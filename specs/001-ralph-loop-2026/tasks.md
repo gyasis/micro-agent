@@ -185,7 +185,7 @@
 - [x] T059 [P] [US2] Implement ChromaDB wrapper for MemoryVault in src/memory/memory-vault.ts
 - [x] T060 [P] [US2] Implement error categorizer (SYNTAX/LOGIC/ENVIRONMENT/FLAKY/PERFORMANCE) in src/memory/error-categorizer.ts
 - [x] T061 [P] [US2] Implement fix recorder for successful attempts in src/memory/fix-recorder.ts
-- [ ] T062 [P] [US2] Implement similarity search for top 5 past fixes in src/memory/similarity-search.ts
+- [X] T062 [P] [US2] Implement similarity search for top 5 past fixes in src/memory/similarity-search.ts
 
 ### Agent Integration
 
@@ -209,24 +209,24 @@
 
 ### Chaos Agent Implementation
 
-- [ ] T067 [P] [US3] Implement Chaos Agent orchestrator in src/agents/chaos/chaos.agent.ts
-- [ ] T068 [P] [US3] Implement property-based test generator using fast-check in src/agents/chaos/property-tests.ts
-- [ ] T069 [P] [US3] Implement mutation testing integration with Stryker in src/agents/chaos/mutation-testing.ts
-- [ ] T070 [P] [US3] Implement boundary value fuzzer in src/agents/chaos/boundary-values.ts
+- [X] T067 [P] [US3] Implement Chaos Agent orchestrator in src/agents/chaos/chaos.agent.ts
+- [X] T068 [P] [US3] Implement property-based test generator using fast-check in src/agents/chaos/property-tests.ts
+- [X] T069 [P] [US3] Implement mutation testing integration with Stryker in src/agents/chaos/mutation-testing.ts
+- [X] T070 [P] [US3] Implement boundary value fuzzer in src/agents/chaos/boundary-values.ts
 
 ### State Machine Integration
 
-- [ ] T071 [US3] Add adversarial testing state to state machine after testing state in src/state-machine/ralph-machine.ts
-- [ ] T072 [US3] Wire Chaos Agent to adversarial state with guard condition (only if unit tests pass) in src/state-machine/ralph-machine.ts
+- [X] T071 [US3] Add adversarial testing state to state machine after testing state in src/state-machine/ralph-machine.ts
+- [X] T072 [US3] Wire Chaos Agent to adversarial state with guard condition (only if unit tests pass) in src/state-machine/ralph-machine.ts
 
 ### Backtracking Logic
 
-- [ ] T073 [US3] Implement intelligent backtracking for adversarial failures in src/state-machine/transitions.ts (revert to last known good state, try alternative fix)
-- [ ] T074 [US3] Ensure adversarial failures do NOT count toward entropy threshold in src/memory/error-categorizer.ts
+- [X] T073 [US3] Implement intelligent backtracking for adversarial failures in src/state-machine/transitions.ts (revert to last known good state, try alternative fix)
+- [X] T074 [US3] Ensure adversarial failures do NOT count toward entropy threshold in src/memory/error-categorizer.ts
 
 ### Configuration
 
-- [ ] T075 [US3] Add adversarial testing config options to defaults in src/config/defaults.ts (adversarial_tests: true, mutation_score_min: 80%)
+- [X] T075 [US3] Add adversarial testing config options to defaults in src/config/defaults.ts (adversarial_tests: true, mutation_score_min: 80%)
 
 **Checkpoint**: Adversarial testing working - Chaos Agent runs after unit tests pass, discovers edge cases with property-based/mutation/boundary tests, backtracking applies alternative fixes
 
@@ -240,23 +240,23 @@
 
 ### Plugin SDK
 
-- [ ] T076 [P] [US5] Define TypeScript plugin interface in src/plugins/sdk/plugin.interface.ts (RalphPlugin, hooks, context types)
-- [ ] T077 [P] [US5] Create plugin SDK type definitions in specs/001-ralph-loop-2026/contracts/plugin-sdk.d.ts
+- [X] T076 [P] [US5] Define TypeScript plugin interface in src/plugins/sdk/plugin.interface.ts (RalphPlugin, hooks, context types)
+- [X] T077 [P] [US5] Create plugin SDK type definitions in specs/001-ralph-loop-2026/contracts/plugin-sdk.d.ts
 
 ### Plugin Manager
 
-- [ ] T078 [US5] Implement plugin loader from ralph-plugins.yaml in src/plugins/plugin-loader.ts
-- [ ] T079 [US5] Implement hook executor with timeout and error handling in src/plugins/hook-executor.ts
+- [X] T078 [US5] Implement plugin loader from ralph-plugins.yaml in src/plugins/plugin-loader.ts
+- [X] T079 [US5] Implement hook executor with timeout and error handling in src/plugins/hook-executor.ts
 
 ### State Machine Integration
 
-- [ ] T080 [US5] Wire plugin hooks to state machine lifecycle stages in src/state-machine/ralph-machine.ts (onBeforeGen before artisan, onAfterGen after artisan, onTestFail after testing failure, onSuccess/onBeforeSuccess before completion)
-- [ ] T081 [US5] Ensure plugin failures are logged but do NOT crash main workflow in src/plugins/hook-executor.ts
+- [X] T080 [US5] Wire plugin hooks to state machine lifecycle stages in src/state-machine/ralph-machine.ts (onBeforeGen before artisan, onAfterGen after artisan, onTestFail after testing failure, onSuccess/onBeforeSuccess before completion)
+- [X] T081 [US5] Ensure plugin failures are logged but do NOT crash main workflow in src/plugins/hook-executor.ts
 
 ### Configuration
 
-- [ ] T082 [US5] Add plugins section to config schema in src/config/schema-validator.ts
-- [ ] T083 [US5] Document plugin discovery and loading in specs/001-ralph-loop-2026/quickstart.md
+- [X] T082 [US5] Add plugins section to config schema in src/config/schema-validator.ts
+- [X] T083 [US5] Document plugin discovery and loading in specs/001-ralph-loop-2026/quickstart.md
 
 **Checkpoint**: Plugin system operational - plugins load from config, hooks execute at correct lifecycle stages, failures are gracefully handled without blocking core workflow
 

@@ -73,8 +73,12 @@ export class RalphLoop {
     // Create state machine orchestrator
     this.orchestrator = createRalphOrchestrator();
 
-    // Create state persister
-    this.statePersister = new StatePersister(config.sessionId);
+    // Create state persister (T050 integration)
+    this.statePersister = new StatePersister({
+      sessionId: config.sessionId,
+      projectRoot: process.cwd(),
+      ralphDir: '.ralph',
+    });
 
     // Wire agents to orchestrator (already done in T035-T037)
     // Agents are wired externally before calling run()
@@ -112,6 +116,9 @@ export class RalphLoop {
    */
   public async run(): Promise<RalphLoopResult> {
     const sessionStartTime = Date.now();
+
+    // T050: Initialize session directory for persistence
+    await this.statePersister.initialize();
 
     logger.info('🚀 Starting Ralph Loop session', {
       sessionId: this.config.sessionId,
@@ -166,6 +173,15 @@ export class RalphLoop {
           duration: result.duration,
           timestamp: new Date().toISOString(),
         });
+
+        // T050: Persist test results to dedicated file
+        if (result.context.testResults) {
+          const testResultsPath = await this.statePersister.persistTestResults(
+            iteration,
+            result.context.testResults
+          );
+          logger.debug('Test results persisted', { path: testResultsPath });
+        }
 
         // Check success criteria (T053 integration)
         if (result.finalState === 'completion') {

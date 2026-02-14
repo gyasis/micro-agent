@@ -27,7 +27,7 @@
 - [x] T006 Create .dockerignore for node_modules/, .git/, .ralph/, *.log*
 - [x] T007 Create project directory structure per plan.md (src/agents/, src/lifecycle/, src/state-machine/, src/memory/, src/parsers/, src/llm/, src/plugins/, src/config/, src/cli/, src/utils/, tests/)
 - [x] T008 [P] Create package.json scripts for build, test, lint, format
-- [ ] T009 [P] Setup TypeScript path aliases in tsconfig.json (@agents, @lifecycle, @memory, @parsers, @llm, @config, @utils)
+- [x] T009 [P] Setup TypeScript path aliases in tsconfig.json (@agents, @lifecycle, @memory, @parsers, @llm, @config, @utils)
 
 ---
 
@@ -131,8 +131,8 @@
 
 - [x] T044 [P] [US4] Define base parser interface with ralph-test-json schema in src/parsers/base-parser.ts
 - [x] T045 [P] [US4] Implement Jest/Vitest parser for TypeScript/JavaScript in src/parsers/jest-parser.ts
-- [ ] T046 [P] [US4] Implement pytest parser for Python in src/parsers/pytest-parser.ts
-- [ ] T047 [P] [US4] Implement cargo test parser for Rust in src/parsers/cargo-parser.ts
+- [x] T046 [P] [US4] Implement pytest parser for Python in src/parsers/pytest-parser.ts
+- [x] T047 [P] [US4] Implement cargo test parser for Rust in src/parsers/cargo-parser.ts
 
 ### Test Execution Integration
 
@@ -182,9 +182,9 @@
 
 ### MemoryVault Core
 
-- [ ] T059 [P] [US2] Implement ChromaDB wrapper for MemoryVault in src/memory/memory-vault.ts
-- [ ] T060 [P] [US2] Implement error categorizer (SYNTAX/LOGIC/ENVIRONMENT/FLAKY/PERFORMANCE) in src/memory/error-categorizer.ts
-- [ ] T061 [P] [US2] Implement fix recorder for successful attempts in src/memory/fix-recorder.ts
+- [x] T059 [P] [US2] Implement ChromaDB wrapper for MemoryVault in src/memory/memory-vault.ts
+- [x] T060 [P] [US2] Implement error categorizer (SYNTAX/LOGIC/ENVIRONMENT/FLAKY/PERFORMANCE) in src/memory/error-categorizer.ts
+- [x] T061 [P] [US2] Implement fix recorder for successful attempts in src/memory/fix-recorder.ts
 - [ ] T062 [P] [US2] Implement similarity search for top 5 past fixes in src/memory/similarity-search.ts
 
 ### Agent Integration

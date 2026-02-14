@@ -138,12 +138,12 @@
 
 - [X] T048 [US4] Integrate framework detector with state machine testing state in src/state-machine/ralph-orchestrator.ts
 - [X] T049 [US4] Wire test parsers to generate unified ralph-test-json output in src/state-machine/test-executor.ts
-- [ ] T050 [US4] Persist test results to .ralph/session-{id}/test-results-iteration-{N}.json in src/lifecycle/state-persister.ts
+- [X] T050 [US4] Persist test results to .ralph/session-{id}/test-results-iteration-{N}.json in src/lifecycle/state-persister.ts
 
 ### Dependency Graph for Multiple Languages
 
-- [ ] T051 [P] [US4] Implement Python import parser using AST in src/agents/librarian/dependency-graph.ts
-- [ ] T052 [P] [US4] Implement Rust module parser using tree-sitter in src/agents/librarian/dependency-graph.ts
+- [X] T051 [P] [US4] Implement Python import parser using AST in src/agents/librarian/python-import-parser.ts
+- [X] T052 [P] [US4] Implement Rust module parser in src/agents/librarian/rust-module-parser.ts
 
 **Checkpoint**: Polyglot support working - TypeScript, JavaScript, Python, Rust projects all detect correct framework, run native tests, produce unified ralph-test-json format
 

@@ -14,7 +14,8 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import type { TestResults, SessionLogEntry, IterationState } from './types';
+import type { SessionLogEntry, IterationState } from './types';
+import type { RalphTestResult } from '../parsers/base-parser';
 
 export interface PersistOptions {
   sessionId: string;
@@ -61,11 +62,13 @@ export class StatePersister {
   }
 
   /**
-   * Persist test results for an iteration
+   * Persist test results for an iteration (T050)
+   *
+   * Saves unified ralph-test-json format to disk
    */
   public async persistTestResults(
     iteration: number,
-    results: TestResults
+    results: RalphTestResult
   ): Promise<string> {
     const filename = `test-results-iteration-${iteration}.json`;
     const filepath = path.join(this.sessionDir, filename);
@@ -159,7 +162,7 @@ export class StatePersister {
   /**
    * Load test results from previous iteration
    */
-  public async loadTestResults(iteration: number): Promise<TestResults | null> {
+  public async loadTestResults(iteration: number): Promise<RalphTestResult | null> {
     const filename = `test-results-iteration-${iteration}.json`;
     const filepath = path.join(this.sessionDir, filename);
 

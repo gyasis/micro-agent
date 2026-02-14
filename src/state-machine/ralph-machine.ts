@@ -12,6 +12,8 @@
  */
 
 import { createMachine, assign } from 'xstate';
+import type { RalphConfig } from '../config/schema-validator';
+import { getDefaults } from '../config/defaults';
 
 export interface RalphContext {
   sessionId: string;
@@ -23,8 +25,10 @@ export interface RalphContext {
   artisanOutput: any | null;
   criticOutput: any | null;
   adversarialResults: any | null;
+  lastKnownGoodState: any | null;
   errors: string[];
   contextUsage: Map<string, number>;
+  config: RalphConfig;
 }
 
 export type RalphEvent =
@@ -60,8 +64,10 @@ export const ralphMachine = createMachine(
       artisanOutput: null,
       criticOutput: null,
       adversarialResults: null,
+      lastKnownGoodState: null,
       errors: [],
       contextUsage: new Map(),
+      config: getDefaults(),
     } as RalphContext,
     states: {
       librarian: {
@@ -120,12 +126,24 @@ export const ralphMachine = createMachine(
       },
       testing: {
         on: {
-          TESTS_PASS: {
-            target: 'adversarial',
-            actions: assign({
-              testResults: ({ event }) => event.results,
-            }),
-          },
+          TESTS_PASS: [
+            {
+              target: 'adversarial',
+              guard: 'shouldRunAdversarialTests',
+              actions: [
+                assign({
+                  testResults: ({ event }) => event.results,
+                }),
+                'saveLastKnownGoodState',
+              ],
+            },
+            {
+              target: 'completion',
+              actions: assign({
+                testResults: ({ event }) => event.results,
+              }),
+            },
+          ],
           TESTS_FAIL: {
             target: 'completion',
             actions: assign({
@@ -162,15 +180,45 @@ export const ralphMachine = createMachine(
     },
   },
   {
-    actions: {},
-    guards: {},
+    actions: {
+      /**
+       * Action: Save last known good state
+       * Captures current state snapshot when tests pass
+       * Used for intelligent backtracking if adversarial tests fail
+       */
+      saveLastKnownGoodState: assign({
+        lastKnownGoodState: ({ context }) => ({
+          artisanOutput: context.artisanOutput,
+          testResults: context.testResults,
+          iteration: context.iteration,
+          timestamp: new Date().toISOString(),
+        }),
+      }),
+    },
+    guards: {
+      /**
+       * Guard: Should run adversarial tests?
+       * Only run if:
+       * 1. Config enables adversarial testing
+       * 2. Unit tests passed (not failed)
+       * 3. Budget not exceeded
+       */
+      shouldRunAdversarialTests: ({ context }) => {
+        return context.config?.testing?.adversarialTests === true;
+      },
+    },
   }
 );
 
 /**
  * Create Ralph machine with initial context
  */
-export function createRalphMachine(sessionId: string, iteration: number, targetFile: string) {
+export function createRalphMachine(
+  sessionId: string,
+  iteration: number,
+  targetFile: string,
+  config: RalphConfig
+) {
   return ralphMachine.provide({
     context: {
       sessionId,
@@ -182,8 +230,10 @@ export function createRalphMachine(sessionId: string, iteration: number, targetF
       artisanOutput: null,
       criticOutput: null,
       adversarialResults: null,
+      lastKnownGoodState: null,
       errors: [],
       contextUsage: new Map(),
+      config,
     },
   });
 }

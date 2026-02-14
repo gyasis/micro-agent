@@ -18,7 +18,8 @@ export type ErrorCategory =
   | 'LOGIC'
   | 'ENVIRONMENT'
   | 'FLAKY'
-  | 'PERFORMANCE';
+  | 'PERFORMANCE'
+  | 'ADVERSARIAL';
 
 export interface CategorizedError {
   category: ErrorCategory;
@@ -83,6 +84,7 @@ export class ErrorCategorizer {
       ENVIRONMENT: 0,
       FLAKY: 0,
       PERFORMANCE: 0,
+      ADVERSARIAL: 0,
     };
 
     for (const { pattern, category, weight } of this.patterns) {
@@ -204,6 +206,17 @@ export class ErrorCategorizer {
       { pattern: /heap.*overflow/i, category: 'PERFORMANCE', weight: 0.8 },
       { pattern: /stack overflow/i, category: 'PERFORMANCE', weight: 0.9 }
     );
+
+    // ADVERSARIAL patterns (chaos testing failures)
+    this.patterns.push(
+      { pattern: /mutation.*survived/i, category: 'ADVERSARIAL', weight: 1.0 },
+      { pattern: /property.*violated/i, category: 'ADVERSARIAL', weight: 1.0 },
+      { pattern: /boundary.*test.*failed/i, category: 'ADVERSARIAL', weight: 1.0 },
+      { pattern: /adversarial/i, category: 'ADVERSARIAL', weight: 1.0 },
+      { pattern: /chaos.*test/i, category: 'ADVERSARIAL', weight: 0.9 },
+      { pattern: /mutation.*score/i, category: 'ADVERSARIAL', weight: 0.8 },
+      { pattern: /edge.*case.*failed/i, category: 'ADVERSARIAL', weight: 0.7 }
+    );
   }
 
   /**
@@ -224,6 +237,8 @@ export class ErrorCategorizer {
         'Environment issues (missing dependencies, file not found, network errors)',
       FLAKY: 'Non-deterministic failures (race conditions, timing issues)',
       PERFORMANCE: 'Performance issues (timeouts, memory exhaustion)',
+      ADVERSARIAL:
+        'Adversarial testing failures (mutation tests, property tests, boundary tests)',
     };
 
     return descriptions[category];
@@ -264,6 +279,12 @@ export class ErrorCategorizer {
         'Increase timeout limits',
         'Fix memory leaks',
       ],
+      ADVERSARIAL: [
+        'Add tests for survived mutations',
+        'Strengthen property test assertions',
+        'Handle boundary value edge cases',
+        'Note: Adversarial failures are informational (unit tests still pass)',
+      ],
     };
 
     return strategies[category];
@@ -286,8 +307,20 @@ export class ErrorCategorizer {
       ENVIRONMENT: 'medium', // Can often be worked around
       FLAKY: 'low', // Non-blocking, may pass on retry
       PERFORMANCE: 'medium', // Impacts usability
+      ADVERSARIAL: 'low', // Informational only, unit tests pass
     };
 
     return priorities[category];
+  }
+
+  /**
+   * Check if error should count toward entropy threshold
+   * ADVERSARIAL errors do NOT count - they're informational failures
+   * that don't invalidate working code (unit tests still pass)
+   */
+  static shouldCountTowardEntropy(category: ErrorCategory): boolean {
+    // ADVERSARIAL failures are informational only - they don't indicate
+    // the code is broken, just that it could be more robust
+    return category !== 'ADVERSARIAL';
   }
 }

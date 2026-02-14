@@ -97,11 +97,21 @@ export function determineNextState(
       break;
 
     case 'adversarial':
-      if (event.type === 'ADVERSARIAL_SUCCESS' || event.type === 'ADVERSARIAL_FAIL') {
+      if (event.type === 'ADVERSARIAL_SUCCESS') {
         return {
           nextState: 'completion',
           context: { adversarialResults: event.results },
           actions: ['persistAdversarialResults'],
+        };
+      }
+      if (event.type === 'ADVERSARIAL_FAIL') {
+        // Intelligent backtracking: Adversarial failures are informational
+        // They don't invalidate the working code that passed unit tests
+        // Store the failures for analysis but proceed to completion
+        return {
+          nextState: 'completion',
+          context: { adversarialResults: event.results },
+          actions: ['persistAdversarialResults', 'notifyAdversarialFailure'],
         };
       }
       break;
@@ -195,6 +205,10 @@ async function executeAction(
 
     case 'notifyContextResetRequired':
       console.warn('⚠️  Context reset required - 40% threshold exceeded');
+      break;
+
+    case 'notifyAdversarialFailure':
+      console.info('ℹ️  Adversarial tests revealed potential improvements (unit tests still pass)');
       break;
 
     default:

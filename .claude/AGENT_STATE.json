@@ -1,0 +1,12 @@
+{
+  "session_id": "",
+  "user_id": "gyasis",
+  "project_path": "/home/gyasis/Documents/code/micro-agent",
+  "status": "initialized",
+  "agents": {
+    "main": {"status": "idle"},
+    "memory-keeper": {"status": "idle"},
+    "git-manager": {"status": "idle"}
+  },
+  "initialized_at": "2026-02-14T09:39:59-05:00"
+}

@@ -1,8 +1,13 @@
 /**
- * Dependency Graph Parser
+ * Dependency Graph Parser with Performance Caching
  *
  * Uses TypeScript compiler API for accurate dependency analysis.
  * Provides deeper import/export resolution than regex-based parsing.
+ *
+ * Includes multi-level caching:
+ * - File dependency cache (keyed by path + mtime)
+ * - Module resolution cache
+ * - Complete graph cache
  *
  * @module agents/librarian/dependency-graph
  */
@@ -41,12 +46,194 @@ export interface DependencyGraph {
 }
 
 /**
+ * Cache entry for file dependencies
+ */
+interface CacheEntry {
+  info: DependencyInfo;
+  mtime: number; // File modification time
+}
+
+/**
+ * Performance cache for dependency graph operations
+ */
+export class DependencyGraphCache {
+  private _fileCache = new Map<string, CacheEntry>();
+  private _moduleResolutionCache = new Map<string, string | null>();
+  private _graphCache = new Map<string, DependencyGraph>();
+  private _maxCacheSize = 1000; // Prevent unbounded growth
+
+  /**
+   * Get cached file dependencies if not stale
+   */
+  async getFileDependencies(
+    filePath: string,
+    rootDir: string
+  ): Promise<DependencyInfo | null> {
+    const cacheKey = path.relative(rootDir, filePath);
+    const cached = this._fileCache.get(cacheKey);
+
+    if (!cached) return null;
+
+    // Check if file modified since cache
+    try {
+      const stats = await fs.stat(filePath);
+      if (stats.mtimeMs !== cached.mtime) {
+        this._fileCache.delete(cacheKey);
+        return null;
+      }
+      return cached.info;
+    } catch {
+      this._fileCache.delete(cacheKey);
+      return null;
+    }
+  }
+
+  /**
+   * Store file dependencies in cache
+   */
+  async setFileDependencies(
+    filePath: string,
+    rootDir: string,
+    info: DependencyInfo
+  ): Promise<void> {
+    const cacheKey = path.relative(rootDir, filePath);
+
+    try {
+      const stats = await fs.stat(filePath);
+      this._fileCache.set(cacheKey, { info, mtime: stats.mtimeMs });
+
+      // Evict oldest entries if cache too large
+      if (this._fileCache.size > this._maxCacheSize) {
+        const firstKey = this._fileCache.keys().next().value;
+        this._fileCache.delete(firstKey);
+      }
+    } catch {
+      // Ignore stat errors
+    }
+  }
+
+  /**
+   * Get cached module resolution
+   */
+  getModuleResolution(
+    modulePath: string,
+    fromDir: string,
+    rootDir: string
+  ): string | null | undefined {
+    const cacheKey = `${fromDir}:${modulePath}`;
+    return this._moduleResolutionCache.get(cacheKey);
+  }
+
+  /**
+   * Store module resolution in cache
+   */
+  setModuleResolution(
+    modulePath: string,
+    fromDir: string,
+    rootDir: string,
+    resolved: string | null
+  ): void {
+    const cacheKey = `${fromDir}:${modulePath}`;
+    this._moduleResolutionCache.set(cacheKey, resolved);
+
+    // Evict oldest entries if cache too large
+    if (this._moduleResolutionCache.size > this._maxCacheSize) {
+      const firstKey = this._moduleResolutionCache.keys().next().value;
+      this._moduleResolutionCache.delete(firstKey);
+    }
+  }
+
+  /**
+   * Get cached dependency graph
+   */
+  async getGraph(
+    files: string[],
+    rootDir: string
+  ): Promise<DependencyGraph | null> {
+    const cacheKey = files.sort().join(':');
+    const cached = this._graphCache.get(cacheKey);
+
+    if (!cached) return null;
+
+    // Verify all files still have same mtime
+    for (const file of files) {
+      const relPath = path.relative(rootDir, file);
+      const fileInfo = this._fileCache.get(relPath);
+      if (!fileInfo) return null;
+
+      try {
+        const stats = await fs.stat(file);
+        if (stats.mtimeMs !== fileInfo.mtime) {
+          this._graphCache.delete(cacheKey);
+          return null;
+        }
+      } catch {
+        this._graphCache.delete(cacheKey);
+        return null;
+      }
+    }
+
+    return cached;
+  }
+
+  /**
+   * Store dependency graph in cache
+   */
+  setGraph(files: string[], rootDir: string, graph: DependencyGraph): void {
+    const cacheKey = files.sort().join(':');
+    this._graphCache.set(cacheKey, graph);
+
+    // Evict oldest entries if cache too large
+    if (this._graphCache.size > 100) {
+      // Keep graph cache smaller
+      const firstKey = this._graphCache.keys().next().value;
+      this._graphCache.delete(firstKey);
+    }
+  }
+
+  /**
+   * Clear all caches
+   */
+  clear(): void {
+    this._fileCache.clear();
+    this._moduleResolutionCache.clear();
+    this._graphCache.clear();
+  }
+
+  /**
+   * Get cache statistics
+   */
+  getStats() {
+    return {
+      fileCacheSize: this._fileCache.size,
+      moduleResolutionCacheSize: this._moduleResolutionCache.size,
+      graphCacheSize: this._graphCache.size,
+      maxCacheSize: this._maxCacheSize,
+    };
+  }
+}
+
+/**
+ * Global cache instance (singleton pattern for cross-iteration caching)
+ */
+const globalCache = new DependencyGraphCache();
+
+/**
  * Parse dependencies for a single file using TypeScript compiler
+ * with caching for performance
  */
 export async function parseFileDependencies(
   filePath: string,
-  rootDir: string
+  rootDir: string,
+  cache: DependencyGraphCache = globalCache
 ): Promise<DependencyInfo> {
+  // Check cache first
+  const cached = await cache.getFileDependencies(filePath, rootDir);
+  if (cached) {
+    return cached;
+  }
+
+  // Parse file
   const content = await fs.readFile(filePath, 'utf-8');
 
   const sourceFile = ts.createSourceFile(
@@ -59,20 +246,25 @@ export async function parseFileDependencies(
   const imports = extractImports(sourceFile);
   const exports = extractExports(sourceFile);
 
-  // Resolve import paths
-  const resolvedImports = await resolveImports(imports, filePath, rootDir);
+  // Resolve import paths (with caching)
+  const resolvedImports = await resolveImports(imports, filePath, rootDir, cache);
 
   const dependencies = resolvedImports
     .filter(imp => imp.resolved)
     .map(imp => imp.resolved!);
 
-  return {
+  const info: DependencyInfo = {
     file: path.relative(rootDir, filePath),
     imports: resolvedImports,
     exports,
     dependencies,
     dependents: [], // Filled by buildDependencyGraph
   };
+
+  // Store in cache
+  await cache.setFileDependencies(filePath, rootDir, info);
+
+  return info;
 }
 
 /**
@@ -252,12 +444,13 @@ function parseExportedDeclaration(node: ts.Node): ExportInfo | null {
 }
 
 /**
- * Resolve import paths to actual files
+ * Resolve import paths to actual files with caching
  */
 async function resolveImports(
   imports: ImportInfo[],
   fromFile: string,
-  rootDir: string
+  rootDir: string,
+  cache: DependencyGraphCache = globalCache
 ): Promise<ImportInfo[]> {
   const resolved = [...imports];
 
@@ -268,7 +461,7 @@ async function resolveImports(
     }
 
     const fromDir = path.dirname(fromFile);
-    const resolvedPath = await resolveModulePath(imp.module, fromDir, rootDir);
+    const resolvedPath = await resolveModulePath(imp.module, fromDir, rootDir, cache);
 
     if (resolvedPath) {
       imp.resolved = path.relative(rootDir, resolvedPath);
@@ -279,17 +472,26 @@ async function resolveImports(
 }
 
 /**
- * Resolve module path to file
+ * Resolve module path to file with caching
  */
 async function resolveModulePath(
   modulePath: string,
   fromDir: string,
-  rootDir: string
+  rootDir: string,
+  cache: DependencyGraphCache = globalCache
 ): Promise<string | null> {
+  // Check cache first
+  const cached = cache.getModuleResolution(modulePath, fromDir, rootDir);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  // Resolve path
   const basePath = path.resolve(fromDir, modulePath);
 
   // Try exact path
   if (await fileExists(basePath)) {
+    cache.setModuleResolution(modulePath, fromDir, rootDir, basePath);
     return basePath;
   }
 
@@ -298,6 +500,7 @@ async function resolveModulePath(
   for (const ext of extensions) {
     const withExt = basePath + ext;
     if (await fileExists(withExt)) {
+      cache.setModuleResolution(modulePath, fromDir, rootDir, withExt);
       return withExt;
     }
   }
@@ -306,10 +509,13 @@ async function resolveModulePath(
   const indexPaths = extensions.map(ext => path.join(basePath, `index${ext}`));
   for (const indexPath of indexPaths) {
     if (await fileExists(indexPath)) {
+      cache.setModuleResolution(modulePath, fromDir, rootDir, indexPath);
       return indexPath;
     }
   }
 
+  // Cache null result (failed resolution)
+  cache.setModuleResolution(modulePath, fromDir, rootDir, null);
   return null;
 }
 
@@ -326,18 +532,26 @@ async function fileExists(filePath: string): Promise<boolean> {
 }
 
 /**
- * Build complete dependency graph from multiple files
+ * Build complete dependency graph from multiple files with caching
  */
 export async function buildDependencyGraph(
   files: string[],
-  rootDir: string
+  rootDir: string,
+  cache: DependencyGraphCache = globalCache
 ): Promise<DependencyGraph> {
+  // Check cache first
+  const cachedGraph = await cache.getGraph(files, rootDir);
+  if (cachedGraph) {
+    return cachedGraph;
+  }
+
+  // Build graph
   const nodes = new Map<string, DependencyInfo>();
   const edges: Array<{ from: string; to: string }> = [];
 
-  // Parse all files
+  // Parse all files (with individual file caching)
   for (const file of files) {
-    const info = await parseFileDependencies(file, rootDir);
+    const info = await parseFileDependencies(file, rootDir, cache);
     nodes.set(info.file, info);
   }
 
@@ -353,7 +567,12 @@ export async function buildDependencyGraph(
     }
   }
 
-  return { nodes, edges };
+  const graph = { nodes, edges };
+
+  // Store in cache
+  cache.setGraph(files, rootDir, graph);
+
+  return graph;
 }
 
 /**

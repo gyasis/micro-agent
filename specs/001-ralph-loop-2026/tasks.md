@@ -41,14 +41,14 @@
 
 - [x] T010 Implement fresh session lifecycle orchestrator in src/lifecycle/iteration-manager.ts
 - [x] T011 Implement context usage monitor tracking 40% smart zone boundary in src/lifecycle/context-monitor.ts
-- [ ] T012 Implement state persister for disk writes between iterations in src/lifecycle/state-persister.ts
-- [ ] T013 Implement session resetter to destroy LLM context in src/lifecycle/session-resetter.ts
+- [x] T012 Implement state persister for disk writes between iterations in src/lifecycle/state-persister.ts
+- [x] T013 Implement session resetter to destroy LLM context in src/lifecycle/session-resetter.ts
 
 ### LiteLLM Integration
 
-- [ ] T014 [P] Implement LiteLLM provider router in src/llm/provider-router.ts
-- [ ] T015 [P] Implement cost tracker for token usage per agent in src/llm/cost-tracker.ts
-- [ ] T016 [P] Implement fallback handler for provider failover in src/llm/fallback-handler.ts
+- [x] T014 [P] Implement LiteLLM provider router in src/llm/provider-router.ts
+- [x] T015 [P] Implement cost tracker for token usage per agent in src/llm/cost-tracker.ts
+- [x] T016 [P] Implement fallback handler for provider failover in src/llm/fallback-handler.ts
 
 ### State Machine Foundation
 

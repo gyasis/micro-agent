@@ -64,9 +64,9 @@
 
 ### Shared Utilities
 
-- [ ] T023 [P] Implement structured logger in src/utils/logger.ts
-- [ ] T024 [P] Implement atomic file I/O utilities in src/utils/file-io.ts
-- [ ] T025 [P] Implement git working tree status utilities in src/utils/git-utils.ts
+- [x] T023 [P] Implement structured logger in src/utils/logger.ts
+- [x] T024 [P] Implement atomic file I/O utilities in src/utils/file-io.ts
+- [x] T025 [P] Implement git working tree status utilities in src/utils/git-utils.ts
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -80,7 +80,7 @@
 
 ### Agent Interfaces
 
-- [ ] T026 [US1] Create base agent interface in src/agents/base/agent.interface.ts
+- [x] T026 [US1] Create base agent interface in src/agents/base-agent.ts
 - [ ] T027 [US1] Create shared agent context structure in src/agents/base/agent-context.ts
 
 ### Librarian Agent (Context Provider)

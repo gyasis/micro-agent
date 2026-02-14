@@ -101,9 +101,9 @@
 
 ### State Machine Integration
 
-- [ ] T035 [US1] Wire Librarian agent to state machine librarian state in src/state-machine/ralph-machine.ts
-- [ ] T036 [US1] Wire Artisan agent to state machine artisan state in src/state-machine/ralph-machine.ts
-- [ ] T037 [US1] Wire Critic agent to state machine critic state in src/state-machine/ralph-machine.ts
+- [X] T035 [US1] Wire Librarian agent to state machine librarian state in src/state-machine/ralph-machine.ts
+- [X] T036 [US1] Wire Artisan agent to state machine artisan state in src/state-machine/ralph-machine.ts
+- [X] T037 [US1] Wire Critic agent to state machine critic state in src/state-machine/ralph-machine.ts
 - [ ] T038 [US1] Integrate iteration lifecycle manager with state machine workflow in src/state-machine/ralph-machine.ts
 
 ### CLI Interface

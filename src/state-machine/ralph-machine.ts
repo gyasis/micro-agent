@@ -14,11 +14,13 @@
 import { createMachine, assign } from 'xstate';
 import type { RalphConfig } from '../config/schema-validator';
 import { getDefaults } from '../config/defaults';
+import type { PluginRegistryEntry } from '../plugins/sdk/plugin.interface';
 
 export interface RalphContext {
   sessionId: string;
   iteration: number;
   targetFile: string;
+  objective: string;
   codebaseFiles: Map<string, string>;
   testResults: any | null;
   librarianOutput: any | null;
@@ -29,6 +31,7 @@ export interface RalphContext {
   errors: string[];
   contextUsage: Map<string, number>;
   config: RalphConfig;
+  plugins: PluginRegistryEntry[];
 }
 
 export type RalphEvent =
@@ -58,6 +61,7 @@ export const ralphMachine = createMachine(
       sessionId: '',
       iteration: 0,
       targetFile: '',
+      objective: '',
       codebaseFiles: new Map(),
       testResults: null,
       librarianOutput: null,
@@ -68,15 +72,19 @@ export const ralphMachine = createMachine(
       errors: [],
       contextUsage: new Map(),
       config: getDefaults(),
+      plugins: [],
     } as RalphContext,
     states: {
       librarian: {
         on: {
           LIBRARIAN_SUCCESS: {
             target: 'artisan',
-            actions: assign({
-              librarianOutput: ({ event }) => event.output,
-            }),
+            actions: [
+              assign({
+                librarianOutput: ({ event }) => event.output,
+              }),
+              'executeOnBeforeGen',
+            ],
           },
           LIBRARIAN_ERROR: {
             target: 'error',
@@ -92,9 +100,12 @@ export const ralphMachine = createMachine(
         on: {
           ARTISAN_SUCCESS: {
             target: 'critic',
-            actions: assign({
-              artisanOutput: ({ event }) => event.output,
-            }),
+            actions: [
+              assign({
+                artisanOutput: ({ event }) => event.output,
+              }),
+              'executeOnAfterGen',
+            ],
           },
           ARTISAN_ERROR: {
             target: 'error',
@@ -146,9 +157,12 @@ export const ralphMachine = createMachine(
           ],
           TESTS_FAIL: {
             target: 'completion',
-            actions: assign({
-              testResults: ({ event }) => event.results,
-            }),
+            actions: [
+              assign({
+                testResults: ({ event }) => event.results,
+              }),
+              'executeOnTestFail',
+            ],
           },
           BUDGET_EXCEEDED: 'completion',
           ENTROPY_DETECTED: 'completion',
@@ -173,6 +187,7 @@ export const ralphMachine = createMachine(
       },
       completion: {
         type: 'final',
+        entry: ['executeOnBeforeSuccess', 'executeOnSuccess'],
       },
       error: {
         type: 'final',
@@ -194,6 +209,27 @@ export const ralphMachine = createMachine(
           timestamp: new Date().toISOString(),
         }),
       }),
+
+      /**
+       * Plugin hook actions
+       * These are executed by the HookExecutor in the state machine orchestrator
+       * They serve as markers for where hooks should be executed
+       */
+      executeOnBeforeGen: () => {
+        // Implemented by orchestrator via HookExecutor
+      },
+      executeOnAfterGen: () => {
+        // Implemented by orchestrator via HookExecutor
+      },
+      executeOnTestFail: () => {
+        // Implemented by orchestrator via HookExecutor
+      },
+      executeOnBeforeSuccess: () => {
+        // Implemented by orchestrator via HookExecutor
+      },
+      executeOnSuccess: () => {
+        // Implemented by orchestrator via HookExecutor
+      },
     },
     guards: {
       /**
@@ -217,13 +253,16 @@ export function createRalphMachine(
   sessionId: string,
   iteration: number,
   targetFile: string,
-  config: RalphConfig
+  objective: string,
+  config: RalphConfig,
+  plugins: PluginRegistryEntry[] = []
 ) {
   return ralphMachine.provide({
     context: {
       sessionId,
       iteration,
       targetFile,
+      objective,
       codebaseFiles: new Map(),
       testResults: null,
       librarianOutput: null,
@@ -234,6 +273,7 @@ export function createRalphMachine(
       errors: [],
       contextUsage: new Map(),
       config,
+      plugins,
     },
   });
 }

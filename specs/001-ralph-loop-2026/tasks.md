@@ -110,8 +110,8 @@
 
 - [x] T039 [US1] Implement main entry point ralph-loop CLI in src/cli/ralph-loop.ts
 - [x] T040 [US1] Implement run command orchestrating multi-agent workflow in src/cli/commands/run.ts
-- [ ] T041 [P] [US1] Implement real-time progress display in src/cli/ui/progress-display.ts
-- [ ] T042 [P] [US1] Implement completion summary reporter in src/cli/ui/summary-reporter.ts
+- [x] T041 [P] [US1] Implement real-time progress display in src/cli/ui/progress-display.ts
+- [x] T042 [P] [US1] Implement completion summary reporter in src/cli/ui/summary-reporter.ts
 
 **Checkpoint**: At this point, Multi-Agent Code Generation should be fully functional - Librarian → Artisan → Critic workflow executes with fresh context each iteration
 
@@ -125,12 +125,12 @@
 
 ### Test Framework Detection
 
-- [ ] T043 [P] [US4] Implement framework detector scanning manifest files in src/parsers/framework-detector.ts
+- [x] T043 [P] [US4] Implement framework detector scanning manifest files in src/parsers/framework-detector.ts
 
 ### Language-Specific Parsers
 
-- [ ] T044 [P] [US4] Define base parser interface with ralph-test-json schema in src/parsers/base-parser.ts
-- [ ] T045 [P] [US4] Implement Jest/Vitest parser for TypeScript/JavaScript in src/parsers/jest-parser.ts
+- [x] T044 [P] [US4] Define base parser interface with ralph-test-json schema in src/parsers/base-parser.ts
+- [x] T045 [P] [US4] Implement Jest/Vitest parser for TypeScript/JavaScript in src/parsers/jest-parser.ts
 - [ ] T046 [P] [US4] Implement pytest parser for Python in src/parsers/pytest-parser.ts
 - [ ] T047 [P] [US4] Implement cargo test parser for Rust in src/parsers/cargo-parser.ts
 

@@ -19,6 +19,7 @@ import type { RalphConfig } from '../config/schema-validator';
 import type { PluginRegistryEntry } from '../plugins/sdk/plugin.interface';
 import { HookExecutor } from '../plugins/hook-executor';
 import { createLogger } from '../utils/logger';
+import { executeTests, validateTestResult } from './test-executor';
 
 // Import agents (these will be wired in)
 import type { LibrarianAgent } from '../agents/librarian/librarian.agent';
@@ -354,7 +355,12 @@ export class RalphOrchestrator {
   }
 
   /**
-   * Execute Testing state
+   * Execute Testing state (T048 & T049)
+   *
+   * Integrates framework detector and test parsers to:
+   * - Auto-detect test framework (Vitest, Jest, pytest, cargo test)
+   * - Execute tests with appropriate command
+   * - Parse output to unified ralph-test-json format
    */
   private async executeTestingState(
     actor: any,
@@ -363,32 +369,81 @@ export class RalphOrchestrator {
   ): Promise<void> {
     logger.info('Executing tests...');
 
-    // This will be implemented when test framework detector is wired
-    // For now, simulate test execution
-    const testResults = {
-      passed: true,
-      total: 0,
-      failed: 0,
-      skipped: 0,
-    };
-
-    if (testResults.passed) {
-      actor.send({
-        type: 'TESTS_PASS',
-        results: testResults,
+    try {
+      // T048 & T049: Execute tests with framework detection and unified parsing
+      const projectDir = process.cwd();
+      const result = await executeTests({
+        projectDir,
+        targetFile: context.targetFile,
+        timeout: context.config.timeLimit || 120000,
       });
-    } else {
-      // Execute plugin hooks: onTestFail
-      await this.hookExecutor.executeHook(
-        'onTestFail',
-        plugins,
-        this.createPluginContext(context),
-        testResults
-      );
+
+      // Validate test result
+      const isValid = validateTestResult(result.testResults);
+      if (!isValid) {
+        logger.warn('Test result validation failed - continuing anyway');
+      }
+
+      // Send appropriate event based on test outcome
+      if (result.success && result.testResults.summary.status === 'passed') {
+        actor.send({
+          type: 'TESTS_PASS',
+          results: result.testResults,
+        });
+
+        logger.info('✅ Tests passed!', {
+          total: result.testResults.summary.total,
+          passed: result.testResults.summary.passed,
+          duration: `${result.testResults.summary.duration}s`,
+        });
+      } else {
+        // Execute plugin hooks: onTestFail
+        await this.hookExecutor.executeHook(
+          'onTestFail',
+          plugins,
+          this.createPluginContext(context),
+          result.testResults
+        );
+
+        actor.send({
+          type: 'TESTS_FAIL',
+          results: result.testResults,
+        });
+
+        logger.warn('❌ Tests failed', {
+          total: result.testResults.summary.total,
+          passed: result.testResults.summary.passed,
+          failed: result.testResults.summary.failed,
+          duration: `${result.testResults.summary.duration}s`,
+        });
+      }
+    } catch (error) {
+      logger.error('Test execution error:', error);
+
+      // Send test failure event with error details
+      const errorResults = {
+        framework: 'custom',
+        version: '1.0.0',
+        timestamp: new Date().toISOString(),
+        summary: {
+          total: 0,
+          passed: 0,
+          failed: 0,
+          skipped: 0,
+          duration: 0,
+          status: 'error' as const,
+        },
+        tests: [],
+        metadata: {
+          command: 'unknown',
+          workingDirectory: process.cwd(),
+          error: error instanceof Error ? error.message : String(error),
+        },
+      };
 
       actor.send({
         type: 'TESTS_FAIL',
-        results: testResults,
+        results: errorResults,
       });
     }
 

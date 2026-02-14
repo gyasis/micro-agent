@@ -92,12 +92,12 @@
 ### Artisan Agent (Code Generator)
 
 - [x] T031 [P] [US1] Implement Artisan agent with Claude integration in src/agents/artisan/artisan.agent.ts
-- [ ] T032 [P] [US1] Implement code writer utilities for file modifications in src/agents/artisan/code-writer.ts
+- [x] T032 [P] [US1] Implement code writer utilities for file modifications in src/agents/artisan/code-writer.ts
 
 ### Critic Agent (Logic Reviewer)
 
-- [ ] T033 [P] [US1] Implement Critic agent with GPT integration in src/agents/critic/critic.agent.ts
-- [ ] T034 [P] [US1] Implement review validation checker in src/agents/critic/review-checker.ts
+- [x] T033 [P] [US1] Implement Critic agent with GPT integration in src/agents/critic/critic.agent.ts
+- [x] T034 [P] [US1] Implement review validation checker in src/agents/critic/review-checker.ts
 
 ### State Machine Integration
 
@@ -108,8 +108,8 @@
 
 ### CLI Interface
 
-- [ ] T039 [US1] Implement main entry point ralph-loop CLI in src/cli/ralph-loop.ts
-- [ ] T040 [US1] Implement run command orchestrating multi-agent workflow in src/cli/commands/run.ts
+- [x] T039 [US1] Implement main entry point ralph-loop CLI in src/cli/ralph-loop.ts
+- [x] T040 [US1] Implement run command orchestrating multi-agent workflow in src/cli/commands/run.ts
 - [ ] T041 [P] [US1] Implement real-time progress display in src/cli/ui/progress-display.ts
 - [ ] T042 [P] [US1] Implement completion summary reporter in src/cli/ui/summary-reporter.ts
 

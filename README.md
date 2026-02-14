@@ -1,291 +1,468 @@
-<br>
-<div align="center">
-   <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F4d36bc052c4340f997dd61eb19c1c64b">
-      <img width="400" alt="AI Shell logo" src="https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F1a718d297d644fce90f33e93b7e4061f">
-    </picture>
-</div>
+# Ralph Loop 2026
 
-<p align="center">
-   An AI agent that writes and fixes code for you.
-</p>
+[![npm version](https://badge.fury.io/js/ralph-loop.svg)](https://www.npmjs.com/package/ralph-loop)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
 
-<p align="center">
-   <a href="https://www.npmjs.com/package/@builder.io/micro-agent"><img src="https://img.shields.io/npm/v/@builder.io/micro-agent" alt="Current version"></a>
-</p>
-<br>
+**The Multi-Agent Iterative Testing System with Fresh Context Resets**
 
-![Demo](https://cdn.builder.io/api/v1/file/assets%2FYJIGb4i01jvw0SRdL5Bt%2F3306a1cff57b4be69df65492a72ae8e5)
+Ralph Loop 2026 is a next-generation autonomous testing and code generation system that uses multiple specialized AI agents to iteratively fix code until tests pass. Built on the principles of fresh context resets, intelligent error learning, and adversarial testing.
 
-# Micro Agent
+> **Evolution from Micro Agent**: Ralph Loop 2026 is the successor to Micro Agent, introducing multi-agent architecture, fresh context every iteration, intelligent memory learning, and adversarial chaos testing.
 
-Just run `micro-agent`, give it a prompt, and it'll generate a test and then iterate on code until all test cases pass.
+## ✨ Key Features
 
-## Why?
+- 🤖 **Multi-Agent Architecture**: Librarian (Gemini), Artisan (Claude), Critic (GPT-4.1), Chaos (Claude)
+- 🔄 **Fresh Context Every Iteration**: Prevents context pollution and eliminates token waste
+- 🧠 **Intelligent Memory Vault**: Vector database learns from past fixes using semantic similarity
+- 🎯 **Adversarial Testing**: Property-based tests, mutation testing, boundary fuzzing
+- 🌍 **Polyglot Support**: TypeScript, JavaScript, Python, Rust
+- 🔌 **Plugin System**: Extend with custom lifecycle hooks (10 hook points)
+- 💰 **Budget-Aware**: Automatic cost tracking with configurable limits
+- 🛡️ **Sandboxed Execution**: Isolated test runs in Docker containers
+- ⚡ **Circuit Breaker**: Entropy detection prevents infinite loops
 
-LLMs are great at giving you broken code, and it can take repeat iteration to get that code to work as expected.
+## 🚀 Quick Start
 
-So why do this manually when AI can handle not just the generation but also the iteration and fixing?
-
-### Why a "micro" agent?
-
-AI agents are cool, but general-purpose coding agents rarely work as hoped or promised. They tend to go haywire with compounding errors. Think of your Roomba getting stuck under a table, x1000.
-
-The idea of a micro agent is to
-
-1. Create a definitive test case that can give clear feedback if the code works as intended or not, and
-2. Iterate on code until all test cases pass
-
-Read more on [why Micro Agent exists](https://www.builder.io/blog/micro-agent).
-
-<img width="1270" alt="Micro Agent Diagram" src="https://github.com/BuilderIO/micro-agent/assets/844291/406496dd-3be8-491b-a5f0-2960dd924013">
-
-### What this project is not
-
-This project is not trying to be an end-to-end developer. AI agents are not capable enough to reliably try to be that yet (or probably very soon). This project won't install modules, read and write multiple files, or do anything else that is highly likely to cause havoc when it inevitably fails.
-
-It's a micro agent. It's small, focused, and does one thing as well as possible: write a test, then produce code that passes that test.
-
-## Installation
-
-> Micro Agent requires [Node.js](https://nodejs.org/) v18 or later.
+### Installation
 
 ```bash
-npm install -g @builder.io/micro-agent
+# Global installation
+npm install -g ralph-loop
+
+# Or use locally
+npm install ralph-loop --save-dev
 ```
 
-## Getting Started
-
-The best way to get started is to run Micro Agent in interactive mode, where it will ask you questions about the code it generates and use your feedback to improve the code it generates.
+### Basic Usage
 
 ```bash
-micro-agent
+# Fix a failing file
+ralph fix src/utils/calculator.ts
+
+# Run on entire directory
+ralph fix src/
+
+# Watch mode (auto-fix on changes)
+ralph watch src/
 ```
 
-Look at that, you're now a test-driven developer. You're welcome.
+### Example Output
 
-## Running Manually
+```
+🚀 Ralph Loop 2026 - Multi-Agent Iterative Testing
+   Session: abc123, Budget: 30 iterations, $2.00 max
 
-### Add an LLM API key
+🔍 Iteration 1/30
+   📚 Librarian (Gemini): Analyzed 3 files, found 12 dependencies
+   ✍️  Artisan (Claude): Generated fix for TypeError at line 42
+   🔎 Critic (GPT-4.1): Code quality 85/100, suggested 2 improvements
+   🧪 Tests: 8/10 passed (2 failures)
+   💥 Chaos: Skipped (tests didn't pass)
 
-Micro Agent works with Claude, OpenAI, Ollama, or any OpenAI compatible provider such as Groq. You need to add your API key to the CLI:
+🔍 Iteration 2/30
+   ✍️  Artisan: Improved error handling based on memory vault
+   🧪 Tests: 10/10 passed ✅
+   💥 Chaos: Running adversarial tests...
+      - Property tests: 15/15 passed
+      - Mutation score: 85% (17/20 killed)
+      - Boundary tests: 12/12 passed
+
+🎉 SUCCESS! Tests pass + Chaos tests complete
+   💰 Cost: $0.23  |  ⏱️  Duration: 45s  |  🔄 Iterations: 2
+   💾 Fix pattern saved to memory vault
+```
+
+## 📖 Documentation
+
+- **[Quick Start Guide](./specs/001-ralph-loop-2026/quickstart.md)** - Get started in 5 minutes
+- **[Configuration Guide](#configuration)** - Customize models and settings
+- **[Plugin System](./specs/001-ralph-loop-2026/quickstart.md#plugin-system)** - Extend functionality
+- **[Architecture](./specs/001-ralph-loop-2026/plan.md)** - Technical deep dive
+
+## ⚙️ Configuration
+
+Create `ralph.config.yaml` in your project root:
+
+```yaml
+# AI Model Assignments
+models:
+  librarian:
+    provider: google
+    model: gemini-2.0-pro
+    temperature: 0.3  # Low temp for precise analysis
+
+  artisan:
+    provider: anthropic
+    model: claude-sonnet-4.5
+    temperature: 0.7  # Moderate temp for code generation
+
+  critic:
+    provider: openai
+    model: gpt-4.1-mini
+    temperature: 0.2  # Low temp for strict review
+
+  chaos:
+    provider: anthropic
+    model: claude-sonnet-4.5
+    temperature: 0.9  # High temp for creative adversarial thinking
+
+# Budget Constraints
+budgets:
+  maxIterations: 30
+  maxCostUsd: 2.0
+  maxDurationMinutes: 15
+
+# Testing Strategies
+testing:
+  adversarialTests: true
+  propertyBasedTests: true
+  mutationTesting: true
+  boundaryValueTesting: true
+
+# Success Criteria
+successCriteria:
+  testsPass: true
+  adversarialTestsPass: true
+  coverageThreshold: 90
+  mutationScoreMin: 80
+
+# Memory & Learning
+memory:
+  vectorDb: chromadb
+  similarityThreshold: 0.85
+  maxPatterns: 1000
+  contextResetFrequency: 1  # GOLD STANDARD: Fresh context every iteration
+```
+
+### Environment Variables
 
 ```bash
-micro-agent config set OPENAI_KEY=<your token>
-micro-agent config set MODEL=gpt-4o
+# AI Provider API Keys
+export ANTHROPIC_API_KEY=sk-ant-...
+export OPENAI_API_KEY=sk-...
+export GOOGLE_API_KEY=...
+
+# Optional: Local LLM endpoints
+export OLLAMA_BASE_URL=http://localhost:11434
 ```
 
-Or, for Claude:
+## 🏗️ Architecture
+
+### Multi-Agent State Machine
+
+```mermaid
+graph TD
+    A[Librarian] -->|Context & Dependencies| B[Artisan]
+    B -->|Generated Code| C[Critic]
+    C -->|Approved Code| D[Testing]
+    D -->|Tests Pass| E[Adversarial]
+    D -->|Tests Fail| F[Next Iteration]
+    E -->|Complete| G[Success]
+    F -->|Destroy Machine| A
+```
+
+**Agents**:
+- **Librarian (Gemini)**: Context analysis, dependency graphing, file ranking
+- **Artisan (Claude)**: Code generation and fixes with 0.7 temperature
+- **Critic (GPT-4.1)**: Code quality review, logic verification
+- **Chaos (Claude)**: Adversarial testing with 0.9 temperature
+
+### Fresh Context Reset (GOLD STANDARD)
+
+Every iteration destroys the previous state machine and creates a fresh one:
+
+```typescript
+for (let iteration = 0; iteration < maxIterations; iteration++) {
+  // Create fresh state machine
+  const machine = createRalphMachine(sessionId, iteration, targetFile, config);
+
+  // Execute iteration
+  const result = await executeMachine(machine);
+
+  if (result.success) {
+    await memoryVault.storeFixPattern(result.fix);
+    break;
+  }
+
+  // Machine is destroyed - fresh context for next iteration
+  // No context pollution, no token waste
+}
+```
+
+**Benefits**:
+- ✅ No context pollution across iterations
+- ✅ Prevents cascading errors from bad state
+- ✅ Each iteration starts with clean slate
+- ✅ Optimal token usage (only pay for what you need)
+
+### Memory Vault Learning
+
+```typescript
+// Store successful fix
+await memoryVault.storeFixPattern({
+  errorSignature: '[LOGIC] expected 5 but got 3',
+  solution: 'Changed += to = in accumulator',
+  context: ['calculator.ts', 'sum function'],
+  successRate: 1.0,
+  timesApplied: 1
+});
+
+// Retrieve similar fixes using vector similarity
+const fixes = await similaritySearch.search({
+  errorMessage: 'expected 10 but got 8',
+  context: ['calculator.ts']
+});
+// Returns top 5 most similar past fixes with relevance scores
+```
+
+**Similarity Scoring**:
+- Category match: 30% weight
+- Context overlap (Jaccard): 50% weight
+- Recency (exponential decay): 20% weight
+- Bonuses: success rate >80% (+10%), popularity >5 uses (+5%)
+
+## 🎯 Use Cases
+
+### 1. Fix Failing Tests
 
 ```bash
-micro-agent config set ANTHROPIC_KEY=<your token>
-micro-agent config set MODEL=claude
+ralph fix src/api/auth.ts
+
+# Ralph will:
+# 1. Analyze test failures (Librarian)
+# 2. Search memory for similar fixes
+# 3. Generate and apply fix (Artisan)
+# 4. Review code quality (Critic)
+# 5. Verify tests pass
+# 6. Run adversarial tests (Chaos)
+# 7. Store successful pattern
 ```
 
-To use a custom OpenAI API endpoint, such as for use with Ollama or Groq, you can set the endpoint with:
+### 2. Improve Test Coverage
 
 ```bash
-micro-agent config set OPENAI_API_ENDPOINT=<your endpoint>
-micro-agent config set OPENAI_API_ENDPOINT=https://api.groq.com/openai/v1
+ralph coverage src/utils/ --threshold 90
+
+# Generates additional tests to reach 90% coverage
 ```
 
-### Unit test matching
-
-![Demo](https://cdn.builder.io/api/v1/file/assets%2FYJIGb4i01jvw0SRdL5Bt%2F4e8b02abb3e044118f070d9a7253003e)
-
-To run the Micro Agent on a file in unit test matching mode, you need to provide a test script that will run after each code generation attempt. For instance:
+### 3. Adversarial Testing Only
 
 ```bash
-micro-agent ./file-to-edit.ts -t "npm test"
+ralph chaos src/critical-module.ts
+
+# Runs:
+# - Property-based tests (fast-check)
+# - Mutation testing (Stryker)
+# - Boundary value fuzzing
+# - Reports survived mutations
 ```
 
-This will run the Micro Agent on the file `./file-to-edit.ts` running `npm test` and will write code until the tests pass.
+### 4. Continuous Integration
 
-The above assumes the following file structure:
+```yaml
+# .github/workflows/ralph.yml
+name: Ralph Loop CI
+on: [push, pull_request]
+
+jobs:
+  ralph:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+      - run: npm install -g ralph-loop
+      - run: ralph fix src/ --ci --max-cost 1.0
+```
+
+## 🔌 Plugin System
+
+Extend Ralph Loop with custom lifecycle hooks:
+
+```typescript
+// plugins/slack-notifier.ts
+import type { RalphPlugin } from 'ralph-loop/plugin-sdk';
+
+export const slackPlugin: RalphPlugin = {
+  name: 'slack-notifications',
+  version: '1.0.0',
+
+  async onSuccess(context, results) {
+    await fetch(process.env.SLACK_WEBHOOK!, {
+      method: 'POST',
+      body: JSON.stringify({
+        text: `✅ Iteration ${context.iteration} succeeded in ${results.duration}s!`
+      })
+    });
+  },
+
+  async onTestFail(context, failure) {
+    await fetch(process.env.SLACK_WEBHOOK!, {
+      method: 'POST',
+      body: JSON.stringify({
+        text: `❌ Test failed: ${failure.testName}\n${failure.errorMessage}`
+      })
+    });
+  },
+
+  async onBudgetExceeded(context, budget) {
+    await fetch(process.env.SLACK_WEBHOOK!, {
+      method: 'POST',
+      body: JSON.stringify({
+        text: `⚠️ Budget exceeded: ${budget.exceeded} limit reached`
+      })
+    });
+  }
+};
+```
+
+**Configuration (`ralph-plugins.yaml`):**
+
+```yaml
+plugins:
+  - plugin: ./plugins/slack-notifier.ts
+    enabled: true
+    config:
+      timeout: 5000
+      failOnError: false
+      hooks:
+        onSuccess: true
+        onTestFail: true
+        onBudgetExceeded: true
+```
+
+**10 Lifecycle Hooks**: `onBeforeGen`, `onAfterGen`, `onTestFail`, `onBeforeSuccess`, `onSuccess`, `onFailure`, `onContextReset`, `onBudgetExceeded`, `onEntropyDetected`, `initialize/cleanup`
+
+## 🧪 Language Support
+
+| Language   | Test Framework      | Coverage Tool    | Status |
+|------------|---------------------|------------------|--------|
+| TypeScript | Vitest, Jest        | c8, Istanbul     | ✅     |
+| JavaScript | Vitest, Jest        | c8, Istanbul     | ✅     |
+| Python     | pytest              | coverage.py      | ✅     |
+| Rust       | cargo test          | cargo-tarpaulin  | ✅     |
+| Go         | go test             | go cover         | 🚧     |
+| Java       | JUnit               | JaCoCo           | 🚧     |
+
+## 💡 Advanced Features
+
+### Circuit Breaker (Entropy Detection)
+
+Automatically stops when detecting repeating errors:
+
+```yaml
+budgets:
+  maxIterations: 30  # Hard limit
+
+# Entropy detection:
+# - If same error signature appears 3+ times → circuit breaker triggers
+# - Adversarial failures DON'T count toward entropy
+# - Prevents infinite loops on unsolvable problems
+```
+
+### Budget Tracking
+
+Real-time budget monitoring:
+
+```typescript
+{
+  iterations: { current: 5, max: 30 },
+  cost: { current: 0.45, max: 2.0 },
+  duration: { current: 120, max: 900 }
+}
+
+// Stops when ANY limit is exceeded
+```
+
+### Intelligent Backtracking
+
+For adversarial test failures:
+- ✅ Unit tests pass → ✅ Code is working
+- ⚠️ Adversarial tests fail → Informational only
+- System proceeds to completion
+- Adversarial failures are logged but don't block success
+- Doesn't count toward entropy threshold
+
+## 📊 Metrics & Analytics
+
+Ralph Loop tracks:
+- **Tokens Used**: Per agent, per iteration, cumulative
+- **Cost**: Real-time calculation with provider-specific pricing
+- **Duration**: Wall-clock time per iteration and total
+- **Success Rate**: Fix pattern success rate over time
+- **Coverage**: Code coverage percentage
+- **Mutation Score**: Test quality metric (killed/total mutations)
+- **Context Usage**: Token usage per agent (with 40% reset threshold)
+
+## 🛠️ Development
+
+### Build from Source
 
 ```bash
-some-folder
-├──file-to-edit.ts
-├──file-to-edit.test.ts # test file. if you need a different path, use the -f argument
-└──file-to-edit.prompt.md # optional prompt file. if you need a different path, use the -p argument
+git clone https://github.com/ralph-loop/ralph.git
+cd ralph
+npm install
+npm run build
 ```
 
-By default, Micro Agent assumes you have a test file with the same name as the editing file but with `.test.ts` appended, such as `./file-to-edit.test.ts` for the above examples.
-
-If this is not the case, you can specify the test file with the `-f` flag. You can also add a prompt to help guide the code generation, either at a file located at `<filename>.prompt.md` like `./file-to-edit.prompt.md` or by specifying the prompt file with the `-p`. For instance:
+### Run Tests
 
 ```bash
-micro-agent ./file-to-edit.ts -t "npm test" -f ./file-to-edit.spec.ts -p ./path-to-prompt.prompt.md
+npm test                 # Unit tests
+npm run test:integration # Integration tests
+npm run test:e2e        # End-to-end tests
+npm run test:chaos      # Chaos/adversarial tests
 ```
 
-### Visual matching (experimental)
+## 🤝 Contributing
 
-![Visual Demo](https://cdn.builder.io/api/v1/file/assets%2FYJIGb4i01jvw0SRdL5Bt%2Fe90f6d4158b44a8fb9adeee3be3dbe82)
+Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-> [!WARNING]
-> This feature is experimental and under active development. Use with caution.
+**Areas for Contribution**:
+- 🌐 Additional language support (Go, Java, C++)
+- 🔌 Community plugins
+- 📚 Documentation improvements
+- 🐛 Bug fixes
+- ✨ Feature requests
 
-Micro Agent can also help you match a design. To do this, you need to provide a design and a local URL to your rendered code. For instance:
+## 📄 License
 
-```bash
-micro-agent ./app/about/page.tsx --visual localhost:3000/about
-```
+MIT License - see [LICENSE](./LICENSE)
 
-Micro agent will then generate code until the rendered output of your code more closely matches a screenshot file that you place next to the code you are editing (in this case, it would be `./app/about/page.png`).
+## 🙏 Acknowledgments
 
-The above assumes the following file structure:
+Built on the shoulders of giants:
+- **Anthropic Claude** - Code generation and chaos testing
+- **Google Gemini** - Context analysis and dependency graphing
+- **OpenAI GPT** - Code review and quality assurance
+- **ChromaDB** - Vector similarity search for memory vault
+- **XState** - State machine orchestration
+- **Stryker** - Mutation testing framework
+- **fast-check** - Property-based testing library
 
-```bash
-app/about
-├──page.tsx # The code to edit
-├──page.png # The screenshot to match
-└──page.prompt.md # Optional, additional instructions for the AI
-```
+## 📞 Support
 
-### Adding an Anthropic API key
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/ralph-loop/ralph/issues)
+- 💬 **Discord**: [Join Community](https://discord.gg/ralph-loop)
+- 📧 **Email**: support@ralph-loop.dev
+- 📖 **Docs**: [ralph-loop.dev/docs](https://ralph-loop.dev/docs)
 
-> [!NOTE]
-> Using the visual matching feature requires an Anthropic API key.
+## 🗺️ Roadmap
 
-OpenAI is simply just not good at visual matching. We recommend using [Anthropic](https://anthropic.com/) for visual matching. To use Anthropic, you need to add your API key to the CLI:
+- [ ] Real-time collaboration mode (multiple developers)
+- [ ] Web dashboard for monitoring iterations
+- [ ] VS Code extension with inline suggestions
+- [ ] More language support (Go, Java, C++, Swift)
+- [ ] Cloud-hosted memory vault sharing
+- [ ] Advanced analytics dashboard
+- [ ] Integration with GitHub Copilot
+- [ ] Self-hosted LLM support (Llama, Mistral)
 
-```bash
-micro-agent config set ANTHROPIC_KEY=<your token>
-```
+---
 
-Visual matching uses a multi-agent approach where Anthropic Claude Opus will do the visual matching and feedback, and then OpenAI will generate the code to match the design and address the feedback.
+**Built with ❤️ by the Ralph Loop team**
 
-![Visual of the multi agent approach](https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F427929ba84b34ac6a0f1fda104e60ecd)
+*Making AI-powered testing accessible and reliable for everyone*
 
-### Integration with Figma
-
-Micro Agent can also integrate with [Visual Copilot](https://www.builder.io/c/docs/visual-copilot) to connect directly with Figma to ensure the highest fidelity possible design to code, including fully reusing the exact components and design tokens from your codebase.
-
-Visual Copilot connects directly to Figma to assist with pixel perfect conversion, exact design token mapping, and precise reusage of your components in the generated output.
-
-Then, Micro Agent can take the output of Visual Copilot and make final adjustments to the code to ensure it passes TSC, lint, tests, and fully matches your design including final tweaks.
-
-![Visual Copilot demo](https://cdn.builder.io/api/v1/file/assets%2FYJIGb4i01jvw0SRdL5Bt%2Fa503ad8367d746f3879db1a155728cb2)
-
-## Configuration
-
-### Max runs
-
-By default, Micro Agent will do 10 runs. If tests don't pass in 10 runs, it will stop. You can change this with the `-m` flag, like `micro-agent ./file-to-edit.ts -m 20`.
-
-### Config
-
-You can configure the CLI with the `config` command, for instance to set your OpenAI API key:
-
-```bash
-micro-agent config set OPENAI_KEY=<your token>
-```
-
-or to set an Anthropic key:
-
-```bash
-micro-agent config set ANTHROPIC_KEY=<your token>
-```
-
-By default Micro Agent uses `gpt-4o` as the model, but you can override it with the `MODEL` config option (or environment variable):
-
-```bash
-micro-agent config set MODEL=gpt-3.5-turbo
-```
-
-or, if you supply an Anthropic key, you can use any Claude model. by default `claude` is an alias to `claude-3-5-sonnet-20241022`:
-
-```bash
-micro-agent config set MODEL=claude
-```
-
-#### Config UI
-
-To use a more visual interface to view and set config options you can type:
-
-```bash
-micro-agent config
-```
-
-To get an interactive UI like below:
-
-```bash
-◆  Set config:
-│  ○ OpenAI Key
-│  ○ Anthropic Key
-│  ○ OpenAI API Endpoint
-│  ● Model (gpt-4o)
-│  ○ Done
-└
-```
-
-#### Environment variables
-
-All config options can be overridden as environment variables, for instance:
-
-```bash
-MODEL=gpt-3.5-turbo micro-agent ./file-to-edit.ts -t "npm test"
-```
-
-### Upgrading
-
-Check the installed version with:
-
-```bash
-micro-agent --version
-```
-
-If it's not the [latest version](https://github.com/BuilderIO/micro-agent/tags), run:
-
-```bash
-micro-agent update
-```
-
-Or manually update with:
-
-```bash
-npm update -g @builder.io/micro-agent
-```
-
-## Contributing
-
-We would love your contributions to make this project better, and gladly accept PRs. Please see [./CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute.
-
-If you are looking for a good first issue, check out the [good first issue](https://github.com/BuilderIO/micro-agent/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22) label.
-
-## Feedback
-
-If you have any feedback, please open an issue or @ me at [@steve8708](https://twitter.com/steve8708) on Twitter.
-
-## Usage
-
-```bash
-Usage:
-  micro-agent <file path> [flags...]
-  micro-agent <command>
-
-Commands:
-  config        Configure the CLI
-  update        Update Micro Agent to the latest version
-
-Flags:
-  -h, --help                      Show help
-  -m, --max-runs <number>         The maximum number of runs to attempt
-  -p, --prompt <string>           Prompt to run
-  -t, --test <string>             The test script to run
-  -f, --test-file <string>        The test file to run
-  -v, --visual <string>           Visual matching URL
-      --thread <string>           Thread ID to resume
-      --version                   Show version
-```
-
-<br><br>
-
-<p align="center">
-   <a href="https://www.builder.io/m/developers">
-      <picture>
-         <source media="(prefers-color-scheme: dark)" srcset="https://user-images.githubusercontent.com/844291/230786554-eb225eeb-2f6b-4286-b8c2-535b1131744a.png">
-         <img width="250" alt="Made with love by Builder.io" src="https://user-images.githubusercontent.com/844291/230786555-a58479e4-75f3-4222-a6eb-74c5af953eac.png">
-       </picture>
-   </a>
-</p>
+> **Note**: This project evolved from [Micro Agent](https://github.com/BuilderIO/micro-agent) by Builder.io, reimagined with multi-agent architecture, fresh context resets, and intelligent memory learning.

@@ -52,15 +52,15 @@
 
 ### State Machine Foundation
 
-- [ ] T017 Define XState state machine schema in src/state-machine/ralph-machine.ts (states: librarian, artisan, critic, testing, adversarial, completion, error)
-- [ ] T018 [P] Implement state transition logic in src/state-machine/transitions.ts
-- [ ] T019 [P] Implement guard conditions for state changes in src/state-machine/guards.ts
+- [x] T017 Define XState state machine schema in src/state-machine/ralph-machine.ts (states: librarian, artisan, critic, testing, adversarial, completion, error)
+- [x] T018 [P] Implement state transition logic in src/state-machine/transitions.ts
+- [x] T019 [P] Implement guard conditions for state changes in src/state-machine/guards.ts
 
 ### Configuration Management
 
-- [ ] T020 Define configuration schema with Zod in src/config/schema-validator.ts
-- [ ] T021 Implement config loader with auto-discovery in src/config/config-loader.ts
-- [ ] T022 [P] Define built-in defaults in src/config/defaults.ts (context_reset_frequency=1, librarian=gemini-2.0-pro, artisan=claude-sonnet-4.5, critic=gpt-4.1-mini, max_iterations=30, max_cost=$2.00)
+- [x] T020 Define configuration schema with Zod in src/config/schema-validator.ts
+- [x] T021 Implement config loader with auto-discovery in src/config/config-loader.ts
+- [x] T022 [P] Define built-in defaults in src/config/defaults.ts (context_reset_frequency=1, librarian=gemini-2.0-pro, artisan=claude-sonnet-4.5, critic=gpt-4.1-mini, max_iterations=30, max_cost=$2.00)
 
 ### Shared Utilities
 

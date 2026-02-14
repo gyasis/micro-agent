@@ -274,12 +274,12 @@
 
 ### Testing & Validation
 
-- [ ] T087 [P] Create unit tests for iteration lifecycle in tests/unit/lifecycle/
-- [ ] T088 [P] Create unit tests for MemoryVault operations in tests/unit/memory/
-- [ ] T089 [P] Create unit tests for test result parsers in tests/unit/parsers/
-- [ ] T090 [P] Create integration test for full state machine workflow in tests/integration/state-machine.test.ts
-- [ ] T091 [P] Create integration test for multi-agent coordination in tests/integration/multi-agent.test.ts
-- [ ] T092 [P] Create e2e test on TypeScript project in tests/e2e/typescript-project.test.ts
+- [X] T087 [P] Create unit tests for iteration lifecycle in tests/unit/lifecycle/
+- [X] T088 [P] Create unit tests for MemoryVault operations in tests/unit/memory/
+- [X] T089 [P] Create unit tests for test result parsers in tests/unit/parsers/
+- [X] T090 [P] Create integration test for full state machine workflow in tests/integration/state-machine.test.ts
+- [X] T091 [P] Create integration test for multi-agent coordination in tests/integration/multi-agent.test.ts
+- [X] T092 [P] Create e2e test on TypeScript project in tests/e2e/typescript-project.test.ts
 - [ ] T093 [P] Create e2e test on Python project in tests/e2e/python-project.test.ts
 - [ ] T094 [P] Create e2e test verifying fresh context each iteration in tests/e2e/context-freshness.test.ts
 

@@ -285,10 +285,10 @@
 
 ### Performance & Security
 
-- [ ] T095 Code cleanup and refactoring across all modules
-- [ ] T096 Performance optimization for dependency graph caching
-- [ ] T097 Security hardening for sandboxed plugin execution
-- [ ] T098 Add input validation for all CLI arguments and config files
+- [X] T095 Code cleanup and refactoring across all modules
+- [X] T096 Performance optimization for dependency graph caching
+- [X] T097 Security hardening for sandboxed plugin execution
+- [X] T098 Add input validation for all CLI arguments and config files
 
 ### Final Validation
 

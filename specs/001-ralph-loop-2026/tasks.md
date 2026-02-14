@@ -19,11 +19,11 @@
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Initialize TypeScript project with Node.js 20+ and tsconfig.json configured for ES2022
-- [ ] T002 Install core dependencies: LiteLLM, XState, ChromaDB, Zod, Vitest, dotenv
-- [ ] T003 [P] Configure ESLint and Prettier with TypeScript rules
-- [ ] T004 [P] Setup Vitest configuration in vitest.config.ts
-- [ ] T005 Create .gitignore for node_modules/, dist/, .ralph/, .env*, coverage/
+- [x] T001 Initialize TypeScript project with Node.js 20+ and tsconfig.json configured for ES2022
+- [x] T002 Install core dependencies: LiteLLM, XState, ChromaDB, Zod, Vitest, dotenv
+- [x] T003 [P] Configure ESLint and Prettier with TypeScript rules
+- [x] T004 [P] Setup Vitest configuration in vitest.config.ts
+- [x] T005 Create .gitignore for node_modules/, dist/, .ralph/, .env*, coverage/
 - [ ] T006 Create .dockerignore for node_modules/, .git/, .ralph/, *.log*
 - [ ] T007 Create project directory structure per plan.md (src/agents/, src/lifecycle/, src/state-machine/, src/memory/, src/parsers/, src/llm/, src/plugins/, src/config/, src/cli/, src/utils/, tests/)
 - [ ] T008 [P] Create package.json scripts for build, test, lint, format

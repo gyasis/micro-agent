@@ -24,9 +24,9 @@
 - [x] T003 [P] Configure ESLint and Prettier with TypeScript rules
 - [x] T004 [P] Setup Vitest configuration in vitest.config.ts
 - [x] T005 Create .gitignore for node_modules/, dist/, .ralph/, .env*, coverage/
-- [ ] T006 Create .dockerignore for node_modules/, .git/, .ralph/, *.log*
-- [ ] T007 Create project directory structure per plan.md (src/agents/, src/lifecycle/, src/state-machine/, src/memory/, src/parsers/, src/llm/, src/plugins/, src/config/, src/cli/, src/utils/, tests/)
-- [ ] T008 [P] Create package.json scripts for build, test, lint, format
+- [x] T006 Create .dockerignore for node_modules/, .git/, .ralph/, *.log*
+- [x] T007 Create project directory structure per plan.md (src/agents/, src/lifecycle/, src/state-machine/, src/memory/, src/parsers/, src/llm/, src/plugins/, src/config/, src/cli/, src/utils/, tests/)
+- [x] T008 [P] Create package.json scripts for build, test, lint, format
 - [ ] T009 [P] Setup TypeScript path aliases in tsconfig.json (@agents, @lifecycle, @memory, @parsers, @llm, @config, @utils)
 
 ---
@@ -39,8 +39,8 @@
 
 ### Iteration Lifecycle (Ralph Loop Core)
 
-- [ ] T010 Implement fresh session lifecycle orchestrator in src/lifecycle/iteration-manager.ts
-- [ ] T011 Implement context usage monitor tracking 40% smart zone boundary in src/lifecycle/context-monitor.ts
+- [x] T010 Implement fresh session lifecycle orchestrator in src/lifecycle/iteration-manager.ts
+- [x] T011 Implement context usage monitor tracking 40% smart zone boundary in src/lifecycle/context-monitor.ts
 - [ ] T012 Implement state persister for disk writes between iterations in src/lifecycle/state-persister.ts
 - [ ] T013 Implement session resetter to destroy LLM context in src/lifecycle/session-resetter.ts
 

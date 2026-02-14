@@ -81,17 +81,17 @@
 ### Agent Interfaces
 
 - [x] T026 [US1] Create base agent interface in src/agents/base-agent.ts
-- [ ] T027 [US1] Create shared agent context structure in src/agents/base/agent-context.ts
+- [x] T027 [US1] Create shared agent context structure in src/agents/base/agent-context.ts
 
 ### Librarian Agent (Context Provider)
 
-- [ ] T028 [P] [US1] Implement Librarian agent with Gemini integration in src/agents/librarian/librarian.agent.ts
-- [ ] T029 [P] [US1] Implement dependency graph parser using TypeScript compiler API in src/agents/librarian/dependency-graph.ts
-- [ ] T030 [P] [US1] Implement file ranker by distance from target in src/agents/librarian/file-ranker.ts
+- [x] T028 [P] [US1] Implement Librarian agent with Gemini integration in src/agents/librarian/librarian.agent.ts
+- [x] T029 [P] [US1] Implement dependency graph parser using TypeScript compiler API in src/agents/librarian/dependency-graph.ts
+- [x] T030 [P] [US1] Implement file ranker by distance from target in src/agents/librarian/file-ranker.ts
 
 ### Artisan Agent (Code Generator)
 
-- [ ] T031 [P] [US1] Implement Artisan agent with Claude integration in src/agents/artisan/artisan.agent.ts
+- [x] T031 [P] [US1] Implement Artisan agent with Claude integration in src/agents/artisan/artisan.agent.ts
 - [ ] T032 [P] [US1] Implement code writer utilities for file modifications in src/agents/artisan/code-writer.ts
 
 ### Critic Agent (Logic Reviewer)

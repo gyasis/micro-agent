@@ -136,8 +136,8 @@
 
 ### Test Execution Integration
 
-- [ ] T048 [US4] Integrate framework detector with state machine testing state in src/state-machine/ralph-machine.ts
-- [ ] T049 [US4] Wire test parsers to generate unified ralph-test-json output in src/state-machine/transitions.ts
+- [X] T048 [US4] Integrate framework detector with state machine testing state in src/state-machine/ralph-orchestrator.ts
+- [X] T049 [US4] Wire test parsers to generate unified ralph-test-json output in src/state-machine/test-executor.ts
 - [ ] T050 [US4] Persist test results to .ralph/session-{id}/test-results-iteration-{N}.json in src/lifecycle/state-persister.ts
 
 ### Dependency Graph for Multiple Languages

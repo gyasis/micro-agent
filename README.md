@@ -1,14 +1,24 @@
-# Ralph Loop 2026
+<br>
+<div align="center">
+   <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F4d36bc052c4340f997dd61eb19c1c64b">
+      <img width="400" alt="Micro Agent logo" src="https://cdn.builder.io/api/v1/image/assets%2FYJIGb4i01jvw0SRdL5Bt%2F1a718d297d644fce90f33e93b7e4061f">
+    </picture>
+</div>
 
-[![npm version](https://badge.fury.io/js/ralph-loop.svg)](https://www.npmjs.com/package/ralph-loop)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)](https://www.typescriptlang.org/)
+<p align="center">
+   An AI agent that writes and fixes code for you.
+</p>
 
-**The Multi-Agent Iterative Testing System with Fresh Context Resets**
+<p align="center">
+   <a href="https://www.npmjs.com/package/@builder.io/micro-agent"><img src="https://img.shields.io/npm/v/@builder.io/micro-agent" alt="Current version"></a>
+</p>
 
-Ralph Loop 2026 is a next-generation autonomous testing and code generation system that uses multiple specialized AI agents to iteratively fix code until tests pass. Built on the principles of fresh context resets, intelligent error learning, and adversarial testing.
+# Micro Agent
 
-> **Evolution from Micro Agent**: Ralph Loop 2026 is the successor to Micro Agent, introducing multi-agent architecture, fresh context every iteration, intelligent memory learning, and adversarial chaos testing.
+> **Now powered by Ralph Loop 2026 techniques** - Multi-agent architecture with fresh context resets, intelligent memory learning, and adversarial testing
+
+An autonomous AI coding agent that iteratively writes and fixes code until all tests pass. Micro Agent uses the Ralph Loop 2026 methodology: multiple specialized AI agents (Librarian, Artisan, Critic, Chaos) working together with fresh context every iteration to prevent token waste and context pollution.
 
 ## ✨ Key Features
 
@@ -28,29 +38,32 @@ Ralph Loop 2026 is a next-generation autonomous testing and code generation syst
 
 ```bash
 # Global installation
-npm install -g ralph-loop
+npm install -g @builder.io/micro-agent
 
 # Or use locally
-npm install ralph-loop --save-dev
+npm install @builder.io/micro-agent --save-dev
 ```
 
 ### Basic Usage
 
 ```bash
-# Fix a failing file
-ralph fix src/utils/calculator.ts
+# Run micro-agent interactively
+micro-agent
 
-# Run on entire directory
-ralph fix src/
+# Or use the short alias
+ma
 
-# Watch mode (auto-fix on changes)
-ralph watch src/
+# Fix a specific file
+micro-agent --file src/utils/calculator.ts
+
+# Specify a custom prompt
+micro-agent --prompt "Add error handling to the login function"
 ```
 
 ### Example Output
 
 ```
-🚀 Ralph Loop 2026 - Multi-Agent Iterative Testing
+🤖 Micro Agent - Multi-Agent Iterative Testing (Ralph Loop 2026)
    Session: abc123, Budget: 30 iterations, $2.00 max
 
 🔍 Iteration 1/30
@@ -60,7 +73,7 @@ ralph watch src/
    🧪 Tests: 8/10 passed (2 failures)
    💥 Chaos: Skipped (tests didn't pass)
 
-🔍 Iteration 2/30
+🔍 Iteration 2/30 (Fresh Context Reset)
    ✍️  Artisan: Improved error handling based on memory vault
    🧪 Tests: 10/10 passed ✅
    💥 Chaos: Running adversarial tests...
@@ -73,12 +86,24 @@ ralph watch src/
    💾 Fix pattern saved to memory vault
 ```
 
+## 🔬 What is Ralph Loop 2026?
+
+Ralph Loop 2026 is the **methodology** that powers Micro Agent. It's named after the iterative testing approach where:
+
+1. **Fresh Context Reset** - Each iteration destroys and recreates the AI context to prevent pollution
+2. **Multi-Agent Collaboration** - Specialized agents (Librarian, Artisan, Critic, Chaos) work together
+3. **Intelligent Memory** - Vector database learns from past mistakes across sessions
+4. **Circuit Breaker** - Entropy detection stops infinite loops after 3 identical errors
+5. **Budget Awareness** - Automatic tracking prevents runaway costs
+
+Think of it as **TDD (Test-Driven Development) meets AI agents meets fresh context resets**.
+
 ## 📖 Documentation
 
 - **[Quick Start Guide](./specs/001-ralph-loop-2026/quickstart.md)** - Get started in 5 minutes
 - **[Configuration Guide](#configuration)** - Customize models and settings
 - **[Plugin System](./specs/001-ralph-loop-2026/quickstart.md#plugin-system)** - Extend functionality
-- **[Architecture](./specs/001-ralph-loop-2026/plan.md)** - Technical deep dive
+- **[Architecture](./specs/001-ralph-loop-2026/plan.md)** - Technical deep dive into Ralph Loop 2026
 
 ## ⚙️ Configuration
 

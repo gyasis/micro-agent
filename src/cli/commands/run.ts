@@ -28,6 +28,7 @@ import {
   withLibrarianContext,
   withArtisanCode,
   withCriticReview,
+  withTestResults,
   isBudgetExceeded,
 } from '../../agents/base/agent-context';
 import type { AgentContext } from '../../agents/base/agent-context';
@@ -353,12 +354,31 @@ async function runSingleIteration(
   updatedContext = withCriticReview(updatedContext, criticResult.data);
   contextMonitor.trackTokens('critic', criticResult.tokensUsed);
 
-  // Phase 4: Testing (TODO: implement test runner)
+  // Phase 4: Testing - Run actual tests
   logger.info('Phase 4: Running tests...');
   updatedContext = updatePhase(updatedContext, 'testing');
 
-  // TODO: Run actual tests and update context with results
-  const testsPass = criticResult.data.approved; // Placeholder
+  // Run tests using test runner
+  const { createTestRunner } = await import('../../testing/test-runner');
+  const testRunner = createTestRunner(logger);
+
+  const testResult = await testRunner.runTests({
+    workingDirectory: context.workingDirectory,
+    testCommand: context.test.command,
+    timeout: 120000, // 2 minutes
+  });
+
+  // Update context with test results (T091)
+  updatedContext = withTestResults(updatedContext, testResult.results);
+
+  const testsPass = testResult.success && testResult.results.summary.status === 'passed';
+
+  logger.info('Tests completed', {
+    status: testResult.results.summary.status,
+    passed: testResult.results.summary.passed,
+    failed: testResult.results.summary.failed,
+    total: testResult.results.summary.total,
+  });
 
   return {
     context: updatedContext,

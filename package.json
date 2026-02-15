@@ -44,7 +44,8 @@
   ],
   "bin": {
     "micro-agent": "./dist/cli.mjs",
-    "ma": "./dist/cli.mjs"
+    "ma": "./dist/cli.mjs",
+    "ma-loop": "./dist/ralph-loop.mjs"
   },
   "scripts": {
     "test": "vitest run --exclude src/tests/integration",

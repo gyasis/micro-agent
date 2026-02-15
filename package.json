@@ -10,6 +10,8 @@
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@dqbd/tiktoken": "^1.0.15",
+    "@google/generative-ai": "^0.21.0",
+    "@huggingface/inference": "^2.8.0",
     "@types/diff": "^5.2.1",
     "@types/probe-image-size": "^7.2.4",
     "chromadb": "^3.3.0",

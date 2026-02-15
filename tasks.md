@@ -419,8 +419,8 @@ With multiple developers:
 
 ## Summary
 
-**Total Tasks**: 94
-**Completed**: 76/94 (81%)
+**Total Tasks**: 95
+**Completed**: 76/95 (80%)
 **User Story Task Breakdown**:
 - US1 (Multi-Agent Code Generation): 17 tasks (T026-T042)
 - US4 (Polyglot Testing Support): 10 tasks (T043-T052)
@@ -501,15 +501,17 @@ With multiple developers:
 
 ## **Wave 26.5: CRITICAL - Eliminate Mocked Code & Implement Real LLM Integration (Addendum)** 🚨
 
-**Purpose**: Replace all mock/placeholder implementations with real working code
+**Purpose**: Replace all mock/placeholder implementations with real working code using DIRECT SDKs
 **Priority**: BLOCKING - Product is non-functional without this!
+**Strategy**: Use official SDKs (not outdated litellm package), migrate working code from src/helpers/llm.ts
 
 ### LLM Provider Implementation (CRITICAL!)
 
-- [ ] T086.1 [BLOCKER] Replace mocked provider-router.ts with real LiteLLM integration
+- [ ] T086.1 [BLOCKER] Replace mocked provider-router.ts with real SDK calls
   - Current: Returns 'Mock LLM response - implement actual LiteLLM integration' (line 158)
-  - Required: Real API calls to Anthropic, Google, OpenAI, Azure, Ollama
+  - Strategy: Use DIRECT SDKs (Anthropic, Google, OpenAI, Ollama, Hugging Face)
   - Reference: Working implementations exist in src/helpers/llm.ts (lines 1-80)
+  - Note: litellm npm package is outdated (Jan 2024) - doesn't support latest models
 
 - [ ] T086.2 [BLOCKER] Implement real Anthropic Claude API calls
   - SDK: @anthropic-ai/sdk (already imported in helpers/llm.ts:17)
@@ -517,8 +519,10 @@ With multiple developers:
   - File: src/llm/provider-router.ts:routeRequest()
 
 - [ ] T086.3 [BLOCKER] Implement real Google Gemini API calls
-  - Models: gemini-2.0-flash, gemini-2.0-pro
+  - SDK: @google/generative-ai (newly added to package.json)
+  - Models: gemini-2.0-flash (recommended - 10x cheaper!), gemini-2.0-pro
   - File: src/llm/provider-router.ts:routeRequest()
+  - Note: Use Gemini 2.0 Flash for Librarian (faster + cheaper than Pro)
 
 - [ ] T086.4 [BLOCKER] Implement real OpenAI API calls
   - SDK: openai (already imported in helpers/llm.ts:1)
@@ -532,7 +536,14 @@ With multiple developers:
 
 - [ ] T086.6 [BLOCKER] Implement real Ollama local model calls
   - SDK: ollama (already imported in helpers/llm.ts:12)
-  - Models: llama3, phi, mistral (local/free)
+  - Models: llama3, phi, mistral, qwen, deepseek, and 100+ other models (local/free)
+  - File: src/llm/provider-router.ts:routeRequest()
+  - Note: Ollama can load most open-source models - very flexible!
+
+- [ ] T086.6b [BLOCKER] Add Hugging Face Inference API support
+  - SDK: @huggingface/inference (newly added to package.json)
+  - Models: Any model on Hugging Face Hub (70k+ models)
+  - Use cases: Specialized models, embeddings, image generation
   - File: src/llm/provider-router.ts:routeRequest()
 
 ### Code Audit & Verification

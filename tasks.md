@@ -167,8 +167,8 @@
 
 ### Entropy Detection
 
-- [ ] T057 [US6] Implement entropy detector for circuit breaker in src/lifecycle/iteration-manager.ts (track 3 identical unit test errors, pause and ask user)
-- [ ] T058 [US6] Add entropy threshold configuration to defaults in src/config/defaults.ts
+- [X] T057 [US6] Implement entropy detector for circuit breaker in src/lifecycle/entropy-detector.ts (track 3 identical unit test errors, pause and ask user)
+- [X] T058 [US6] Add entropy threshold configuration to defaults in src/config/defaults.ts
 
 **Checkpoint**: Completion promise working - system exits correctly on success, budget exceeded, entropy detected, or max iterations with detailed reports
 
@@ -194,8 +194,8 @@
 
 ### Entropy Detection Integration
 
-- [ ] T065 [US2] Wire entropy detector to MemoryVault for tracking identical errors in src/lifecycle/iteration-manager.ts
-- [ ] T066 [US2] Ensure adversarial test failures do NOT increment entropy counter (only unit test failures) in src/memory/error-categorizer.ts
+- [X] T065 [US2] Wire entropy detector to MemoryVault for tracking identical errors in src/lifecycle/entropy-memory-integration.ts
+- [X] T066 [US2] Ensure adversarial test failures do NOT increment entropy counter (only unit test failures) in src/lifecycle/entropy-detector.ts
 
 **Checkpoint**: MemoryVault operational - past errors are queried with <100ms latency, top 5 fixes applied, new successful fixes recorded to project-specific .ralph/memory.db
 

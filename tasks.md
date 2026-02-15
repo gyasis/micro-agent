@@ -445,6 +445,39 @@ With multiple developers:
 
 ---
 
+## **Wave 25: Documentation & Branding Polish (Addendum)**
+
+**Purpose**: Fix naming hallucinations and complete documentation for release
+
+### Branding Fixes (47 violations found by adversarial bug hunter)
+
+- [X] T066 Fix CLI command branding in README.md (11 violations)
+- [ ] T067 Fix CLI commands and imports in quickstart.md (10 violations)
+- [ ] T068 Replace @ralph/* package scope with @builder.io/micro-agent-plugin-* (15 violations)
+- [ ] T069 Fix CLI commands in PRD/README.md (2 violations)
+- [ ] T070 Fix plugin SDK import examples in contracts/plugin-sdk.d.ts (1 violation)
+- [ ] T071 Fix fake package references in spec.md (4 violations)
+- [ ] T072 Fix plugin examples in tasks.md files (2 violations)
+
+### Language-Specific Tutorials
+
+- [ ] T073 Write TypeScript/JavaScript tutorial with Vitest/Jest examples
+- [ ] T074 Write Python tutorial with pytest examples
+- [ ] T075 Write Rust tutorial with cargo test examples
+
+### API Documentation
+
+- [ ] T076 Generate API documentation for all public modules
+- [ ] T077 Update plan.md to reflect Micro Agent product naming
+
+### Release Preparation
+
+- [ ] T078 Create PR to merge 001-ralph-loop-2026 → main
+- [ ] T079 Final validation: Ensure no "ralph" CLI commands in user-facing docs
+- [ ] T080 Tag release as v2.0.0 (Micro Agent powered by Ralph Loop 2026)
+
+---
+
 ## Notes
 
 - Fresh context each iteration (context_reset_frequency=1) is GOLD STANDARD default per FR-009
@@ -455,3 +488,4 @@ With multiple developers:
 - Verify each user story independently at checkpoints before proceeding
 - Commit after each logical task group or phase completion
 - Avoid blocking dependencies between user stories to maintain independence
+- **Wave 25 (Addendum)**: Post-implementation polish for production release

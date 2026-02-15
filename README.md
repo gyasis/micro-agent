@@ -252,9 +252,9 @@ const fixes = await similaritySearch.search({
 ### 1. Fix Failing Tests
 
 ```bash
-ralph fix src/api/auth.ts
+micro-agent --file src/api/auth.ts
 
-# Ralph will:
+# Micro Agent will:
 # 1. Analyze test failures (Librarian)
 # 2. Search memory for similar fixes
 # 3. Generate and apply fix (Artisan)
@@ -267,7 +267,7 @@ ralph fix src/api/auth.ts
 ### 2. Improve Test Coverage
 
 ```bash
-ralph coverage src/utils/ --threshold 90
+micro-agent --file src/utils/ --prompt "Improve test coverage to 90%"
 
 # Generates additional tests to reach 90% coverage
 ```
@@ -275,7 +275,7 @@ ralph coverage src/utils/ --threshold 90
 ### 3. Adversarial Testing Only
 
 ```bash
-ralph chaos src/critical-module.ts
+micro-agent --file src/critical-module.ts --prompt "Run adversarial tests only"
 
 # Runs:
 # - Property-based tests (fast-check)
@@ -287,27 +287,27 @@ ralph chaos src/critical-module.ts
 ### 4. Continuous Integration
 
 ```yaml
-# .github/workflows/ralph.yml
-name: Ralph Loop CI
+# .github/workflows/micro-agent.yml
+name: Micro Agent CI
 on: [push, pull_request]
 
 jobs:
-  ralph:
+  micro-agent:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - run: npm install -g ralph-loop
-      - run: ralph fix src/ --ci --max-cost 1.0
+      - run: npm install -g @builder.io/micro-agent
+      - run: micro-agent --file src/ --prompt "Fix all failing tests" --max-cost 1.0
 ```
 
 ## 🔌 Plugin System
 
-Extend Ralph Loop with custom lifecycle hooks:
+Extend Micro Agent with custom lifecycle hooks (powered by Ralph Loop engine):
 
 ```typescript
 // plugins/slack-notifier.ts
-import type { RalphPlugin } from 'ralph-loop/plugin-sdk';
+import type { RalphPlugin } from '@builder.io/micro-agent/plugin-sdk';
 
 export const slackPlugin: RalphPlugin = {
   name: 'slack-notifications',
@@ -425,8 +425,8 @@ Ralph Loop tracks:
 ### Build from Source
 
 ```bash
-git clone https://github.com/ralph-loop/ralph.git
-cd ralph
+git clone https://github.com/BuilderIO/micro-agent.git
+cd micro-agent
 npm install
 npm run build
 ```
@@ -468,10 +468,10 @@ Built on the shoulders of giants:
 
 ## 📞 Support
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/ralph-loop/ralph/issues)
-- 💬 **Discord**: [Join Community](https://discord.gg/ralph-loop)
-- 📧 **Email**: support@ralph-loop.dev
-- 📖 **Docs**: [ralph-loop.dev/docs](https://ralph-loop.dev/docs)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/BuilderIO/micro-agent/issues)
+- 💬 **Discord**: [Builder.io Community](https://discord.gg/builderio)
+- 📧 **Email**: support@builder.io
+- 📖 **Docs**: See [specs/001-ralph-loop-2026/](./specs/001-ralph-loop-2026/) for technical documentation
 
 ## 🗺️ Roadmap
 

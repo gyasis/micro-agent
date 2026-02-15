@@ -86,7 +86,7 @@ export class RalphLoop {
     // Wire agents to orchestrator (already done in T035-T037)
     // Agents are wired externally before calling run()
 
-    logger.info('Ralph Loop initialized', {
+    logger.info('Micro Agent initialized (Ralph Loop engine)', {
       sessionId: config.sessionId,
       targetFile: config.targetFile,
       maxIterations: config.config.maxIterations,
@@ -119,7 +119,7 @@ export class RalphLoop {
    */
   public wireMemoryVault(memoryVault: MemoryVault): void {
     this.memoryVault = memoryVault;
-    logger.info('MemoryVault wired to Ralph Loop');
+    logger.info('MemoryVault wired to Micro Agent');
   }
 
   /**
@@ -131,7 +131,7 @@ export class RalphLoop {
     // T050: Initialize session directory for persistence
     await this.statePersister.initialize();
 
-    logger.info('🚀 Starting Ralph Loop session', {
+    logger.info('🤖 Micro Agent session starting (Ralph Loop engine)', {
       sessionId: this.config.sessionId,
       targetFile: this.config.targetFile,
     });
@@ -288,7 +288,7 @@ export class RalphLoop {
     const stats = this.iterationManager.getStats();
 
     logger.info('\n' + '='.repeat(60));
-    logger.info('📊 Ralph Loop Session Complete');
+    logger.info('📊 Micro Agent Session Complete');
     logger.info('='.repeat(60));
     logger.info(`Final State: ${finalState}`);
     logger.info(`Reason: ${reason}`);

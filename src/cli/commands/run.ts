@@ -53,12 +53,12 @@ export interface RunOptions {
 }
 
 /**
- * Run Ralph Loop for target file or objective
+ * Run Micro Agent (Ralph Loop engine) for target file or objective
  */
 export async function runCommand(target: string, options: RunOptions): Promise<void> {
   const startTime = Date.now();
 
-  logger.info('Ralph Loop starting', {
+  logger.info('🤖 Micro Agent starting (Ralph Loop engine)', {
     target,
     ...options,
   });
@@ -174,7 +174,7 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
     // Step 7: Final report
     const duration = (Date.now() - startTime) / 1000;
     logger.info('\n' + '='.repeat(60));
-    logger.info('Ralph Loop Complete');
+    logger.info('📊 Micro Agent Complete');
     logger.info('='.repeat(60));
     logger.info(`Status: ${success ? 'SUCCESS ✓' : 'FAILED ✗'}`);
     logger.info(`Iterations: ${iteration}/${params.maxIterations}`);
@@ -183,7 +183,7 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
 
     process.exit(success ? 0 : 1);
   } catch (error) {
-    logger.error('Ralph Loop failed', error);
+    logger.error('❌ Micro Agent failed', error);
     process.exit(1);
   }
 }

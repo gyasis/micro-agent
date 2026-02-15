@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
- * Ralph Loop CLI Entry Point
+ * Micro Agent CLI Entry Point (Ralph Loop Engine)
  *
- * Main command-line interface for the Ralph Loop 2026 multi-agent testing system.
+ * Command-line interface for Micro Agent powered by Ralph Loop 2026 methodology.
  * Provides commands for running iterations, checking config, and managing sessions.
  *
  * @module cli/ralph-loop
@@ -21,7 +21,7 @@ const program = new Command();
 
 program
   .name('ralph-loop')
-  .description('Ralph Loop 2026 - Multi-agent iterative testing system')
+  .description('Micro Agent - Powered by Ralph Loop 2026 methodology')
   .version('1.0.0');
 
 /**

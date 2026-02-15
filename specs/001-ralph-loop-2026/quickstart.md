@@ -1,6 +1,8 @@
-# Ralph Loop 2026 - Quick Start Guide
+# Micro Agent - Quick Start Guide
 
-This guide helps you get started with Ralph Loop, the multi-agent iterative testing system.
+This guide helps you get started with Micro Agent, the autonomous AI coding agent powered by Ralph Loop 2026 methodology (multi-agent iterative testing with fresh context resets).
+
+> **Note:** "Ralph Loop 2026" is the name of the methodology/technique, not the product. The product is called "Micro Agent".
 
 ## Table of Contents
 
@@ -16,11 +18,11 @@ This guide helps you get started with Ralph Loop, the multi-agent iterative test
 ## Installation
 
 ```bash
-# Install Ralph Loop
-npm install -g ralph-loop
+# Install Micro Agent
+npm install -g @builder.io/micro-agent
 
 # Or use locally
-npm install ralph-loop --save-dev
+npm install @builder.io/micro-agent --save-dev
 ```
 
 ### Prerequisites
@@ -33,27 +35,32 @@ npm install ralph-loop --save-dev
 
 ## Basic Usage
 
-### Run Ralph Loop on a file
+### Run Micro Agent interactively
 
 ```bash
-ralph-loop fix src/utils/calculator.ts
+# Run with interactive prompts
+micro-agent
+
+# Or use the short alias
+ma
 ```
 
-This will:
-1. Analyze your codebase (Librarian agent)
-2. Generate fixes (Artisan agent)
-3. Review code quality (Critic agent)
-4. Run tests (polyglot test runner)
-5. Perform adversarial testing (Chaos agent)
-6. Iterate until tests pass or budget exhausted
-
-### Watch mode
+### Specify a file to fix
 
 ```bash
-ralph-loop watch src/
+micro-agent --file src/utils/calculator.ts
+
+# Or use the short form
+ma --file src/utils/calculator.ts
 ```
 
-Automatically re-runs when files change.
+**What happens during execution:**
+1. 📚 **Librarian agent** (Gemini) analyzes your codebase
+2. ✍️ **Artisan agent** (Claude) generates fixes
+3. 🔎 **Critic agent** (GPT-4.1) reviews code quality
+4. 🧪 **Test execution** using your framework (Vitest/Jest/pytest/cargo)
+5. 💥 **Chaos agent** (Claude) runs adversarial tests
+6. 🔄 **Fresh context reset** and iterate until tests pass or budget exhausted
 
 ---
 

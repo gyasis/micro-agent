@@ -419,8 +419,8 @@ With multiple developers:
 
 ## Summary
 
-**Total Tasks**: 84
-**Completed**: 76/84 (90%)
+**Total Tasks**: 94
+**Completed**: 76/94 (81%)
 **User Story Task Breakdown**:
 - US1 (Multi-Agent Code Generation): 17 tasks (T026-T042)
 - US4 (Polyglot Testing Support): 10 tasks (T043-T052)
@@ -496,6 +496,57 @@ With multiple developers:
 - [X] T084 [P] Implement token tracking in Chaos agent (src/agents/chaos/chaos.agent.ts:83-84)
 - [X] T085 [P] Create centralized cost calculator using LiteLLM token counts
 - [X] T086 Wire cost tracker to all agent LLM calls and aggregate session totals
+
+---
+
+## **Wave 26.5: CRITICAL - Eliminate Mocked Code & Implement Real LLM Integration (Addendum)** 🚨
+
+**Purpose**: Replace all mock/placeholder implementations with real working code
+**Priority**: BLOCKING - Product is non-functional without this!
+
+### LLM Provider Implementation (CRITICAL!)
+
+- [ ] T086.1 [BLOCKER] Replace mocked provider-router.ts with real LiteLLM integration
+  - Current: Returns 'Mock LLM response - implement actual LiteLLM integration' (line 158)
+  - Required: Real API calls to Anthropic, Google, OpenAI, Azure, Ollama
+  - Reference: Working implementations exist in src/helpers/llm.ts (lines 1-80)
+
+- [ ] T086.2 [BLOCKER] Implement real Anthropic Claude API calls
+  - SDK: @anthropic-ai/sdk (already imported in helpers/llm.ts:17)
+  - Models: claude-sonnet-4.5, claude-opus-4, claude-haiku-4
+  - File: src/llm/provider-router.ts:routeRequest()
+
+- [ ] T086.3 [BLOCKER] Implement real Google Gemini API calls
+  - Models: gemini-2.0-flash, gemini-2.0-pro
+  - File: src/llm/provider-router.ts:routeRequest()
+
+- [ ] T086.4 [BLOCKER] Implement real OpenAI API calls
+  - SDK: openai (already imported in helpers/llm.ts:1)
+  - Models: gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo
+  - File: src/llm/provider-router.ts:routeRequest()
+
+- [ ] T086.5 [BLOCKER] Implement real Azure OpenAI API calls
+  - SDK: AzureOpenAI (already imported in helpers/llm.ts:1)
+  - Reference: Working implementation in helpers/llm.ts:57-73
+  - File: src/llm/provider-router.ts:routeRequest()
+
+- [ ] T086.6 [BLOCKER] Implement real Ollama local model calls
+  - SDK: ollama (already imported in helpers/llm.ts:12)
+  - Models: llama3, phi, mistral (local/free)
+  - File: src/llm/provider-router.ts:routeRequest()
+
+### Code Audit & Verification
+
+- [ ] T086.7 Audit all agent LLM calls to ensure they use real provider-router (not mocks)
+- [ ] T086.8 Remove mock-llm.ts or clearly mark as test-only (src/helpers/mock-llm.ts)
+- [ ] T086.9 Add integration tests that verify REAL API calls (with small token limits)
+- [ ] T086.10 Document which providers require API keys in README
+
+**Success Criteria:**
+- ✅ All agent LLM calls return REAL AI responses (not "Mock LLM response")
+- ✅ Anthropic, Google, OpenAI, Azure, Ollama all fully functional
+- ✅ No "placeholder" or "TODO: implement" comments in production code paths
+- ✅ Integration tests pass with real API calls
 
 ---
 

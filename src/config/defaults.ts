@@ -87,6 +87,12 @@ export function getDefaults(): RalphConfig {
       contextResetFrequency: 1, // GOLD STANDARD - fresh context every iteration
     },
 
+    entropy: {
+      threshold: 3, // Circuit breaker at 3 identical errors (T058)
+      windowSize: 10, // Track last 10 errors
+      resetOnDifferentError: true, // Reset counter when different error occurs
+    },
+
     plugins: [],
 
     sandbox: {
@@ -160,4 +166,23 @@ export function getDefaultSuccessCriteria(): {
  */
 export function getDefaultContextResetFrequency(): number {
   return 1; // Fresh context every iteration
+}
+
+/**
+ * Get default entropy detection configuration (T058)
+ *
+ * Circuit breaker triggers at 3 identical errors
+ * Adversarial test failures do NOT count toward entropy
+ */
+export function getDefaultEntropyConfig(): {
+  threshold: number;
+  windowSize: number;
+  resetOnDifferentError: boolean;
+} {
+  const defaults = getDefaults();
+  return defaults.entropy || {
+    threshold: 3,
+    windowSize: 10,
+    resetOnDifferentError: true,
+  };
 }

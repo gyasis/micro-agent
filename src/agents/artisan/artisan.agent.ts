@@ -7,7 +7,7 @@
  * @module agents/artisan
  */
 
-import { BaseAgent, AgentResult } from '../base-agent';
+import { BaseAgent, AgentResult, TokenUsage } from '../base-agent';
 import type {
   AgentContext,
   ArtisanOutput,
@@ -17,6 +17,7 @@ import type {
 import { promises as fs } from 'fs';
 import path from 'path';
 import type { MemoryVault } from '../../memory/memory-vault';
+import { calculateCost } from '../../llm/cost-calculator';
 
 export interface CodeGenerationRequest {
   objective: string;
@@ -59,6 +60,11 @@ export class ArtisanAgent extends BaseAgent {
       contextFiles: context.librarianContext?.relevantFiles.length || 0,
     });
 
+    // Track token usage across all LLM calls
+    let totalTokensUsed = 0;
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+
     try {
       // Step 1: Build generation request
       const request = this.buildGenerationRequest(context);
@@ -73,7 +79,12 @@ export class ArtisanAgent extends BaseAgent {
       }
 
       // Step 2: Generate code with Claude (including learned solutions)
-      const generated = await this.generateCode(request, context, learnedSolutions);
+      const { generated, usage } = await this.generateCode(request, context, learnedSolutions);
+      if (usage) {
+        totalTokensUsed += usage.total;
+        totalInputTokens += usage.input;
+        totalOutputTokens += usage.output;
+      }
       this.emitProgress('Code generated', { file: generated.filePath });
 
       // Step 3: Prepare code changes
@@ -84,6 +95,9 @@ export class ArtisanAgent extends BaseAgent {
       await this.writeCode(generated, context.workingDirectory);
       this.emitProgress('Code written to disk');
 
+      // Calculate cost from token usage
+      const cost = calculateCost(this.config.model, totalInputTokens, totalOutputTokens);
+
       return {
         success: true,
         data: {
@@ -91,11 +105,11 @@ export class ArtisanAgent extends BaseAgent {
           filePath: generated.filePath,
           changes,
           reasoning: generated.reasoning,
-          tokensUsed: 0, // TODO: Track from LLM calls
-          cost: 0, // TODO: Calculate from token usage
+          tokensUsed: totalTokensUsed,
+          cost,
         },
-        tokensUsed: 0,
-        cost: 0,
+        tokensUsed: totalTokensUsed,
+        cost,
         duration: 0,
       };
     } catch (error) {
@@ -158,7 +172,7 @@ export class ArtisanAgent extends BaseAgent {
     request: CodeGenerationRequest,
     context: AgentContext,
     learnedSolutions: Array<{ errorCategory: string; solution: string; successRate: number }> = []
-  ): Promise<GeneratedCode> {
+  ): Promise<{ generated: GeneratedCode; usage: TokenUsage }> {
     const prompt = this.buildCodePrompt(request, context, learnedSolutions);
 
     try {
@@ -168,7 +182,8 @@ export class ArtisanAgent extends BaseAgent {
         maxTokens: 4000,
       });
 
-      return this.parseCodeResponse(response.content, request);
+      const generated = this.parseCodeResponse(response.content, request);
+      return { generated, usage: response.usage };
     } catch (error) {
       this.logger.error('Code generation failed', error);
       throw new Error(`Failed to generate code: ${error}`);

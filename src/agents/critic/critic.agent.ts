@@ -7,12 +7,13 @@
  * @module agents/critic
  */
 
-import { BaseAgent, AgentResult } from '../base-agent';
+import { BaseAgent, AgentResult, TokenUsage } from '../base-agent';
 import type {
   AgentContext,
   CriticOutput,
   ReviewIssue,
 } from '../base/agent-context';
+import { calculateCost } from '../../llm/cost-calculator';
 
 export interface ReviewRequest {
   code: string;
@@ -50,13 +51,23 @@ export class CriticAgent extends BaseAgent {
       throw new Error('No code from Artisan to review');
     }
 
+    // Track token usage across all LLM calls
+    let totalTokensUsed = 0;
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+
     try {
       // Step 1: Build review request
       const request = this.buildReviewRequest(context);
       this.emitProgress('Review request prepared');
 
       // Step 2: Analyze code with GPT
-      const analysis = await this.analyzeCode(request);
+      const { analysis, usage } = await this.analyzeCode(request);
+      if (usage) {
+        totalTokensUsed += usage.total;
+        totalInputTokens += usage.input;
+        totalOutputTokens += usage.output;
+      }
       this.emitProgress('Code analyzed', {
         issuesFound: analysis.logicIssues.length + analysis.edgeCases.length,
       });
@@ -72,6 +83,9 @@ export class CriticAgent extends BaseAgent {
       const approved = this.makeApprovalDecision(analysis);
       this.emitProgress(`Code ${approved ? 'APPROVED' : 'REJECTED'}`);
 
+      // Calculate cost from token usage
+      const cost = calculateCost(this.config.model, totalInputTokens, totalOutputTokens);
+
       return {
         success: true,
         data: {
@@ -79,11 +93,11 @@ export class CriticAgent extends BaseAgent {
           issues: allIssues,
           suggestions,
           overallAssessment: analysis.overallAssessment,
-          tokensUsed: 0, // TODO: Track from LLM calls
-          cost: 0, // TODO: Calculate from token usage
+          tokensUsed: totalTokensUsed,
+          cost,
         },
-        tokensUsed: 0,
-        cost: 0,
+        tokensUsed: totalTokensUsed,
+        cost,
         duration: 0,
       };
     } catch (error) {
@@ -108,7 +122,7 @@ export class CriticAgent extends BaseAgent {
   /**
    * Analyze code using GPT
    */
-  private async analyzeCode(request: ReviewRequest): Promise<ReviewAnalysis> {
+  private async analyzeCode(request: ReviewRequest): Promise<{ analysis: ReviewAnalysis; usage: TokenUsage }> {
     const prompt = this.buildReviewPrompt(request);
 
     try {
@@ -118,7 +132,8 @@ export class CriticAgent extends BaseAgent {
         maxTokens: 3000,
       });
 
-      return this.parseReviewResponse(response.content);
+      const analysis = this.parseReviewResponse(response.content);
+      return { analysis, usage: response.usage };
     } catch (error) {
       this.logger.error('Code analysis failed', error);
       throw new Error(`Failed to analyze code: ${error}`);

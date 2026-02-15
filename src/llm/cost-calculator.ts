@@ -46,13 +46,55 @@ const MODEL_PRICING: Record<string, ModelPricing> = {
     inputCostPer1kTokens: 0.0001,
     outputCostPer1kTokens: 0.0003,
   },
+  'gpt-4o': {
+    inputCostPer1kTokens: 0.0025,
+    outputCostPer1kTokens: 0.01,
+  },
+  'gpt-4o-mini': {
+    inputCostPer1kTokens: 0.00015,
+    outputCostPer1kTokens: 0.0006,
+  },
+  'gpt-4-turbo': {
+    inputCostPer1kTokens: 0.01,
+    outputCostPer1kTokens: 0.03,
+  },
   'gpt-4': {
     inputCostPer1kTokens: 0.03,
     outputCostPer1kTokens: 0.06,
   },
+  'gpt-4-32k': {
+    inputCostPer1kTokens: 0.06,
+    outputCostPer1kTokens: 0.12,
+  },
   'gpt-3.5-turbo': {
     inputCostPer1kTokens: 0.0005,
     outputCostPer1kTokens: 0.0015,
+  },
+  'gpt-3.5-turbo-16k': {
+    inputCostPer1kTokens: 0.003,
+    outputCostPer1kTokens: 0.004,
+  },
+
+  // Azure OpenAI models (same pricing as OpenAI in most regions)
+  'azure/gpt-4': {
+    inputCostPer1kTokens: 0.03,
+    outputCostPer1kTokens: 0.06,
+  },
+  'azure/gpt-4-turbo': {
+    inputCostPer1kTokens: 0.01,
+    outputCostPer1kTokens: 0.03,
+  },
+  'azure/gpt-4-32k': {
+    inputCostPer1kTokens: 0.06,
+    outputCostPer1kTokens: 0.12,
+  },
+  'azure/gpt-3.5-turbo': {
+    inputCostPer1kTokens: 0.0005,
+    outputCostPer1kTokens: 0.0015,
+  },
+  'azure/gpt-3.5-turbo-16k': {
+    inputCostPer1kTokens: 0.003,
+    outputCostPer1kTokens: 0.004,
   },
 
   // Local models (free)

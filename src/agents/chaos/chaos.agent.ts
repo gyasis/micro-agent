@@ -12,8 +12,9 @@
  * @module agents/chaos
  */
 
-import { BaseAgent, AgentResult } from '../base-agent';
+import { BaseAgent, AgentResult, TokenUsage } from '../base-agent';
 import type { AgentContext, ChaosOutput, AdversarialTest } from '../base/agent-context';
+import { calculateCost } from '../../llm/cost-calculator';
 
 export interface ChaosTestRequest {
   code: string;
@@ -49,13 +50,23 @@ export class ChaosAgent extends BaseAgent {
       throw new Error('No code from Artisan to test');
     }
 
+    // Track token usage across all LLM calls
+    let totalTokensUsed = 0;
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
+
     try {
       // Step 1: Build test request
       const request = this.buildTestRequest(context);
       this.emitProgress('Test request prepared');
 
       // Step 2: Generate adversarial test suite
-      const testSuite = await this.generateTestSuite(request);
+      const { testSuite, usage } = await this.generateTestSuite(request);
+      if (usage) {
+        totalTokensUsed += usage.total;
+        totalInputTokens += usage.input;
+        totalOutputTokens += usage.output;
+      }
       this.emitProgress('Adversarial tests generated', {
         propertyTests: testSuite.propertyTests.length,
         mutationTests: testSuite.mutationTests.length,
@@ -73,6 +84,9 @@ export class ChaosAgent extends BaseAgent {
       const passed = allTests.every(t => t.passed);
       this.emitProgress(`Chaos testing ${passed ? 'PASSED' : 'FAILED'}`);
 
+      // Calculate cost from token usage
+      const cost = calculateCost(this.config.model, totalInputTokens, totalOutputTokens);
+
       return {
         success: true,
         data: {
@@ -80,11 +94,11 @@ export class ChaosAgent extends BaseAgent {
           edgeCases: testSuite.edgeCases,
           vulnerabilities: testSuite.vulnerabilities,
           passed,
-          tokensUsed: 0, // TODO: Track from LLM calls
-          cost: 0, // TODO: Calculate from token usage
+          tokensUsed: totalTokensUsed,
+          cost,
         },
-        tokensUsed: 0,
-        cost: 0,
+        tokensUsed: totalTokensUsed,
+        cost,
         duration: 0,
       };
     } catch (error) {
@@ -109,7 +123,7 @@ export class ChaosAgent extends BaseAgent {
   /**
    * Generate complete adversarial test suite
    */
-  private async generateTestSuite(request: ChaosTestRequest): Promise<ChaosTestSuite> {
+  private async generateTestSuite(request: ChaosTestRequest): Promise<{ testSuite: ChaosTestSuite; usage: TokenUsage }> {
     const prompt = this.buildChaosPrompt(request);
 
     try {
@@ -119,7 +133,8 @@ export class ChaosAgent extends BaseAgent {
         maxTokens: 4000,
       });
 
-      return this.parseTestSuite(response.content);
+      const testSuite = this.parseTestSuite(response.content);
+      return { testSuite, usage: response.usage };
     } catch (error) {
       this.logger.error('Test suite generation failed', error);
       throw new Error(`Failed to generate chaos tests: ${error}`);

@@ -420,7 +420,7 @@ With multiple developers:
 ## Summary
 
 **Total Tasks**: 84
-**Completed**: 70/84 (83%)
+**Completed**: 76/84 (90%)
 **User Story Task Breakdown**:
 - US1 (Multi-Agent Code Generation): 17 tasks (T026-T042)
 - US4 (Polyglot Testing Support): 10 tasks (T043-T052)
@@ -485,16 +485,17 @@ With multiple developers:
 
 ---
 
-## **Wave 26: Technical Debt - Cost/Token Tracking (Addendum)**
+## **Wave 26: Technical Debt - Cost/Token Tracking (Addendum)** ✅
 
 **Purpose**: Implement proper cost and token tracking across all agents
+**Tasks**: 6 | **Completed**: 6/6 (100%) ✅
 
-- [ ] T081 [P] Implement token tracking in Librarian agent (src/agents/librarian/librarian.agent.ts:72-73)
-- [ ] T082 [P] Implement token tracking in Artisan agent (src/agents/artisan/artisan.agent.ts:94-95)
-- [ ] T083 [P] Implement token tracking in Critic agent (src/agents/critic/critic.agent.ts:82-83)
-- [ ] T084 [P] Implement token tracking in Chaos agent (src/agents/chaos/chaos.agent.ts:83-84)
-- [ ] T085 [P] Create centralized cost calculator using LiteLLM token counts
-- [ ] T086 Wire cost tracker to all agent LLM calls and aggregate session totals
+- [X] T081 [P] Implement token tracking in Librarian agent (src/agents/librarian/librarian.agent.ts:72-73)
+- [X] T082 [P] Implement token tracking in Artisan agent (src/agents/artisan/artisan.agent.ts:94-95)
+- [X] T083 [P] Implement token tracking in Critic agent (src/agents/critic/critic.agent.ts:82-83)
+- [X] T084 [P] Implement token tracking in Chaos agent (src/agents/chaos/chaos.agent.ts:83-84)
+- [X] T085 [P] Create centralized cost calculator using LiteLLM token counts
+- [X] T086 Wire cost tracker to all agent LLM calls and aggregate session totals
 
 ---
 

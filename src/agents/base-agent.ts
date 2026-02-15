@@ -109,12 +109,18 @@ export abstract class BaseAgent extends EventEmitter {
 
       const duration = Date.now() - startTime;
 
-      // Track cost
+      // Track cost (extract token breakdown from result metadata if available)
+      const tokenData = (result.data as any)?.tokenUsage || result.tokensUsed;
+      const promptTokens = typeof tokenData === 'object' ? tokenData.input || 0 : Math.floor(tokenData * 0.4);
+      const completionTokens = typeof tokenData === 'object' ? tokenData.output || 0 : Math.floor(tokenData * 0.6);
+
       this.costTracker.record({
         agent: this.config.type,
         provider: this.config.provider,
         model: this.config.model,
-        tokensUsed: result.tokensUsed,
+        promptTokens,
+        completionTokens,
+        totalTokens: result.tokensUsed,
         cost: result.cost,
       });
 

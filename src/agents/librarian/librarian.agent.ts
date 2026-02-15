@@ -7,11 +7,12 @@
  * @module agents/librarian
  */
 
-import { BaseAgent, AgentResult } from '../base-agent';
+import { BaseAgent, AgentResult, TokenUsage } from '../base-agent';
 import type { AgentContext, LibrarianOutput, FileContext, DependencyNode } from '../base/agent-context';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { glob } from 'glob';
+import { calculateCost } from '../../llm/cost-calculator';
 
 export class LibrarianAgent extends BaseAgent {
   /**
@@ -26,6 +27,11 @@ export class LibrarianAgent extends BaseAgent {
       workingDir: context.workingDirectory,
       targetFile: context.targetFile,
     });
+
+    // Track token usage across all LLM calls
+    let totalTokensUsed = 0;
+    let totalInputTokens = 0;
+    let totalOutputTokens = 0;
 
     try {
       // Step 1: Discover files
@@ -46,22 +52,35 @@ export class LibrarianAgent extends BaseAgent {
       });
 
       // Step 4: Rank files by relevance
-      const rankedFiles = await this.rankFiles(
+      const { rankedFiles, usage: rankingUsage } = await this.rankFiles(
         fileContexts,
         dependencyGraph,
         context.targetFile,
         context.objective
       );
+      if (rankingUsage) {
+        totalTokensUsed += rankingUsage.total;
+        totalInputTokens += rankingUsage.input;
+        totalOutputTokens += rankingUsage.output;
+      }
       this.emitProgress('Files ranked', { topFiles: rankedFiles.slice(0, 5).map(f => f.path) });
 
       // Step 5: Generate context summary
-      const contextSummary = await this.generateContextSummary(
+      const { summary: contextSummary, usage: summaryUsage } = await this.generateContextSummary(
         rankedFiles,
         dependencyGraph,
         context.objective
       );
+      if (summaryUsage) {
+        totalTokensUsed += summaryUsage.total;
+        totalInputTokens += summaryUsage.input;
+        totalOutputTokens += summaryUsage.output;
+      }
 
       this.emitProgress('Context summary generated');
+
+      // Calculate cost from token usage
+      const cost = calculateCost(this.config.model, totalInputTokens, totalOutputTokens);
 
       return {
         success: true,
@@ -69,11 +88,11 @@ export class LibrarianAgent extends BaseAgent {
           relevantFiles: rankedFiles,
           dependencyGraph,
           contextSummary,
-          tokensUsed: 0, // TODO: Track from LLM calls
-          cost: 0, // TODO: Calculate from token usage
+          tokensUsed: totalTokensUsed,
+          cost,
         },
-        tokensUsed: 0,
-        cost: 0,
+        tokensUsed: totalTokensUsed,
+        cost,
         duration: 0,
       };
     } catch (error) {
@@ -283,7 +302,7 @@ export class LibrarianAgent extends BaseAgent {
     dependencyGraph: DependencyNode[],
     targetFile: string | undefined,
     objective: string
-  ): Promise<FileContext[]> {
+  ): Promise<{ rankedFiles: FileContext[]; usage: TokenUsage | null }> {
     // Calculate distance from target file
     if (targetFile) {
       this.calculateDistances(dependencyGraph, targetFile);
@@ -303,10 +322,13 @@ export class LibrarianAgent extends BaseAgent {
       const rankings = this.parseRankings(response.content, fileContexts);
 
       // Merge with distance-based rankings
-      return this.mergeRankings(rankings, dependencyGraph);
+      const rankedFiles = this.mergeRankings(rankings, dependencyGraph);
+
+      return { rankedFiles, usage: response.usage };
     } catch (error) {
       this.logger.warn('Failed to rank files with LLM, using distance-based ranking', error);
-      return this.fallbackRanking(fileContexts, dependencyGraph);
+      const rankedFiles = this.fallbackRanking(fileContexts, dependencyGraph);
+      return { rankedFiles, usage: null }; // No LLM usage on fallback
     }
   }
 
@@ -441,7 +463,7 @@ Return ONLY a JSON array of file paths in order: ["most-relevant.ts", "second.ts
     files: FileContext[],
     dependencyGraph: DependencyNode[],
     objective: string
-  ): Promise<string> {
+  ): Promise<{ summary: string; usage: TokenUsage | null }> {
     const topFiles = files.slice(0, 10);
     const fileDescriptions = topFiles.map(f => `${f.path}: ${f.content.split('\n').slice(0, 3).join(' ')}`).join('\n');
 
@@ -459,10 +481,13 @@ Provide a concise summary (2-3 paragraphs) of the codebase context relevant to t
         maxTokens: 500,
       });
 
-      return response.content;
+      return { summary: response.content, usage: response.usage };
     } catch (error) {
       this.logger.warn('Failed to generate context summary', error);
-      return `Codebase analysis: ${topFiles.length} relevant files identified.`;
+      return {
+        summary: `Codebase analysis: ${topFiles.length} relevant files identified.`,
+        usage: null, // No LLM usage on fallback
+      };
     }
   }
 }

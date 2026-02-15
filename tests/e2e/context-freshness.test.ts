@@ -8,12 +8,14 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { createActor } from 'xstate';
 import { createRalphMachine } from '../../src/state-machine/ralph-machine';
 import type { RalphConfig, RalphContext } from '../../src/types/ralph-config';
 
 describe('E2E: Fresh Context Verification', () => {
   const sessionId = 'context-test-session';
   const targetFile = 'src/test-target.ts';
+  const objective = 'Test objective for context verification';
   let config: RalphConfig;
 
   beforeEach(() => {
@@ -32,9 +34,9 @@ describe('E2E: Fresh Context Verification', () => {
 
   describe('State Machine Instance Isolation', () => {
     it('should create different instances per iteration', () => {
-      const iteration1 = createRalphMachine(sessionId, 1, targetFile, config);
-      const iteration2 = createRalphMachine(sessionId, 2, targetFile, config);
-      const iteration3 = createRalphMachine(sessionId, 3, targetFile, config);
+      const iteration1 = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const iteration2 = createRalphMachine(sessionId, 2, targetFile, objective, config);
+      const iteration3 = createRalphMachine(sessionId, 3, targetFile, objective, config);
 
       // CRITICAL: Each iteration must be a completely different object instance
       expect(iteration1).not.toBe(iteration2);
@@ -43,8 +45,8 @@ describe('E2E: Fresh Context Verification', () => {
     });
 
     it('should not share memory references between iterations', () => {
-      const iteration1 = createRalphMachine(sessionId, 1, targetFile, config);
-      const iteration2 = createRalphMachine(sessionId, 2, targetFile, config);
+      const iteration1 = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const iteration2 = createRalphMachine(sessionId, 2, targetFile, objective, config);
 
       // Modify iteration1 context - should NOT affect iteration2
       expect(true).toBe(true); // Placeholder
@@ -133,50 +135,58 @@ describe('E2E: Fresh Context Verification', () => {
 
   describe('Fresh State Verification', () => {
     it('should have empty codebaseFiles Map at iteration start', () => {
-      const machine = createRalphMachine(sessionId, 1, targetFile, config);
-      const context = machine.getSnapshot().context as RalphContext;
+      const machine = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      // XState v5: create actor and get snapshot to access context
+      const actor = createActor(machine);
+      const context = actor.getSnapshot().context as RalphContext;
 
       expect(context.codebaseFiles.size).toBe(0);
     });
 
     it('should have null testResults at iteration start', () => {
-      const machine = createRalphMachine(sessionId, 1, targetFile, config);
-      const context = machine.getSnapshot().context as RalphContext;
+      const machine = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const actor = createActor(machine);
+      const context = actor.getSnapshot().context as RalphContext;
 
       expect(context.testResults).toBeNull();
     });
 
     it('should have null librarianOutput at iteration start', () => {
-      const machine = createRalphMachine(sessionId, 1, targetFile, config);
-      const context = machine.getSnapshot().context as RalphContext;
+      const machine = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const actor = createActor(machine);
+      const context = actor.getSnapshot().context as RalphContext;
 
       expect(context.librarianOutput).toBeNull();
     });
 
     it('should have null artisanOutput at iteration start', () => {
-      const machine = createRalphMachine(sessionId, 1, targetFile, config);
-      const context = machine.getSnapshot().context as RalphContext;
+      const machine = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const actor = createActor(machine);
+      const context = actor.getSnapshot().context as RalphContext;
 
       expect(context.artisanOutput).toBeNull();
     });
 
     it('should have null criticOutput at iteration start', () => {
-      const machine = createRalphMachine(sessionId, 1, targetFile, config);
-      const context = machine.getSnapshot().context as RalphContext;
+      const machine = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const actor = createActor(machine);
+      const context = actor.getSnapshot().context as RalphContext;
 
       expect(context.criticOutput).toBeNull();
     });
 
     it('should have empty errors array at iteration start', () => {
-      const machine = createRalphMachine(sessionId, 1, targetFile, config);
-      const context = machine.getSnapshot().context as RalphContext;
+      const machine = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const actor = createActor(machine);
+      const context = actor.getSnapshot().context as RalphContext;
 
       expect(context.errors).toEqual([]);
     });
 
     it('should have empty contextUsage Map at iteration start', () => {
-      const machine = createRalphMachine(sessionId, 1, targetFile, config);
-      const context = machine.getSnapshot().context as RalphContext;
+      const machine = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const actor = createActor(machine);
+      const context = actor.getSnapshot().context as RalphContext;
 
       expect(context.contextUsage.size).toBe(0);
     });

@@ -6,13 +6,29 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest';
+import { createRalphMachine } from '../../../src/state-machine/ralph-machine';
+import type { RalphConfig } from '../../../src/types/ralph-config';
 
 describe('Iteration Manager', () => {
+  const sessionId = 'test-session';
+  const targetFile = 'src/test-file.ts';
+  const objective = 'Test objective for iteration management';
+  let config: RalphConfig;
+
+  beforeEach(() => {
+    config = {
+      maxIterations: 5,
+      costLimit: 10,
+      timeLimit: 60000,
+      adversarialTesting: { enabled: true, minCoverage: 80 },
+      contextWindow: { maxTokens: 200000, resetThreshold: 0.4 },
+    };
+  });
   describe('Fresh Context Resets', () => {
     it('should create new state machine for each iteration', () => {
       // Test that each iteration gets a fresh machine instance
-      const iteration1 = createRalphMachine('session-1', 1, 'file.ts', config);
-      const iteration2 = createRalphMachine('session-1', 2, 'file.ts', config);
+      const iteration1 = createRalphMachine(sessionId, 1, targetFile, objective, config);
+      const iteration2 = createRalphMachine(sessionId, 2, targetFile, objective, config);
 
       expect(iteration1).not.toBe(iteration2);
     });

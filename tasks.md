@@ -590,6 +590,30 @@ With multiple developers:
 
 ---
 
+## **Wave 26.9: Environment Setup - Collect All API Keys** ✅
+
+**Purpose**: Collect all existing API keys and credentials from user's system into a centralized .env file
+
+- [X] T086.11 [BLOCKER] Collect and configure all API keys and endpoints
+  - ✅ Found Anthropic API key in environment ($ANTHROPIC_API_KEY)
+  - ✅ Found OpenAI API key in environment ($OPENAI_API_KEY)
+  - ✅ Found Gemini API key in ~/Documents/code/gemini-mcp/.env
+  - ✅ Found Azure OpenAI credentials in ~/Documents/code/hybridrag-azure-specstory/.env
+  - ✅ Tested remote Ollama instance: http://192.168.0.159:11434 (22 models available!)
+  - ✅ Created comprehensive .env file with all 6 providers
+  - ✅ Documented available Ollama models and cost optimization tips
+  - ⏸️ Hugging Face API key (optional - can be added later if needed)
+
+**Summary of Credentials Found:**
+- ✅ Anthropic Claude (Artisan & Chaos agents)
+- ✅ Google Gemini (Librarian agent)
+- ✅ OpenAI (Critic agent)
+- ✅ Azure OpenAI (alternative to OpenAI)
+- ✅ Ollama Remote Instance (100+ FREE models - 22 currently loaded)
+- ⏸️ Hugging Face (optional)
+
+---
+
 ## **Wave 27: Technical Debt - CLI Commands (Addendum)**
 
 **Purpose**: Implement missing CLI commands found in TODOs

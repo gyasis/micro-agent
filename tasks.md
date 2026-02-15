@@ -445,11 +445,10 @@ With multiple developers:
 
 ---
 
-## **Wave 25: Documentation & Branding Polish (Addendum)**
+## **Wave 25A: Branding Fixes (Addendum)**
 
-**Purpose**: Fix naming hallucinations and complete documentation for release
-
-### Branding Fixes (47 violations found by adversarial bug hunter)
+**Purpose**: Fix 47 naming hallucinations found by adversarial bug hunter
+**Tasks**: 7 | **Completed**: 1/7 (14%)
 
 - [X] T066 Fix CLI command branding in README.md (11 violations)
 - [ ] T067 Fix CLI commands and imports in quickstart.md (10 violations)
@@ -459,22 +458,64 @@ With multiple developers:
 - [ ] T071 Fix fake package references in spec.md (4 violations)
 - [ ] T072 Fix plugin examples in tasks.md files (2 violations)
 
-### Language-Specific Tutorials
+---
+
+## **Wave 25B: Documentation & Tutorials (Addendum)**
+
+**Purpose**: Write comprehensive language-specific tutorials and API docs
+**Tasks**: 5 | **Completed**: 0/5 (0%)
 
 - [ ] T073 Write TypeScript/JavaScript tutorial with Vitest/Jest examples
 - [ ] T074 Write Python tutorial with pytest examples
 - [ ] T075 Write Rust tutorial with cargo test examples
-
-### API Documentation
-
 - [ ] T076 Generate API documentation for all public modules
 - [ ] T077 Update plan.md to reflect Micro Agent product naming
 
-### Release Preparation
+---
+
+## **Wave 25C: Release Preparation (Addendum)**
+
+**Purpose**: Final validation and release preparation
+**Tasks**: 3 | **Completed**: 0/3 (0%)
 
 - [ ] T078 Create PR to merge 001-ralph-loop-2026 → main
 - [ ] T079 Final validation: Ensure no "ralph" CLI commands in user-facing docs
 - [ ] T080 Tag release as v2.0.0 (Micro Agent powered by Ralph Loop 2026)
+
+---
+
+## **Wave 26: Technical Debt - Cost/Token Tracking (Addendum)**
+
+**Purpose**: Implement proper cost and token tracking across all agents
+
+- [ ] T081 [P] Implement token tracking in Librarian agent (src/agents/librarian/librarian.agent.ts:72-73)
+- [ ] T082 [P] Implement token tracking in Artisan agent (src/agents/artisan/artisan.agent.ts:94-95)
+- [ ] T083 [P] Implement token tracking in Critic agent (src/agents/critic/critic.agent.ts:82-83)
+- [ ] T084 [P] Implement token tracking in Chaos agent (src/agents/chaos/chaos.agent.ts:83-84)
+- [ ] T085 [P] Create centralized cost calculator using LiteLLM token counts
+- [ ] T086 Wire cost tracker to all agent LLM calls and aggregate session totals
+
+---
+
+## **Wave 27: Technical Debt - CLI Commands (Addendum)**
+
+**Purpose**: Implement missing CLI commands found in TODOs
+
+- [ ] T087 Implement config command in src/cli/commands/config.ts
+- [ ] T088 Implement reset command in src/cli/commands/reset.ts
+- [ ] T089 Implement status command in src/cli/commands/status.ts
+
+---
+
+## **Wave 28: Technical Debt - Test Runner & Optimizations (Addendum)**
+
+**Purpose**: Complete test runner implementation and performance optimizations
+
+- [ ] T090 Implement test runner in src/cli/commands/run.ts (Phase 4)
+- [ ] T091 Wire test results back to context after test execution
+- [ ] T092 Optimize MemoryVault category filtering in src/memory/similarity-search.ts:306
+- [ ] T093 Add directory auto-generation in interactive mode (src/helpers/interactive-mode.ts:165)
+- [ ] T094 Parse imports from prompt file for context inclusion (src/helpers/run.ts:52)
 
 ---
 

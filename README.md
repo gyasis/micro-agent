@@ -162,15 +162,40 @@ memory:
 
 ### Environment Variables
 
-```bash
-# AI Provider API Keys
-export ANTHROPIC_API_KEY=sk-ant-...
-export OPENAI_API_KEY=sk-...
-export GOOGLE_API_KEY=...
+Ralph Loop 2026 supports **6 LLM providers** via direct SDK integration:
 
-# Optional: Local LLM endpoints
+```bash
+# 1. Anthropic Claude (REQUIRED for Artisan & Chaos agents)
+export ANTHROPIC_API_KEY=sk-ant-...
+# Get key: https://console.anthropic.com/
+
+# 2. Google Gemini (REQUIRED for Librarian agent)
+export GOOGLE_API_KEY=...
+# Get key: https://aistudio.google.com/app/apikey
+
+# 3. OpenAI (REQUIRED for Critic agent)
+export OPENAI_API_KEY=sk-...
+# Get key: https://platform.openai.com/api-keys
+
+# 4. Azure OpenAI (Optional - alternative to OpenAI)
+export AZURE_OPENAI_KEY=...
+export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+# Get credentials: https://portal.azure.com/
+
+# 5. Hugging Face (Optional - 70k+ specialized models)
+export HUGGINGFACE_API_KEY=hf_...
+# Get key: https://huggingface.co/settings/tokens
+
+# 6. Ollama (Optional - 100+ local models, FREE)
+# No API key required! Install from: https://ollama.com/
 export OLLAMA_BASE_URL=http://localhost:11434
 ```
+
+**Cost Optimization Tips:**
+- Use **Gemini 2.0 Flash** instead of Pro (10x cheaper, faster)
+- Use **GPT-4.1-mini** instead of GPT-4 (300x cheaper!)
+- Use **Ollama** for free local models (llama3, phi, mistral, qwen, deepseek)
+- Default config already uses cost-optimized models
 
 ## 🏗️ Architecture
 

@@ -8,6 +8,8 @@ import { fileExists } from './file-exists';
 import { outputFile } from './output-file';
 import { removeBackticks } from './remove-backticks';
 import { getSimpleCompletion } from './llm';
+import { readFile } from 'fs/promises';
+import { join, dirname, resolve } from 'path';
 
 type Options = {
   outputFile: string;
@@ -49,8 +51,14 @@ export async function runOne(options: Options) {
 
   log.step('Generating code...');
 
-  // TODO: parse any imports in the prompt file and include them in the prompt as context
-  const result = removeBackticks(await generate(options));
+  // Parse imports from prompt file and include as context (T094)
+  const importedContext = await parseImportsFromPromptFile(options.promptFile);
+  const enhancedOptions = {
+    ...options,
+    additionalContext: importedContext,
+  };
+
+  const result = removeBackticks(await generate(enhancedOptions));
 
   await outputFile(options.outputFile, result);
   log.step('Updated code');
@@ -189,4 +197,76 @@ async function removeLogsFromCode(options: Options): Promise<string> {
     ],
   });
   return codeWithoutLogs;
+}
+
+/**
+ * Parse imports from prompt file and include imported files as context (T094)
+ */
+async function parseImportsFromPromptFile(promptFilePath: string): Promise<string> {
+  try {
+    // Read prompt file
+    const promptContent = await readFile(promptFilePath, 'utf-8');
+    const promptDir = dirname(promptFilePath);
+
+    // Regular expressions for various import styles
+    const importPatterns = [
+      // ES6 imports: import ... from './file'
+      /import\s+(?:[\w*{}\s,]+\s+from\s+)?['"]([^'"]+)['"]/g,
+      // CommonJS require: require('./file')
+      /require\s*\(['"]([^'"]+)['"]\)/g,
+      // Dynamic import: import('./file')
+      /import\s*\(['"]([^'"]+)['"]\)/g,
+    ];
+
+    const importedFiles = new Set<string>();
+
+    // Extract all import paths
+    for (const pattern of importPatterns) {
+      let match;
+      while ((match = pattern.exec(promptContent)) !== null) {
+        const importPath = match[1];
+
+        // Skip node_modules and absolute paths
+        if (importPath.startsWith('.')) {
+          importedFiles.add(importPath);
+        }
+      }
+    }
+
+    // Read imported files
+    const context: string[] = [];
+    for (const importPath of importedFiles) {
+      try {
+        // Resolve relative path
+        const resolvedPath = resolve(promptDir, importPath);
+
+        // Try common extensions if no extension provided
+        const pathsToTry = [
+          resolvedPath,
+          `${resolvedPath}.ts`,
+          `${resolvedPath}.js`,
+          `${resolvedPath}/index.ts`,
+          `${resolvedPath}/index.js`,
+        ];
+
+        for (const path of pathsToTry) {
+          if (await fileExists(path)) {
+            const content = await readFile(path, 'utf-8');
+            context.push(`\n// File: ${importPath}\n${content}\n`);
+            break;
+          }
+        }
+      } catch (error) {
+        // Skip files that can't be read
+        continue;
+      }
+    }
+
+    return context.length > 0
+      ? `\n\n--- Imported Context ---\n${context.join('\n')}\n--- End Imported Context ---\n\n`
+      : '';
+  } catch (error) {
+    // If prompt file doesn't exist or can't be read, return empty context
+    return '';
+  }
 }

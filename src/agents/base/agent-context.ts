@@ -76,6 +76,7 @@ export interface FixPattern {
   successRate: number;
   timesApplied: number;
   lastUsed: Date;
+  category?: string; // Optional category for filtering (syntax, logic, runtime, etc.)
 }
 
 export interface TestPattern {
@@ -316,6 +317,65 @@ export function withCriticReview(
     budget: {
       ...context.budget,
       currentCostUsd: context.budget.currentCostUsd + criticOutput.cost,
+    },
+  };
+}
+
+/**
+ * Update agent context with test results
+ */
+export function withTestResults(
+  context: AgentContext,
+  testResults: any // RalphTestResult from parsers
+): AgentContext {
+  // Convert RalphTestResult to TestResult
+  const failures: TestFailure[] = testResults.tests
+    .filter((t: any) => t.status === 'failed' || t.status === 'error')
+    .map((t: any) => ({
+      testName: t.name,
+      filePath: t.file,
+      errorMessage: t.error?.message || 'Unknown error',
+      stackTrace: t.error?.stack,
+      line: t.error?.location?.line,
+      column: t.error?.location?.column,
+    }));
+
+  const coverage: CoverageStats | undefined = testResults.coverage
+    ? {
+        lines: {
+          covered: testResults.coverage.lines.covered,
+          total: testResults.coverage.lines.total,
+          percentage: testResults.coverage.lines.percentage,
+        },
+        statements: {
+          covered: testResults.coverage.statements.covered,
+          total: testResults.coverage.statements.total,
+          percentage: testResults.coverage.statements.percentage,
+        },
+        functions: {
+          covered: testResults.coverage.functions.covered,
+          total: testResults.coverage.functions.total,
+          percentage: testResults.coverage.functions.percentage,
+        },
+        branches: {
+          covered: testResults.coverage.branches.covered,
+          total: testResults.coverage.branches.total,
+          percentage: testResults.coverage.branches.percentage,
+        },
+      }
+    : undefined;
+
+  return {
+    ...context,
+    test: {
+      ...context.test,
+      lastResult: {
+        passed: testResults.summary.status === 'passed',
+        failures,
+        coverage,
+        duration: testResults.summary.duration,
+        timestamp: new Date(testResults.timestamp),
+      },
     },
   };
 }

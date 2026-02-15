@@ -297,24 +297,21 @@ export class SimilaritySearch {
   }
 
   /**
-   * Search by category only
+   * Search by category only (T092: Optimized with vault-level filtering)
    */
   async searchByCategory(
     category: string,
     limit: number = 5
   ): Promise<FixPattern[]> {
-    // Get all patterns (TODO: optimize with category filtering in vault)
-    const allResults = await this.vault.searchFixPatterns('', [], limit * 2);
+    // Use optimized vault-level category filtering (T092)
+    const results = await this.vault.searchFixPatterns(
+      '', // Empty signature matches all
+      [], // Empty context
+      limit,
+      category // Category filter at vault level
+    );
 
-    // Filter by category
-    const filtered = allResults
-      .filter(r => {
-        const cat = this.categorizePattern(r.pattern);
-        return cat === category;
-      })
-      .map(r => r.pattern);
-
-    return filtered.slice(0, limit);
+    return results.map(r => r.pattern);
   }
 
   /**

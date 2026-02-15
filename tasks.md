@@ -618,9 +618,9 @@ With multiple developers:
 
 **Purpose**: Implement missing CLI commands found in TODOs
 
-- [ ] T087 Implement config command in src/cli/commands/config.ts
-- [ ] T088 Implement reset command in src/cli/commands/reset.ts
-- [ ] T089 Implement status command in src/cli/commands/status.ts
+- [X] T087 Implement config command in src/cli/commands/config.ts
+- [X] T088 Implement reset command in src/cli/commands/reset.ts
+- [X] T089 Implement status command in src/cli/commands/status.ts
 
 ---
 
@@ -628,11 +628,11 @@ With multiple developers:
 
 **Purpose**: Complete test runner implementation and performance optimizations
 
-- [ ] T090 Implement test runner in src/cli/commands/run.ts (Phase 4)
-- [ ] T091 Wire test results back to context after test execution
-- [ ] T092 Optimize MemoryVault category filtering in src/memory/similarity-search.ts:306
-- [ ] T093 Add directory auto-generation in interactive mode (src/helpers/interactive-mode.ts:165)
-- [ ] T094 Parse imports from prompt file for context inclusion (src/helpers/run.ts:52)
+- [X] T090 Implement test runner in src/cli/commands/run.ts (Phase 4)
+- [X] T091 Wire test results back to context after test execution
+- [X] T092 Optimize MemoryVault category filtering in src/memory/similarity-search.ts:306
+- [X] T093 Add directory auto-generation in interactive mode (src/helpers/interactive-mode.ts:165)
+- [X] T094 Parse imports from prompt file for context inclusion (src/helpers/run.ts:52)
 
 ---
 

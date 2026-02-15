@@ -102,6 +102,7 @@ export class MemoryVault {
             successRate: pattern.successRate,
             timesApplied: pattern.timesApplied,
             lastUsed: pattern.lastUsed.toISOString(),
+            category: pattern.category || 'general', // Store category for filtering
           },
         ],
       });
@@ -122,7 +123,8 @@ export class MemoryVault {
   async searchFixPatterns(
     errorSignature: string,
     context: string[],
-    limit: number = 5
+    limit: number = 5,
+    category?: string // Optional category filter (T092 optimization)
   ): Promise<SearchResult<FixPattern>[]> {
     if (!this.fixCollection) {
       throw new Error('Memory Vault not initialized');
@@ -132,10 +134,18 @@ export class MemoryVault {
       // Create query embedding
       const queryText = this.createFixQueryText(errorSignature, context);
 
-      const results = await this.fixCollection.query({
+      // Build query with optional category filter
+      const queryOptions: any = {
         queryTexts: [queryText],
         nResults: limit,
-      });
+      };
+
+      // Add category filter if provided (T092 optimization)
+      if (category) {
+        queryOptions.where = { category };
+      }
+
+      const results = await this.fixCollection.query(queryOptions);
 
       // Convert to SearchResult
       const patterns: SearchResult<FixPattern>[] = [];
@@ -165,6 +175,7 @@ export class MemoryVault {
               successRate: metadata.successRate as number,
               timesApplied: metadata.timesApplied as number,
               lastUsed: new Date(metadata.lastUsed as string),
+              category: metadata.category as string | undefined,
             },
             similarity,
             id,

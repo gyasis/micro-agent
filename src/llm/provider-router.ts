@@ -1,20 +1,29 @@
 /**
  * LiteLLM Provider Router
  *
- * Unified interface to 100+ LLM providers through LiteLLM.
+ * Unified interface to 100+ LLM providers using direct SDKs.
  * Routes requests to Claude (Anthropic), Gemini (Google), GPT (OpenAI),
- * Ollama (local), and Azure OpenAI.
+ * Ollama (local), Azure OpenAI, and Hugging Face.
  *
  * @module llm/provider-router
  */
 
 import { EventEmitter } from 'events';
+import Anthropic from '@anthropic-ai/sdk';
+import OpenAI, { AzureOpenAI } from 'openai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+import { HfInference } from '@huggingface/inference';
+import ollama from 'ollama';
+import { calculateCost } from './cost-calculator';
 
 export interface ProviderConfig {
-  provider: 'anthropic' | 'google' | 'openai' | 'ollama' | 'azure';
+  provider: 'anthropic' | 'google' | 'openai' | 'ollama' | 'azure' | 'huggingface';
   model: string;
   apiKey?: string;
   baseUrl?: string; // For Ollama or custom endpoints
+  endpoint?: string; // For Azure OpenAI
+  deployment?: string; // For Azure OpenAI
+  apiVersion?: string; // For Azure OpenAI
   temperature?: number;
   maxTokens?: number;
   topP?: number;
@@ -84,16 +93,43 @@ export class ProviderRouter extends EventEmitter {
   }
 
   /**
-   * Send completion request to specified provider
+   * Send completion request (simplified API - no pre-registration required)
    */
-  public async complete(
-    providerName: string,
-    request: CompletionRequest
-  ): Promise<CompletionResponse> {
-    const config = this.configs.get(providerName);
-    if (!config) {
-      throw new Error(`Provider "${providerName}" not registered`);
-    }
+  public async complete(params: {
+    provider: 'anthropic' | 'google' | 'openai' | 'ollama' | 'azure' | 'huggingface';
+    model: string;
+    messages: Message[];
+    temperature?: number;
+    maxTokens?: number;
+    topP?: number;
+    apiKey?: string;
+    baseUrl?: string;
+    endpoint?: string;
+    deployment?: string;
+    apiVersion?: string;
+  }): Promise<CompletionResponse> {
+    // Build config from params
+    const config: ProviderConfig = {
+      provider: params.provider,
+      model: params.model,
+      apiKey: params.apiKey || this.getApiKeyFromEnv(params.provider),
+      baseUrl: params.baseUrl,
+      endpoint: params.endpoint,
+      deployment: params.deployment,
+      apiVersion: params.apiVersion,
+      temperature: params.temperature,
+      maxTokens: params.maxTokens,
+      topP: params.topP,
+    };
+
+    const request: CompletionRequest = {
+      messages: params.messages,
+      temperature: params.temperature,
+      maxTokens: params.maxTokens,
+      topP: params.topP,
+    };
+
+    const providerName = `${params.provider}:${params.model}`;
 
     const startTime = Date.now();
     this.emit('request-start', { provider: providerName, request });
@@ -128,83 +164,345 @@ export class ProviderRouter extends EventEmitter {
   }
 
   /**
-   * Route request to appropriate LiteLLM provider
+   * Get API key from environment variables
+   */
+  private getApiKeyFromEnv(provider: string): string | undefined {
+    switch (provider) {
+      case 'anthropic':
+        return process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_KEY;
+      case 'google':
+        return process.env.GOOGLE_API_KEY || process.env.GEMINI_API_KEY;
+      case 'openai':
+        return process.env.OPENAI_API_KEY || process.env.OPENAI_KEY;
+      case 'azure':
+        return process.env.AZURE_OPENAI_KEY || process.env.AZURE_OPENAI_API_KEY;
+      case 'huggingface':
+        return process.env.HUGGINGFACE_API_KEY || process.env.HF_API_KEY;
+      case 'ollama':
+        return undefined; // Ollama doesn't need an API key
+      default:
+        return undefined;
+    }
+  }
+
+  /**
+   * Route request to appropriate provider using direct SDKs
    */
   private async routeRequest(
     config: ProviderConfig,
     request: CompletionRequest
   ): Promise<CompletionResponse> {
-    // NOTE: This is a placeholder implementation
-    // In production, this would use the actual LiteLLM npm package
-    // For now, we'll create a mock response structure
-
-    const modelName = this.buildModelName(config);
-
-    // Placeholder for LiteLLM integration
-    // In real implementation:
-    // import { completion } from 'litellm';
-    // const response = await completion({
-    //   model: modelName,
-    //   messages: request.messages,
-    //   temperature: request.temperature ?? config.temperature ?? 0.7,
-    //   max_tokens: request.maxTokens ?? config.maxTokens,
-    // });
-
-    // Mock response for now
-    const response: CompletionResponse = {
-      id: `mock-${Date.now()}`,
-      model: config.model,
-      provider: config.provider,
-      content: 'Mock LLM response - implement actual LiteLLM integration',
-      usage: {
-        promptTokens: 100,
-        completionTokens: 50,
-        totalTokens: 150,
-      },
-      cost: this.estimateCost(config.provider, config.model, 150),
-      finishReason: 'stop',
-    };
-
-    return response;
-  }
-
-  /**
-   * Build LiteLLM model name format
-   */
-  private buildModelName(config: ProviderConfig): string {
     switch (config.provider) {
       case 'anthropic':
-        return `claude/${config.model}`;
+        return this.callAnthropic(config, request);
       case 'google':
-        return `gemini/${config.model}`;
+        return this.callGemini(config, request);
       case 'openai':
-        return config.model; // OpenAI models don't need prefix
-      case 'ollama':
-        return `ollama/${config.model}`;
+        return this.callOpenAI(config, request);
       case 'azure':
-        return `azure/${config.model}`;
+        return this.callAzureOpenAI(config, request);
+      case 'ollama':
+        return this.callOllama(config, request);
+      case 'huggingface':
+        return this.callHuggingFace(config, request);
       default:
-        return config.model;
+        throw new Error(`Unsupported provider: ${config.provider}`);
     }
   }
 
   /**
-   * Estimate cost based on provider and token usage
+   * Call Anthropic Claude API
    */
-  private estimateCost(provider: string, model: string, tokens: number): number {
-    // Rough estimates - actual costs vary
-    const costPer1kTokens: Record<string, number> = {
-      'claude-sonnet-4.5': 0.003,
-      'claude-opus-4': 0.015,
-      'gemini-2.0-pro': 0.001,
-      'gpt-4.1-mini': 0.0001,
-      'gpt-4': 0.03,
-      ollama: 0, // Local models are free
+  private async callAnthropic(
+    config: ProviderConfig,
+    request: CompletionRequest
+  ): Promise<CompletionResponse> {
+    if (!config.apiKey) {
+      throw new Error('Anthropic API key required');
+    }
+
+    const client = new Anthropic({ apiKey: config.apiKey });
+
+    // Extract system message if present
+    const systemMessage = request.messages.find(m => m.role === 'system');
+    const userMessages = request.messages.filter(m => m.role !== 'system');
+
+    const response = await client.messages.create({
+      model: config.model,
+      max_tokens: request.maxTokens ?? config.maxTokens ?? 4096,
+      temperature: request.temperature ?? config.temperature ?? 0.7,
+      system: systemMessage?.content,
+      messages: userMessages.map(m => ({
+        role: m.role as 'user' | 'assistant',
+        content: m.content,
+      })),
+    });
+
+    const content = response.content
+      .filter(block => block.type === 'text')
+      .map(block => (block as any).text)
+      .join('');
+
+    const promptTokens = response.usage.input_tokens;
+    const completionTokens = response.usage.output_tokens;
+    const totalTokens = promptTokens + completionTokens;
+
+    return {
+      id: response.id,
+      model: config.model,
+      provider: 'anthropic',
+      content,
+      usage: { promptTokens, completionTokens, totalTokens },
+      cost: calculateCost(config.model, promptTokens, completionTokens),
+      finishReason: response.stop_reason || 'stop',
+    };
+  }
+
+  /**
+   * Call Google Gemini API
+   */
+  private async callGemini(
+    config: ProviderConfig,
+    request: CompletionRequest
+  ): Promise<CompletionResponse> {
+    if (!config.apiKey) {
+      throw new Error('Google API key required');
+    }
+
+    const genAI = new GoogleGenerativeAI(config.apiKey);
+    const model = genAI.getGenerativeModel({ model: config.model });
+
+    // Build conversation history for Gemini
+    const systemMessage = request.messages.find(m => m.role === 'system');
+    const conversationMessages = request.messages.filter(m => m.role !== 'system');
+
+    // Gemini uses 'user' and 'model' roles
+    const geminiMessages = conversationMessages.map(m => ({
+      role: m.role === 'assistant' ? 'model' : 'user',
+      parts: [{ text: m.content }],
+    }));
+
+    // If there's a system message, prepend it to the first user message
+    if (systemMessage && geminiMessages.length > 0) {
+      const firstUserMsg = geminiMessages[0];
+      firstUserMsg.parts[0].text = `${systemMessage.content}\n\n${firstUserMsg.parts[0].text}`;
+    }
+
+    const chat = model.startChat({
+      history: geminiMessages.slice(0, -1), // All but last message
+      generationConfig: {
+        temperature: request.temperature ?? config.temperature ?? 0.7,
+        maxOutputTokens: request.maxTokens ?? config.maxTokens ?? 4096,
+        topP: request.topP ?? config.topP,
+      },
+    });
+
+    // Send the last message
+    const lastMessage = geminiMessages[geminiMessages.length - 1];
+    const result = await chat.sendMessage(lastMessage.parts[0].text);
+    const response = result.response;
+    const content = response.text();
+
+    // Gemini usage metadata
+    const usageMetadata = response.usageMetadata || {
+      promptTokenCount: 0,
+      candidatesTokenCount: 0,
+      totalTokenCount: 0,
     };
 
-    const rate = costPer1kTokens[model] || 0.001;
-    return (tokens / 1000) * rate;
+    const promptTokens = usageMetadata.promptTokenCount || 0;
+    const completionTokens = usageMetadata.candidatesTokenCount || 0;
+    const totalTokens = usageMetadata.totalTokenCount || promptTokens + completionTokens;
+
+    return {
+      id: `gemini-${Date.now()}`,
+      model: config.model,
+      provider: 'google',
+      content,
+      usage: { promptTokens, completionTokens, totalTokens },
+      cost: calculateCost(config.model, promptTokens, completionTokens),
+      finishReason: 'stop',
+    };
   }
+
+  /**
+   * Call OpenAI API
+   */
+  private async callOpenAI(
+    config: ProviderConfig,
+    request: CompletionRequest
+  ): Promise<CompletionResponse> {
+    if (!config.apiKey) {
+      throw new Error('OpenAI API key required');
+    }
+
+    const client = new OpenAI({
+      apiKey: config.apiKey,
+      baseURL: config.baseUrl,
+    });
+
+    const response = await client.chat.completions.create({
+      model: config.model,
+      messages: request.messages as any,
+      temperature: request.temperature ?? config.temperature ?? 0.7,
+      max_tokens: request.maxTokens ?? config.maxTokens,
+      top_p: request.topP ?? config.topP,
+    });
+
+    const choice = response.choices[0];
+    const content = choice.message.content || '';
+
+    const promptTokens = response.usage?.prompt_tokens || 0;
+    const completionTokens = response.usage?.completion_tokens || 0;
+    const totalTokens = response.usage?.total_tokens || promptTokens + completionTokens;
+
+    return {
+      id: response.id,
+      model: config.model,
+      provider: 'openai',
+      content,
+      usage: { promptTokens, completionTokens, totalTokens },
+      cost: calculateCost(config.model, promptTokens, completionTokens),
+      finishReason: choice.finish_reason || 'stop',
+    };
+  }
+
+  /**
+   * Call Azure OpenAI API
+   */
+  private async callAzureOpenAI(
+    config: ProviderConfig,
+    request: CompletionRequest
+  ): Promise<CompletionResponse> {
+    if (!config.apiKey || !config.endpoint) {
+      throw new Error('Azure OpenAI API key and endpoint required');
+    }
+
+    const client = new AzureOpenAI({
+      apiKey: config.apiKey,
+      endpoint: config.endpoint,
+      deployment: config.deployment || config.model,
+      apiVersion: config.apiVersion || '2024-02-15-preview',
+    });
+
+    const response = await client.chat.completions.create({
+      model: config.deployment || config.model,
+      messages: request.messages as any,
+      temperature: request.temperature ?? config.temperature ?? 0.7,
+      max_tokens: request.maxTokens ?? config.maxTokens,
+      top_p: request.topP ?? config.topP,
+    });
+
+    const choice = response.choices[0];
+    const content = choice.message.content || '';
+
+    const promptTokens = response.usage?.prompt_tokens || 0;
+    const completionTokens = response.usage?.completion_tokens || 0;
+    const totalTokens = response.usage?.total_tokens || promptTokens + completionTokens;
+
+    return {
+      id: response.id,
+      model: config.model,
+      provider: 'azure',
+      content,
+      usage: { promptTokens, completionTokens, totalTokens },
+      cost: calculateCost(`azure/${config.model}`, promptTokens, completionTokens),
+      finishReason: choice.finish_reason || 'stop',
+    };
+  }
+
+  /**
+   * Call Ollama local API
+   */
+  private async callOllama(
+    config: ProviderConfig,
+    request: CompletionRequest
+  ): Promise<CompletionResponse> {
+    const response = await ollama.chat({
+      model: config.model,
+      messages: request.messages as any,
+      options: {
+        temperature: request.temperature ?? config.temperature ?? 0.7,
+        num_predict: request.maxTokens ?? config.maxTokens,
+        top_p: request.topP ?? config.topP,
+      },
+    });
+
+    const content = response.message.content;
+
+    // Ollama doesn't provide token counts - estimate based on content length
+    const estimatedPromptTokens = Math.ceil(
+      request.messages.reduce((sum, m) => sum + m.content.length, 0) / 4
+    );
+    const estimatedCompletionTokens = Math.ceil(content.length / 4);
+    const totalTokens = estimatedPromptTokens + estimatedCompletionTokens;
+
+    return {
+      id: `ollama-${Date.now()}`,
+      model: config.model,
+      provider: 'ollama',
+      content,
+      usage: {
+        promptTokens: estimatedPromptTokens,
+        completionTokens: estimatedCompletionTokens,
+        totalTokens,
+      },
+      cost: 0, // Ollama is free (local)
+      finishReason: 'stop',
+    };
+  }
+
+  /**
+   * Call Hugging Face Inference API
+   */
+  private async callHuggingFace(
+    config: ProviderConfig,
+    request: CompletionRequest
+  ): Promise<CompletionResponse> {
+    if (!config.apiKey) {
+      throw new Error('Hugging Face API key required');
+    }
+
+    const hf = new HfInference(config.apiKey);
+
+    // Combine all messages into a single prompt
+    const prompt = request.messages
+      .map(m => `${m.role === 'system' ? 'System' : m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+      .join('\n\n');
+
+    const response = await hf.textGeneration({
+      model: config.model,
+      inputs: prompt,
+      parameters: {
+        max_new_tokens: request.maxTokens ?? config.maxTokens ?? 512,
+        temperature: request.temperature ?? config.temperature ?? 0.7,
+        top_p: request.topP ?? config.topP,
+        return_full_text: false,
+      },
+    });
+
+    const content = response.generated_text;
+
+    // Hugging Face doesn't provide token counts - estimate
+    const estimatedPromptTokens = Math.ceil(prompt.length / 4);
+    const estimatedCompletionTokens = Math.ceil(content.length / 4);
+    const totalTokens = estimatedPromptTokens + estimatedCompletionTokens;
+
+    return {
+      id: `hf-${Date.now()}`,
+      model: config.model,
+      provider: 'huggingface',
+      content,
+      usage: {
+        promptTokens: estimatedPromptTokens,
+        completionTokens: estimatedCompletionTokens,
+        totalTokens,
+      },
+      cost: 0, // Most HF models are free or have minimal costs
+      finishReason: 'stop',
+    };
+  }
+
 
   /**
    * Update provider stats

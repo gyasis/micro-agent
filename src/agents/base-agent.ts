@@ -221,9 +221,14 @@ export abstract class BaseAgent extends EventEmitter {
       maxTokens: options?.maxTokens ?? this.config.maxTokens,
     });
 
+    // Map provider-router usage to base-agent TokenUsage interface
     return {
       content: response.content,
-      usage: response.usage,
+      usage: {
+        input: response.usage.promptTokens,
+        output: response.usage.completionTokens,
+        total: response.usage.totalTokens,
+      },
     };
   }
 

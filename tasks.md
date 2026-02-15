@@ -236,7 +236,7 @@
 
 **Goal**: Load plugins from ralph-plugins.yaml, execute hooks (onBeforeGen, onAfterGen, onTestFail, onSuccess, onBeforeSuccess) at lifecycle stages, handle failures gracefully
 
-**Independent Test**: Install sample plugin (@ralph/prettier), configure to run onAfterGen hook, generate code, verify plugin executes and formats code without blocking main workflow
+**Independent Test**: Install sample plugin (@builder.io/micro-agent-plugin-prettier), configure to run onAfterGen hook, generate code, verify plugin executes and formats code without blocking main workflow
 
 ### Plugin SDK
 
@@ -445,18 +445,18 @@ With multiple developers:
 
 ---
 
-## **Wave 25A: Branding Fixes (Addendum)**
+## **Wave 25A: Branding Fixes (Addendum)** ✅
 
 **Purpose**: Fix 47 naming hallucinations found by adversarial bug hunter
-**Tasks**: 7 | **Completed**: 1/7 (14%)
+**Tasks**: 7 | **Completed**: 7/7 (100%) ✅
 
 - [X] T066 Fix CLI command branding in README.md (11 violations)
-- [ ] T067 Fix CLI commands and imports in quickstart.md (10 violations)
-- [ ] T068 Replace @ralph/* package scope with @builder.io/micro-agent-plugin-* (15 violations)
-- [ ] T069 Fix CLI commands in PRD/README.md (2 violations)
-- [ ] T070 Fix plugin SDK import examples in contracts/plugin-sdk.d.ts (1 violation)
-- [ ] T071 Fix fake package references in spec.md (4 violations)
-- [ ] T072 Fix plugin examples in tasks.md files (2 violations)
+- [X] T067 Fix CLI commands and imports in quickstart.md (11 violations)
+- [X] T068 Replace @ralph/* package scope with @builder.io/micro-agent-plugin-* (12 violations)
+- [X] T069 Fix CLI commands in PRD/README.md (7 violations)
+- [X] T070 Fix plugin SDK import examples in contracts/plugin-sdk.d.ts (2 violations)
+- [X] T071 Fix fake package references in spec.md (included in T068)
+- [X] T072 Fix plugin examples in tasks.md files (included in T068)
 
 ---
 

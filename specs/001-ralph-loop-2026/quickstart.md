@@ -128,7 +128,7 @@ plugins:
       failOnError: false
 
   # npm package plugin
-  - plugin: '@ralph/plugin-slack'
+  - plugin: '@builder.io/micro-agent-plugin-slack'
     enabled: true
     config:
       settings:
@@ -139,7 +139,7 @@ plugins:
         onBudgetExceeded: false
 
   # Disabled plugin
-  - plugin: '@ralph/plugin-analytics'
+  - plugin: '@builder.io/micro-agent-plugin-analytics'
     enabled: false
 ```
 
@@ -187,7 +187,7 @@ module.exports = {
 **TypeScript plugin:**
 
 ```typescript
-import type { RalphPlugin } from 'ralph-loop/plugin-sdk';
+import type { RalphPlugin } from '@builder.io/micro-agent/plugin-sdk';
 
 export const myPlugin: RalphPlugin = {
   name: 'my-typescript-plugin',
@@ -268,7 +268,7 @@ Plugins are isolated from the main Ralph Loop execution:
 
 ```typescript
 // plugins/linting-plugin.ts
-import type { RalphPlugin, PluginContext, GeneratedCode } from 'ralph-loop/plugin-sdk';
+import type { RalphPlugin, PluginContext, GeneratedCode } from '@builder.io/micro-agent/plugin-sdk';
 import { ESLint } from 'eslint';
 
 export const lintingPlugin: RalphPlugin = {
@@ -361,20 +361,20 @@ export const analyticsPlugin: RalphPlugin = {
 ### Scenario 1: Fix Failing Unit Tests
 
 ```bash
-ralph-loop fix src/calculator.ts
+micro-agent --file src/calculator.ts
 
-# Ralph Loop will:
+# Micro Agent will:
 # 1. Read the test failures
-# 2. Analyze the code
-# 3. Generate fix
-# 4. Run tests
+# 2. Analyze the code (Librarian)
+# 3. Generate fix (Artisan)
+# 4. Run tests (Critic)
 # 5. Iterate until tests pass
 ```
 
 ### Scenario 2: Improve Test Coverage
 
 ```bash
-ralph-loop improve-coverage src/utils/
+micro-agent --file src/utils/ --prompt "Improve test coverage to 90%"
 
 # Generates additional tests to reach coverage threshold
 ```
@@ -382,7 +382,7 @@ ralph-loop improve-coverage src/utils/
 ### Scenario 3: Adversarial Testing
 
 ```bash
-ralph-loop chaos src/api/auth.ts
+micro-agent --file src/api/auth.ts --prompt "Run adversarial tests only"
 
 # Runs:
 # - Property-based tests (fast-check)
@@ -489,12 +489,12 @@ plugins:
 
 - Read the [Plugin SDK Documentation](./contracts/plugin-sdk.d.ts)
 - Explore [Example Plugins](../examples/plugins/)
-- Join the [Ralph Loop Community](https://github.com/ralph-loop/ralph)
+- Join the [Micro Agent Community](https://github.com/BuilderIO/micro-agent)
 - Check out [Advanced Configuration](./plan.md)
 
 ---
 
 **Need Help?**
-- GitHub Issues: https://github.com/ralph-loop/ralph/issues
-- Discord: https://discord.gg/ralph-loop
-- Docs: https://ralph-loop.dev/docs
+- GitHub Issues: https://github.com/BuilderIO/micro-agent/issues
+- Discord: https://discord.gg/builderio
+- Docs: See this directory for technical documentation

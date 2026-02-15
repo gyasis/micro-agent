@@ -92,12 +92,12 @@ A developer wants to extend ralph-loop functionality (e.g., auto-generate docume
 
 **Why this priority**: Plugin system enables community growth and customization but isn't critical for MVP. It's a future-proofing feature that can be added post-launch.
 
-**Independent Test**: Can be tested by installing a sample plugin (e.g., @ralph/prettier), configuring it to run onAfterGen hook, generating code, and verifying plugin executes and modifies output (formats code). Delivers extensibility value for power users.
+**Independent Test**: Can be tested by installing a sample plugin (e.g., @builder.io/micro-agent-plugin-prettier), configuring it to run onAfterGen hook, generating code, and verifying plugin executes and modifies output (formats code). Delivers extensibility value for power users.
 
 **Acceptance Scenarios**:
 
-1. **Given** ralph-plugins.yaml with "@ralph/prettier" enabled, **When** code generation completes, **Then** plugin's onAfterGen hook executes, code is auto-formatted, and formatted code is written to file
-2. **Given** "@ralph/security-scan" plugin configured for onBeforeSuccess hook, **When** tests pass, **Then** plugin runs semgrep and snyk scans, and blocks success if critical vulnerabilities found
+1. **Given** ralph-plugins.yaml with "@builder.io/micro-agent-plugin-prettier" enabled, **When** code generation completes, **Then** plugin's onAfterGen hook executes, code is auto-formatted, and formatted code is written to file
+2. **Given** "@builder.io/micro-agent-plugin-security-scan" plugin configured for onBeforeSuccess hook, **When** tests pass, **Then** plugin runs semgrep and snyk scans, and blocks success if critical vulnerabilities found
 3. **Given** developer creates custom DocGenPlugin, **When** ralph-loop succeeds, **Then** plugin's onSuccess hook generates README.md from code comments and test results
 4. **Given** plugin throws error during execution, **When** ralph-loop handles plugin failure, **Then** main workflow continues (plugins don't block core functionality) and error is logged to .ralph/plugin-errors.log
 

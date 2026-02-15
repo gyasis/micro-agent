@@ -53,10 +53,10 @@ Gemini Deep Research output covering:
 micro-agent ./file.ts -t "npm test" -m 20
 ```
 
-### Target State (Ralph Loop 2026)
+### Target State (Micro Agent powered by Ralph Loop 2026)
 ```bash
 # Multi-agent, adversarial, polyglot loop
-ralph-loop ./file.ts \
+micro-agent --file ./file.ts \
   --config ralph.config.yaml \
   --adversarial \
   --models librarian=gemini,artisan=claude,critic=gpt \
@@ -296,30 +296,30 @@ litellm:
 
 ## 🚀 Getting Started (Post-Implementation)
 
-### 1. Install Ralph Loop 2026
+### 1. Install Micro Agent
 ```bash
-npm install -g @builder.io/ralph-loop
+npm install -g @builder.io/micro-agent
 ```
 
 ### 2. Configure API Keys
 ```bash
-ralph-loop config set OPENAI_KEY=<your-key>
-ralph-loop config set ANTHROPIC_KEY=<your-key>
-ralph-loop config set GOOGLE_API_KEY=<your-key>
+# Set API keys in environment or .env file
+export OPENAI_API_KEY=<your-key>
+export ANTHROPIC_API_KEY=<your-key>
+export GOOGLE_API_KEY=<your-key>
 ```
 
 ### 3. Create Config File
 ```bash
-ralph-loop init
-# Creates ralph.config.yaml with defaults
+# Create ralph.config.yaml with your preferred models
+# See quickstart.md for configuration examples
 ```
 
-### 4. Run Ralph Loop
+### 4. Run Micro Agent
 ```bash
-ralph-loop ./src/algorithm.ts \
-  --adversarial \
-  --budget $2.00 \
-  --ui
+micro-agent --file ./src/algorithm.ts \
+  --prompt "Fix all failing tests" \
+  --max-cost 2.00
 ```
 
 ### 5. View Results

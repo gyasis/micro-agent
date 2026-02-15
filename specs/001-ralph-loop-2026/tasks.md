@@ -236,7 +236,7 @@
 
 **Goal**: Load plugins from ralph-plugins.yaml, execute hooks (onBeforeGen, onAfterGen, onTestFail, onSuccess, onBeforeSuccess) at lifecycle stages, handle failures gracefully
 
-**Independent Test**: Install sample plugin (@ralph/prettier), configure to run onAfterGen hook, generate code, verify plugin executes and formats code without blocking main workflow
+**Independent Test**: Install sample plugin (@builder.io/micro-agent-plugin-prettier), configure to run onAfterGen hook, generate code, verify plugin executes and formats code without blocking main workflow
 
 ### Plugin SDK
 

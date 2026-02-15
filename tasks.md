@@ -189,8 +189,8 @@
 
 ### Agent Integration
 
-- [ ] T063 [US2] Integrate MemoryVault query in Artisan agent before code generation in src/agents/artisan/artisan.agent.ts
-- [ ] T064 [US2] Integrate fix recording in state machine completion state after success in src/state-machine/ralph-machine.ts
+- [X] T063 [US2] Integrate MemoryVault query in Artisan agent before code generation in src/agents/artisan/artisan.agent.ts
+- [X] T064 [US2] Integrate fix recording in state machine completion state after success in src/lifecycle/ralph-loop.ts
 
 ### Entropy Detection Integration
 

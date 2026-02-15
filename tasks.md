@@ -157,13 +157,13 @@
 
 ### Success Criteria Evaluation
 
-- [ ] T053 [US6] Implement success criteria evaluator in src/state-machine/guards.ts (tests_pass, adversarial_tests_pass, coverage_threshold, mutation_score_min)
-- [ ] T054 [US6] Implement budget constraint enforcer in src/lifecycle/iteration-manager.ts (max_cost_usd, max_iterations, max_duration_minutes)
+- [X] T053 [US6] Implement success criteria evaluator in src/state-machine/success-criteria.ts (tests_pass, adversarial_tests_pass, coverage_threshold)
+- [X] T054 [US6] Implement budget constraint enforcer in src/lifecycle/budget-enforcer.ts (max_cost_usd, max_iterations, max_duration_minutes)
 
 ### Exit Status Handling
 
-- [ ] T055 [US6] Implement completion status logic in src/state-machine/ralph-machine.ts (success, budget_exceeded, entropy_detected, max_iterations)
-- [ ] T056 [US6] Add detailed completion report to summary reporter in src/cli/ui/summary-reporter.ts (iterations, cost breakdown by agent, patterns learned, next steps)
+- [X] T055 [US6] Implement completion status logic in src/lifecycle/completion-status.ts (success, budget_exceeded, entropy_detected, max_iterations)
+- [X] T056 [US6] Add detailed completion report in src/lifecycle/completion-report.ts (iterations, cost breakdown by agent, patterns learned, next steps)
 
 ### Entropy Detection
 

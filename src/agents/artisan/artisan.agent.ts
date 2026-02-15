@@ -16,6 +16,7 @@ import type {
 } from '../base/agent-context';
 import { promises as fs } from 'fs';
 import path from 'path';
+import type { MemoryVault } from '../../memory/memory-vault';
 
 export interface CodeGenerationRequest {
   objective: string;
@@ -34,12 +35,23 @@ export interface GeneratedCode {
 }
 
 export class ArtisanAgent extends BaseAgent {
+  private memoryVault?: MemoryVault;
+
+  /**
+   * Wire MemoryVault for learning from past errors (T063)
+   */
+  public wireMemoryVault(memoryVault: MemoryVault): void {
+    this.memoryVault = memoryVault;
+    this.logger.info('MemoryVault wired to Artisan agent');
+  }
+
   /**
    * Execute code generation:
    * 1. Analyze context from Librarian
-   * 2. Generate code using Claude
-   * 3. Parse and validate output
-   * 4. Prepare code changes
+   * 2. Query MemoryVault for similar error patterns (T063)
+   * 3. Generate code using Claude with learned solutions
+   * 4. Parse and validate output
+   * 5. Prepare code changes
    */
   protected async onExecute(context: AgentContext): Promise<AgentResult<ArtisanOutput>> {
     this.emitProgress('Starting code generation', {
@@ -52,8 +64,16 @@ export class ArtisanAgent extends BaseAgent {
       const request = this.buildGenerationRequest(context);
       this.emitProgress('Generation request prepared');
 
-      // Step 2: Generate code with Claude
-      const generated = await this.generateCode(request, context);
+      // Step 1.5: Query MemoryVault for similar errors (T063)
+      const learnedSolutions = await this.queryMemoryVault(context);
+      if (learnedSolutions.length > 0) {
+        this.emitProgress('Found learned solutions from MemoryVault', {
+          count: learnedSolutions.length,
+        });
+      }
+
+      // Step 2: Generate code with Claude (including learned solutions)
+      const generated = await this.generateCode(request, context, learnedSolutions);
       this.emitProgress('Code generated', { file: generated.filePath });
 
       // Step 3: Prepare code changes
@@ -99,13 +119,47 @@ export class ArtisanAgent extends BaseAgent {
   }
 
   /**
-   * Generate code using Claude
+   * Query MemoryVault for similar error patterns (T063)
+   */
+  private async queryMemoryVault(context: AgentContext): Promise<Array<{
+    errorCategory: string;
+    solution: string;
+    successRate: number;
+  }>> {
+    if (!this.memoryVault) {
+      return [];
+    }
+
+    try {
+      // Query for previous test failures related to this objective
+      const objective = context.objective.toLowerCase();
+
+      const results = await this.memoryVault.searchSimilarErrors(objective, {
+        limit: 3,
+        minSimilarity: 0.7,
+        language: context.language || 'typescript',
+      });
+
+      this.logger.info('MemoryVault query results', {
+        resultsFound: results.length,
+      });
+
+      return results;
+    } catch (error) {
+      this.logger.warn('Failed to query MemoryVault', error);
+      return [];
+    }
+  }
+
+  /**
+   * Generate code using Claude with learned solutions (T063)
    */
   private async generateCode(
     request: CodeGenerationRequest,
-    context: AgentContext
+    context: AgentContext,
+    learnedSolutions: Array<{ errorCategory: string; solution: string; successRate: number }> = []
   ): Promise<GeneratedCode> {
-    const prompt = this.buildCodePrompt(request, context);
+    const prompt = this.buildCodePrompt(request, context, learnedSolutions);
 
     try {
       const response = await this.callLLM(prompt, {
@@ -122,11 +176,12 @@ export class ArtisanAgent extends BaseAgent {
   }
 
   /**
-   * Build code generation prompt
+   * Build code generation prompt with learned solutions (T063)
    */
   private buildCodePrompt(
     request: CodeGenerationRequest,
-    context: AgentContext
+    context: AgentContext,
+    learnedSolutions: Array<{ errorCategory: string; solution: string; successRate: number }> = []
   ): string {
     const contextSection = this.formatContextFiles(request.context);
     const librarianSummary = context.librarianContext?.contextSummary || 'No context summary available';
@@ -136,6 +191,16 @@ Test framework: ${request.testFramework}`;
 
     const constraintsSection = request.constraints
       ? `\nConstraints:\n${request.constraints.map(c => `- ${c}`).join('\n')}`
+      : '';
+
+    // T063: Include learned solutions from MemoryVault
+    const learnedSection = learnedSolutions.length > 0
+      ? `\nLearned solutions from past iterations:
+${learnedSolutions.map((sol, i) =>
+  `${i + 1}. ${sol.errorCategory}: ${sol.solution} (success rate: ${(sol.successRate * 100).toFixed(0)}%)`
+).join('\n')}
+
+IMPORTANT: Apply these learned solutions to avoid repeating past mistakes.`
       : '';
 
     return `Objective: ${request.objective}
@@ -150,6 +215,7 @@ ${testInfo}
 Relevant files:
 ${contextSection}
 ${constraintsSection}
+${learnedSection}
 
 Generate production-quality code to achieve the objective. Follow these requirements:
 1. Write clean, maintainable, well-documented code
@@ -157,6 +223,7 @@ Generate production-quality code to achieve the objective. Follow these requirem
 3. Follow TypeScript/JavaScript best practices
 4. Ensure code will pass the specified tests
 5. Use existing patterns from the codebase
+${learnedSolutions.length > 0 ? '6. Apply learned solutions listed above to avoid past mistakes' : ''}
 
 Output format:
 \`\`\`typescript

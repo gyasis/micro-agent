@@ -24,6 +24,7 @@ import type { PluginRegistryEntry } from '../plugins/sdk/plugin.interface';
 import { StatePersister } from './state-persister';
 import { createLogger } from '../utils/logger';
 import type { OrchestrationResult } from '../state-machine/ralph-orchestrator';
+import type { MemoryVault } from '../memory/memory-vault';
 
 const logger = createLogger();
 
@@ -58,6 +59,8 @@ export class RalphLoop {
   private orchestrator: RalphOrchestrator;
   private statePersister: StatePersister;
   private config: RalphLoopConfig;
+  private memoryVault?: MemoryVault;
+  private previousErrors: string[] = []; // Track errors from previous iterations
 
   constructor(config: RalphLoopConfig) {
     this.config = config;
@@ -109,6 +112,14 @@ export class RalphLoop {
         this.orchestrator.wireChaosAgent(agent);
         break;
     }
+  }
+
+  /**
+   * Wire MemoryVault for error learning and fix recording (T063, T064)
+   */
+  public wireMemoryVault(memoryVault: MemoryVault): void {
+    this.memoryVault = memoryVault;
+    logger.info('MemoryVault wired to Ralph Loop');
   }
 
   /**
@@ -192,6 +203,15 @@ export class RalphLoop {
           if (testsPassed) {
             logger.info('✅ Tests passed!');
 
+            // T064: Record successful fix to MemoryVault
+            if (this.memoryVault && this.previousErrors.length > 0) {
+              await this.recordSuccessfulFix(
+                this.previousErrors,
+                result.context.artisanOutput,
+                iteration
+              );
+            }
+
             // Check if adversarial tests ran
             const adversarialResults = result.context.adversarialResults;
             if (adversarialResults) {
@@ -212,6 +232,10 @@ export class RalphLoop {
 
             // Track error for entropy detection (T057)
             const errorSignature = this.extractErrorSignature(testResults);
+
+            // Store error for fix recording (T064)
+            this.previousErrors.push(errorSignature);
+
             const entropyDetected = this.iterationManager.trackError(errorSignature);
 
             if (entropyDetected) {
@@ -345,6 +369,84 @@ export class RalphLoop {
     const baseCost = 0.01; // $0.01 base per iteration
     const durationCost = (result.duration / 1000) * 0.001; // $0.001 per second
     return baseCost + durationCost;
+  }
+
+  /**
+   * Record successful fix to MemoryVault (T064)
+   */
+  private async recordSuccessfulFix(
+    errorSignatures: string[],
+    artisanOutput: any,
+    iteration: number
+  ): Promise<void> {
+    if (!this.memoryVault) {
+      return;
+    }
+
+    logger.info('📝 Recording successful fix to MemoryVault', {
+      errorCount: errorSignatures.length,
+      iteration,
+    });
+
+    try {
+      // Extract solution from artisan output
+      const solution = artisanOutput?.reasoning || artisanOutput?.code || 'Code fix applied';
+
+      // Record fix for each error that was resolved
+      for (const errorSignature of errorSignatures) {
+        await this.memoryVault.recordFix({
+          errorCategory: this.categorizeError(errorSignature),
+          errorSignature,
+          solution,
+          successRate: 1.0, // First success
+          metadata: {
+            iteration,
+            sessionId: this.config.sessionId,
+            objective: this.config.objective,
+            targetFile: this.config.targetFile,
+          },
+        });
+      }
+
+      logger.info('✅ Successful fix recorded to MemoryVault', {
+        errorsResolved: errorSignatures.length,
+      });
+
+      // Clear previous errors after recording
+      this.previousErrors = [];
+    } catch (error) {
+      logger.error('Failed to record fix to MemoryVault', error);
+      // Don't throw - this is non-critical logging
+    }
+  }
+
+  /**
+   * Categorize error for MemoryVault storage (T064)
+   */
+  private categorizeError(errorSignature: string): string {
+    const lower = errorSignature.toLowerCase();
+
+    if (lower.includes('syntax') || lower.includes('parse')) {
+      return 'SYNTAX';
+    }
+
+    if (lower.includes('assertion') || lower.includes('expected')) {
+      return 'LOGIC';
+    }
+
+    if (lower.includes('module not found') || lower.includes('import')) {
+      return 'ENVIRONMENT';
+    }
+
+    if (lower.includes('timeout') || lower.includes('memory')) {
+      return 'PERFORMANCE';
+    }
+
+    if (lower.includes('flaky') || lower.includes('intermittent')) {
+      return 'FLAKY';
+    }
+
+    return 'UNKNOWN';
   }
 
   /**

@@ -1,8 +1,7 @@
-#!/usr/bin/env node
 /**
- * Micro Agent CLI Entry Point (Ralph Loop Engine)
+ * Micro Agent CLI Entry Point (Improved Loop Technique)
  *
- * Command-line interface for Micro Agent powered by Ralph Loop 2026 methodology.
+ * Command-line interface for Micro Agent with enhanced iteration methodology.
  * Provides commands for running iterations, checking config, and managing sessions.
  *
  * @module cli/ralph-loop

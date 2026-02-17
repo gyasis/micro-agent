@@ -7,12 +7,16 @@
  * @module cli/ralph-loop
  */
 
+import { config } from 'dotenv';
 import { Command } from 'commander';
 import { runCommand } from './commands/run';
 import { configCommand } from './commands/config';
 import { statusCommand } from './commands/status';
 import { resetCommand } from './commands/reset';
 import { createLogger } from '../utils/logger';
+
+// Load environment variables from .env file in working directory
+config({ path: process.cwd() + '/.env' });
 
 const logger = createLogger();
 

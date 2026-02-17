@@ -18,7 +18,7 @@ export function getDefaults(): RalphConfig {
     models: {
       librarian: {
         provider: 'google',
-        model: 'gemini-2.0-flash-exp',
+        model: 'gemini-2.5-flash', // Stable workhorse model (Feb 2026)
         temperature: 0.3, // Low temp for context analysis
       },
       artisan: {

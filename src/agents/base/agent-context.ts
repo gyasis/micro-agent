@@ -389,7 +389,8 @@ export function isBudgetExceeded(context: AgentContext): boolean {
   const elapsed = (Date.now() - context.budget.startTime.getTime()) / (1000 * 60);
   const timeExceeded = elapsed >= context.budget.maxDurationMinutes;
 
-  const iterationExceeded = context.iteration.iteration >= context.iteration.maxIterations;
+  // Note: Iteration count is checked by the while loop condition, not here
+  // Checking it here causes false positives (e.g., iteration 1 with maxIterations=1)
 
-  return costExceeded || timeExceeded || iterationExceeded;
+  return costExceeded || timeExceeded;
 }

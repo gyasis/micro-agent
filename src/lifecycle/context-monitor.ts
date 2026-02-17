@@ -40,19 +40,22 @@ export interface ContextWarning {
  * Context window limits for supported models (tokens)
  */
 export const DEFAULT_CONTEXT_LIMITS: ModelContextLimits = {
-  // Claude models
-  'claude-sonnet-4.5': 200_000,
+  // Claude models (2026)
+  'claude-sonnet-4-20250514': 200_000,
   'claude-opus-4': 200_000,
   'claude-haiku-4': 200_000,
 
-  // Gemini models
-  'gemini-2.0-pro': 1_000_000,
-  'gemini-1.5-pro': 1_000_000,
-  'gemini-1.5-flash': 1_000_000,
+  // Gemini models (2026)
+  'gemini-3-pro-preview': 1_000_000,
+  'gemini-3-flash-preview': 1_000_000,
+  'gemini-2.5-pro': 1_000_000,
+  'gemini-2.5-flash': 1_000_000,
+  'gemini-2.5-flash-latest': 1_000_000,
+  'gemini-2.0-flash': 1_000_000, // Legacy (deprecated March 2026)
 
-  // GPT models
-  'gpt-4.1-mini': 128_000,
-  'gpt-4': 128_000,
+  // GPT models (2026)
+  'gpt-4o': 128_000,
+  'gpt-4o-mini': 128_000,
   'gpt-4-turbo': 128_000,
   'o1-preview': 128_000,
 

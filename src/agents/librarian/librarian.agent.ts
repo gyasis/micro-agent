@@ -326,7 +326,8 @@ export class LibrarianAgent extends BaseAgent {
 
       return { rankedFiles, usage: response.usage };
     } catch (error) {
-      this.logger.warn('Failed to rank files with LLM, using distance-based ranking', error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to rank files with LLM: ${errorMsg}. Using distance-based ranking fallback.`);
       const rankedFiles = this.fallbackRanking(fileContexts, dependencyGraph);
       return { rankedFiles, usage: null }; // No LLM usage on fallback
     }
@@ -483,7 +484,8 @@ Provide a concise summary (2-3 paragraphs) of the codebase context relevant to t
 
       return { summary: response.content, usage: response.usage };
     } catch (error) {
-      this.logger.warn('Failed to generate context summary', error);
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      this.logger.warn(`Failed to generate context summary: ${errorMsg}. Using fallback summary.`);
       return {
         summary: `Codebase analysis: ${topFiles.length} relevant files identified.`,
         usage: null, // No LLM usage on fallback

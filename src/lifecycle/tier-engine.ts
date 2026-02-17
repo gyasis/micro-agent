@@ -16,6 +16,7 @@ export interface TierEngineContext {
   runId: string;
   tierConfig: TierConfig;
   tierIndex: number;
+  totalTiers: number;
   context: AgentContext;
   agents: any;
   testRunner: any;
@@ -24,14 +25,15 @@ export interface TierEngineContext {
 
 /**
  * Run a single tier's iteration loop.
- * Calls runSimpleIteration up to tier.maxIterations times.
+ * Calls runSimpleIteration (or runFullIteration for 'full' mode tiers) up to tier.maxIterations times.
  * Records each attempt, checks budget, returns TierRunResult.
  */
 export async function runTier(
   tierCtx: TierEngineContext,
   runSimpleIteration: (ctx: AgentContext, agents: any, testRunner: any) => Promise<{ context: AgentContext; success: boolean }>,
+  runFullIteration?: (ctx: AgentContext, agents: any, testRunner: any) => Promise<{ context: AgentContext; success: boolean }>,
 ): Promise<{ result: TierRunResult; finalContext: AgentContext }> {
-  const { runId, tierConfig, tierIndex, db } = tierCtx;
+  const { runId, tierConfig, tierIndex, totalTiers, db } = tierCtx;
   let context = tierCtx.context;
 
   const records: TierAttemptRecord[] = [];
@@ -39,7 +41,7 @@ export async function runTier(
   let exitReason: TierRunResult['exitReason'] = 'iterations_exhausted';
   let totalCostUsd = 0;
 
-  logger.info(`[tier-engine] Starting tier ${tierIndex + 1}: "${tierConfig.name}" (mode=${tierConfig.mode}, maxIter=${tierConfig.maxIterations})`);
+  logger.info(`\n━━━━ ▶ Tier ${tierIndex + 1}/${totalTiers}: ${tierConfig.name} [${tierConfig.mode}, ${tierConfig.models.artisan}] ━━━━`);
 
   for (let iteration = 1; iteration <= tierConfig.maxIterations; iteration++) {
     if (isBudgetExceeded(context)) {
@@ -50,9 +52,11 @@ export async function runTier(
 
     const iterStart = Date.now();
 
+    const runner = (tierConfig.mode === 'full' && runFullIteration) ? runFullIteration : runSimpleIteration;
+
     let iterResult: { context: AgentContext; success: boolean };
     try {
-      iterResult = await runSimpleIteration(context, tierCtx.agents, tierCtx.testRunner);
+      iterResult = await runner(context, tierCtx.agents, tierCtx.testRunner);
     } catch (err: any) {
       logger.error(`[tier-engine] Provider error on tier "${tierConfig.name}" iter ${iteration}: ${err.message}`);
       exitReason = 'provider_error';

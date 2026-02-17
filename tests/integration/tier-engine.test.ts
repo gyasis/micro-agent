@@ -75,7 +75,7 @@ describe('2-tier escalation flow integration', () => {
     const ctx1 = makeMinimalContext();
 
     const { result: tier1Result, finalContext: finalCtx1 } = await runTier(
-      { runId: 'run-1', tierConfig: tier1Config, tierIndex: 0, context: ctx1, agents: {}, testRunner: {}, db },
+      { runId: 'run-1', tierConfig: tier1Config, tierIndex: 0, totalTiers: 2, context: ctx1, agents: {}, testRunner: {}, db },
       failingRunner,
     );
 
@@ -101,7 +101,7 @@ describe('2-tier escalation flow integration', () => {
     const tier2Config = makeTierConfig({ name: 'cloud-haiku', maxIterations: 5 });
 
     const { result: tier2Result } = await runTier(
-      { runId: 'run-1', tierConfig: tier2Config, tierIndex: 1, context: ctx2, agents: {}, testRunner: {}, db },
+      { runId: 'run-1', tierConfig: tier2Config, tierIndex: 1, totalTiers: 2, context: ctx2, agents: {}, testRunner: {}, db },
       successRunner,
     );
 
@@ -126,7 +126,7 @@ describe('2-tier escalation flow integration', () => {
     const neverCalledRunner = vi.fn(async () => ({ context: budgetExhaustedCtx, success: false }));
 
     const { result } = await runTier(
-      { runId: 'run-2', tierConfig: makeTierConfig(), tierIndex: 0, context: budgetExhaustedCtx, agents: {}, testRunner: {}, db: null },
+      { runId: 'run-2', tierConfig: makeTierConfig(), tierIndex: 0, totalTiers: 1, context: budgetExhaustedCtx, agents: {}, testRunner: {}, db: null },
       neverCalledRunner,
     );
 

@@ -67,20 +67,22 @@ export class TestRunner {
         testCommand: options.testCommand,
       });
 
-      // Step 1: Detect framework if command not provided
+      // Step 1: Detect framework from working directory (always run for parser selection)
       let testCommand = options.testCommand;
-      let framework;
+      const detection = await detectFramework(options.workingDirectory);
+      let framework = detection.framework;
 
       if (!testCommand) {
-        this.logger?.info('Detecting test framework...');
-        const detection = await detectFramework(options.workingDirectory);
-        framework = detection.framework;
         testCommand = detection.command || getDefaultTestCommand(framework);
-
         this.logger?.info('Framework detected', {
           framework,
           confidence: detection.confidence,
           command: testCommand,
+        });
+      } else {
+        this.logger?.info('Using provided test command', {
+          command: testCommand,
+          detectedFramework: framework,
         });
       }
 

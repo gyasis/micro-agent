@@ -150,7 +150,7 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
         // Check if context reset needed
         if (iterationManager.shouldResetContext()) {
           logger.info('Context reset triggered');
-          await resetContext(agents, contextMonitor);
+          await resetContext(agents, contextMonitor, context.sessionId);
         }
 
         // Progress update
@@ -395,8 +395,8 @@ async function runSingleIteration(
 /**
  * Reset agent contexts
  */
-async function resetContext(agents: any, contextMonitor: ContextMonitor): Promise<void> {
-  const resetter = new SessionResetter();
+async function resetContext(agents: any, contextMonitor: ContextMonitor, sessionId: string): Promise<void> {
+  const resetter = new SessionResetter({ sessionId, verbose: false });
 
   await resetter.reset({
     librarian: agents.librarian,

@@ -140,3 +140,80 @@ export interface EscalationEvent {
   };
   failureSummary: FailureSummary;
 }
+
+// ============================================================
+// Multi-Tier Escalation Types (003-tiered-escalation)
+// ============================================================
+
+export interface TierModels {
+  artisan: string;
+  librarian?: string;
+  critic?: string;
+}
+
+export interface TierConfig {
+  name: string;
+  mode: 'simple' | 'full';
+  maxIterations: number;
+  models: TierModels;
+}
+
+export interface TierGlobal {
+  auditDbPath?: string;
+  maxTotalCostUsd?: number;
+  maxTotalDurationMinutes?: number;
+}
+
+export interface TierEscalationConfig {
+  tiers: TierConfig[];
+  global?: TierGlobal;
+}
+
+export interface TierAttemptRecord {
+  runId: string;
+  tierIndex: number;
+  tierName: string;
+  tierMode: 'simple' | 'full';
+  modelArtisan: string;
+  modelLibrarian: string | null;
+  modelCritic: string | null;
+  iteration: number;
+  codeChangeSummary: string;
+  testStatus: 'passed' | 'failed' | 'error';
+  failedTests: string[];
+  errorMessages: string[];
+  costUsd: number;
+  durationMs: number;
+  timestamp: string;
+}
+
+export interface RunMetadataRow {
+  runId: string;
+  objective: string;
+  workingDirectory: string;
+  testCommand: string;
+  tierConfigPath: string;
+  startedAt: string;
+  completedAt?: string;
+  outcome?: 'success' | 'failed' | 'budget_exhausted' | 'in_progress';
+  resolvedTierName?: string;
+  resolvedIteration?: number;
+}
+
+export interface AccumulatedFailureSummary {
+  naturalLanguageSummary: string;
+  totalIterationsAcrossTiers: number;
+  totalCostUsdAcrossTiers: number;
+  allUniqueErrorSignatures: string[];
+  lastFailedTests: string[];
+}
+
+export interface TierRunResult {
+  tierName: string;
+  tierIndex: number;
+  success: boolean;
+  iterationsRan: number;
+  totalCostUsd: number;
+  records: TierAttemptRecord[];
+  exitReason: 'success' | 'iterations_exhausted' | 'budget_exhausted' | 'provider_error';
+}

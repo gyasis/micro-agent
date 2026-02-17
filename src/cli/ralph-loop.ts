@@ -51,6 +51,7 @@ program
   .option('--simple [n]', 'Run in simple mode (Artisan+Tests only) for N iterations before escalating to full mode (default: 5)', '5')
   .option('--no-escalate', 'Disable auto-escalation to full mode — simple mode exits with failure if iterations exhausted')
   .option('--full', 'Skip simple mode — run full pipeline (Librarian→Artisan→Critic→Tests) from iteration 1')
+  .option('--tier-config <path>', 'Path to JSON tier configuration file — enables N-tier escalation mode')
   .action(async (target, options) => {
     try {
       await runCommand(target, options);

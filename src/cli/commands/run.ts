@@ -55,6 +55,7 @@ export interface RunOptions {
   simpleIterations?: string;  // --simple N (default "5")
   noEscalate?: boolean;       // --no-escalate flag
   fullMode?: boolean;         // --full flag
+  tierConfig?: string;        // --tier-config <path>
 }
 
 /**

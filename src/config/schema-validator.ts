@@ -125,6 +125,7 @@ export const RalphConfigSchema = z.object({
   memory: MemoryConfigSchema.optional(),
   plugins: PluginsConfigSchema,
   sandbox: SandboxConfigSchema.optional(),
+  tierConfigFile: z.string().optional(),
 });
 
 export type RalphConfig = z.infer<typeof RalphConfigSchema>;

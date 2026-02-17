@@ -16,8 +16,8 @@
 
 **Purpose**: Install new dependency and create shared type definitions that all waves depend on.
 
-- [ ] T001 Install `better-sqlite3` and `@types/better-sqlite3` — add to `package.json` dependencies and devDependencies via `npm install better-sqlite3 && npm install -D @types/better-sqlite3`
-- [ ] T002 Create `src/lifecycle/types.ts` with shared interfaces: `TierAttemptRecord`, `TierRunResult`, `RunMetadataRow`, `AccumulatedFailureSummary` — field definitions from `specs/003-tiered-escalation/data-model.md`
+- [x] T001 Install `better-sqlite3` and `@types/better-sqlite3` — add to `package.json` dependencies and devDependencies via `npm install better-sqlite3 && npm install -D @types/better-sqlite3`
+- [x] T002 Create `src/lifecycle/types.ts` with shared interfaces: `TierAttemptRecord`, `TierRunResult`, `RunMetadataRow`, `AccumulatedFailureSummary` — field definitions from `specs/003-tiered-escalation/data-model.md`
 
 ---
 
@@ -27,10 +27,10 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete.
 
-- [ ] T003 Create Zod schemas `TierModelsSchema`, `TierConfigSchema`, `TierEscalationConfigSchema` in `src/lifecycle/tier-config.ts` — schema exactly as specified in `specs/003-tiered-escalation/contracts/tier-config-schema.md` and `specs/003-tiered-escalation/research.md` Decision 2
-- [ ] T004 Implement `loadTierConfig(filePath: string): TierEscalationConfig` and `validateTierConfig(config): string[]` in `src/lifecycle/tier-config.ts` — reads JSON file, runs Zod parse, returns typed config or array of error strings; `validateTierConfig` returns ALL errors (not just first) so startup can report them all at once (FR-012)
-- [ ] T005 [P] Add `tierConfig?: string` field to `RunOptions` interface and register `--tier-config <path>` CLI flag in `src/ralph-loop.ts` — follows existing commander option registration pattern
-- [ ] T006 [P] Add `tierConfigFile?: string` to YAML config schema in `src/config/` (whichever file defines the config type) so that `micro-agent.yml` entries are respected as a fallback when `--tier-config` flag is absent
+- [x] T003 Create Zod schemas `TierModelsSchema`, `TierConfigSchema`, `TierEscalationConfigSchema` in `src/lifecycle/tier-config.ts` — schema exactly as specified in `specs/003-tiered-escalation/contracts/tier-config-schema.md` and `specs/003-tiered-escalation/research.md` Decision 2
+- [x] T004 Implement `loadTierConfig(filePath: string): TierEscalationConfig` and `validateTierConfig(config): string[]` in `src/lifecycle/tier-config.ts` — reads JSON file, runs Zod parse, returns typed config or array of error strings; `validateTierConfig` returns ALL errors (not just first) so startup can report them all at once (FR-012)
+- [x] T005 [P] Add `tierConfig?: string` field to `RunOptions` interface and register `--tier-config <path>` CLI flag in `src/ralph-loop.ts` — follows existing commander option registration pattern
+- [x] T006 [P] Add `tierConfigFile?: string` to YAML config schema in `src/config/` (whichever file defines the config type) so that `micro-agent.yml` entries are respected as a fallback when `--tier-config` flag is absent
 
 **Checkpoint**: Config can be loaded, validated, and passed to runCommand — user story implementation can now begin.
 
@@ -42,12 +42,12 @@
 
 **Independent Test Criteria**: Configure a single-tier local config (`ollama/codellama`, mode=simple, maxIterations=5). Run against a known-fixable bug. Confirm: (1) startup banner lists the tier, (2) per-iteration output shows artisan changes + test results, (3) success stops after first passing iteration, (4) final report shows cost=$0.00 and audit path. Run `sqlite3 .micro-agent/audit.db "SELECT * FROM tier_attempts"` and confirm rows written.
 
-- [ ] T007 [US1] Create `runTier(tier, tierIndex, context, agents, testRunner, db, runId)` in `src/lifecycle/tier-engine.ts` — implements the simple-mode iteration loop: calls `runSimpleIteration()` (from `src/cli/commands/run.ts`) up to `tier.maxIterations` times, records each iteration into `TierAttemptRecord[]`, checks `isBudgetExceeded()` after each iteration, exits loop on success or budget exhaustion, returns `TierRunResult` with `exitReason: 'success' | 'iterations_exhausted' | 'budget_exhausted' | 'provider_error'`
+- [x] T007 [US1] Create `runTier(tier, tierIndex, context, agents, testRunner, db, runId)` in `src/lifecycle/tier-engine.ts` — implements the simple-mode iteration loop: calls `runSimpleIteration()` (from `src/cli/commands/run.ts`) up to `tier.maxIterations` times, records each iteration into `TierAttemptRecord[]`, checks `isBudgetExceeded()` after each iteration, exits loop on success or budget exhaustion, returns `TierRunResult` with `exitReason: 'success' | 'iterations_exhausted' | 'budget_exhausted' | 'provider_error'`
 - [ ] T008 [US1] Wire tier engine into `runCommand()` in `src/cli/commands/run.ts` — detect `options.tierConfig ?? config.tierConfigFile`; if present: call `loadTierConfig()`, call `validateTierConfig()` and exit with all errors if invalid (before any LLM call), then enter tier loop; if absent: fall through to existing simple/full path unchanged
 - [ ] T009 [US1] Add startup banner in `src/cli/commands/run.ts` when tier config is active — print tier plan table matching `contracts/cli-interface.md` "Startup" format: tier index, name, mode, model, max iterations
 - [ ] T010 [US1] Add per-tier header output at start of each tier in `src/lifecycle/tier-engine.ts` — print `━━━━ ▶ Tier N/total: <name> [mode, model] ━━━━` divider matching `contracts/cli-interface.md` format
 - [ ] T011 [US1] Add final report for single-tier outcome in `src/cli/commands/run.ts` — per-tier row table (name, mode, iterations, cost, status), total line, audit path + run ID, SQLite query hint on failure — matching all three report formats in `contracts/cli-interface.md`
-- [ ] T012 [P] [US1] Write unit tests for `loadTierConfig()` and `validateTierConfig()` in `tests/unit/lifecycle/tier-config.test.ts`:
+- [x] T012 [P] [US1] Write unit tests for `loadTierConfig()` and `validateTierConfig()` in `tests/unit/lifecycle/tier-config.test.ts`:
   - Valid 3-tier config loads and parses correctly
   - Config with missing `artisan` model fails validation with descriptive error
   - Config with `mode` not in `['simple','full']` fails validation
@@ -65,7 +65,7 @@
 
 **Independent Test Criteria**: Configure 3 tiers (local ollama → claude-haiku simple → claude-sonnet full). Run against a bug that requires Tier 2 to solve. Confirm: (1) Tier 1 runs 5 iterations, (2) escalation event is logged with summary preview, (3) Tier 2 receives `escalationContext` containing "TIER 1 FAILURES" header, (4) Tier 2 solves it in iteration 2, (5) Tier 3 is never invoked, (6) final report shows Tier 3 as "— (not reached)".
 
-- [ ] T013 [US2] Create `buildAccumulatedSummary(priorResults: TierRunResult[]): AccumulatedFailureSummary` in `src/lifecycle/tier-accumulator.ts` — concatenates each prior tier's records into natural-language blocks with `=== TIER N FAILURES: <name> (K iterations) ===` headers; deduplicates error signatures across all tiers; caps total at 4000 characters by truncating oldest tier history first with `[truncated]` marker; includes total-across-tiers footer line
+- [x] T013 [US2] Create `buildAccumulatedSummary(priorResults: TierRunResult[]): AccumulatedFailureSummary` in `src/lifecycle/tier-accumulator.ts` — concatenates each prior tier's records into natural-language blocks with `=== TIER N FAILURES: <name> (K iterations) ===` headers; deduplicates error signatures across all tiers; caps total at 4000 characters by truncating oldest tier history first with `[truncated]` marker; includes total-across-tiers footer line
 - [ ] T014 [P] [US2] Create `withTierEscalationContext(context: AgentContext, summary: AccumulatedFailureSummary): AgentContext` in `src/lifecycle/tier-accumulator.ts` — calls existing `withEscalationContext(context, summary.naturalLanguageSummary)` from `src/agents/base/agent-context.ts`; returns new context without mutating original
 - [ ] T015 [US2] Extend `runTier()` in `src/lifecycle/tier-engine.ts` to support `full` mode tiers — when `tier.mode === 'full'`: calls `runSingleIteration()` (Librarian + Artisan + Critic + Tests) instead of `runSimpleIteration()`; Librarian receives `context.escalationContext` which was injected before this tier started
 - [ ] T016 [US2] Add multi-tier escalation loop in `runCommand()` in `src/cli/commands/run.ts` — after each tier's `TierRunResult`:
@@ -75,13 +75,13 @@
   - If last tier and `iterations_exhausted`: record full failure
 - [ ] T017 [US2] Add escalation event log in `src/cli/commands/run.ts` between tiers — print: tier failure summary, escalation target tier name, count of prior iterations carried forward — matching `contracts/cli-interface.md` "Tier Escalation Event" format
 - [ ] T018 [P] [US2] Update final report in `src/cli/commands/run.ts` for multi-tier outcomes — all three report scenarios (success mid-tier, all-failed, budget-stopped) from `contracts/cli-interface.md`; "— (not reached)" for skipped tiers
-- [ ] T019 [P] [US2] Write unit tests for `buildAccumulatedSummary()` in `tests/unit/lifecycle/tier-accumulator.test.ts`:
+- [x] T019 [P] [US2] Write unit tests for `buildAccumulatedSummary()` in `tests/unit/lifecycle/tier-accumulator.test.ts`:
   - Single prior tier: header + history in output
   - Two prior tiers: both headers present, combined unique error signatures
   - Truncation at 4000 chars: oldest tier truncated, `[truncated]` marker present, newest tier preserved
   - Zero prior tiers: returns empty summary (no crash)
   - `withTierEscalationContext()` returns new context with `escalationContext` set; original context unchanged
-- [ ] T020 [US2] Write integration test for 2-tier escalation flow in `tests/integration/tier-engine.test.ts`:
+- [x] T020 [US2] Write integration test for 2-tier escalation flow in `tests/integration/tier-engine.test.ts`:
   - Mock tier 1 artisan to fail `maxIterations` times; confirm `TierRunResult.exitReason === 'iterations_exhausted'`
   - Confirm `buildAccumulatedSummary` output contains "TIER 1 FAILURES" header
   - Confirm tier 2 context has `escalationContext` set before it runs
@@ -98,14 +98,14 @@
 
 **Independent Test Criteria**: Run the agent with a 2-tier config against an intentionally unsolvable problem. After all tiers exhaust, run `sqlite3 .micro-agent/audit.db` and confirm: (1) `run_metadata` has one row with `outcome='failed'`, (2) `tier_attempts` has one row per iteration for each tier, (3) `failed_tests` and `error_messages` are JSON arrays, (4) `cost_usd=0.0` for Ollama rows. Run again — confirm second run adds new rows without overwriting first.
 
-- [ ] T021 [US3] Create `openAuditDatabase(dbPath: string): Database` in `src/lifecycle/tier-db.ts` — creates directory if missing, opens SQLite file with `better-sqlite3`, runs DDL from `specs/003-tiered-escalation/contracts/sqlite-schema.md` (both `CREATE TABLE IF NOT EXISTS` statements and all three indexes); returns database handle
+- [x] T021 [US3] Create `openAuditDatabase(dbPath: string): Database` in `src/lifecycle/tier-db.ts` — creates directory if missing, opens SQLite file with `better-sqlite3`, runs DDL from `specs/003-tiered-escalation/contracts/sqlite-schema.md` (both `CREATE TABLE IF NOT EXISTS` statements and all three indexes); returns database handle
 - [ ] T022 [US3] Create `writeAttemptRecord(db: Database, record: TierAttemptRecord): void` in `src/lifecycle/tier-db.ts` — prepared `INSERT INTO tier_attempts (...)` statement with all columns; `failedTests` and `errorMessages` serialized as `JSON.stringify()`; entire call wrapped in `try/catch`; on error: `logger.warn('[audit] DB write failed: ...')` and return (never throw)
 - [ ] T023 [P] [US3] Create `writeRunMetadata(db: Database, metadata: RunMetadataRow): void` and `updateRunMetadata(db: Database, runId: string, updates: Partial<RunMetadataRow>): void` in `src/lifecycle/tier-db.ts` — `writeRunMetadata` does `INSERT INTO run_metadata`; `updateRunMetadata` does `UPDATE run_metadata SET ... WHERE run_id = ?`; both wrapped in `try/catch` with `logger.warn` on failure
 - [ ] T024 [P] [US3] Create `closeAuditDatabase(db: Database): void` in `src/lifecycle/tier-db.ts` — calls `db.close()` in `try/catch`; logs warning on failure but never throws
 - [ ] T025 [US3] Wire DB writes into `runTier()` in `src/lifecycle/tier-engine.ts` — after each iteration completes, call `writeAttemptRecord(db, record)` with all fields populated: `runId`, `tierIndex`, `tierName`, `tierMode`, `modelArtisan`, `modelLibrarian` (null for simple mode), `modelCritic` (null for simple mode), `iteration`, `codeChangeSummary`, `testStatus`, `failedTests`, `errorMessages`, `costUsd`, `durationMs`, `timestamp` (ISO 8601 UTC)
 - [ ] T026 [US3] Wire run metadata into `runCommand()` in `src/cli/commands/run.ts` — generate `runId = uuidv4()` at run start; call `openAuditDatabase(resolvedDbPath)` where `resolvedDbPath` is `global.auditDbPath` resolved relative to `options.workingDirectory`; call `writeRunMetadata()` with `outcome='in_progress'`; after all tiers complete, call `updateRunMetadata()` with final `outcome`, `completedAt`, `resolvedTierName`, `resolvedIteration`; call `closeAuditDatabase()` in a `finally` block
 - [ ] T027 [US3] Show audit log path and run ID in final report in `src/cli/commands/run.ts` — `Audit: <path>  (run: <runId[:8]>)`; when all tiers fail, also print the SQLite query hint: `sqlite3 <path> "SELECT * FROM tier_attempts WHERE run_id='<runId>' ORDER BY tier_index, iteration;"`
-- [ ] T028 [P] [US3] Write unit tests for `tier-db.ts` in `tests/unit/lifecycle/tier-db.test.ts` (use in-memory `:memory:` path for speed):
+- [x] T028 [P] [US3] Write unit tests for `tier-db.ts` in `tests/unit/lifecycle/tier-db.test.ts` (use in-memory `:memory:` path for speed):
   - `openAuditDatabase(':memory:')` creates both tables and all indexes without error
   - `openAuditDatabase(':memory:')` is idempotent (calling twice doesn't throw)
   - `writeAttemptRecord()` inserts one row and it is readable via SELECT

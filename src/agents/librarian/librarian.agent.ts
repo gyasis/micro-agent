@@ -65,11 +65,12 @@ export class LibrarianAgent extends BaseAgent {
       }
       this.emitProgress('Files ranked', { topFiles: rankedFiles.slice(0, 5).map(f => f.path) });
 
-      // Step 5: Generate context summary
+      // Step 5: Generate context summary (pass escalationContext so prior attempts are included)
       const { summary: contextSummary, usage: summaryUsage } = await this.generateContextSummary(
         rankedFiles,
         dependencyGraph,
-        context.objective
+        context.objective,
+        context.escalationContext
       );
       if (summaryUsage) {
         totalTokensUsed += summaryUsage.total;
@@ -458,17 +459,25 @@ Return ONLY a JSON array of file paths in order: ["most-relevant.ts", "second.ts
   }
 
   /**
-   * Generate context summary for Artisan
+   * Generate context summary for Artisan.
+   * If escalationContext is provided (from simple mode failure history),
+   * it is prepended to the prompt under a "PRIOR ATTEMPTS:" header so the
+   * Librarian starts informed rather than cold.
    */
   private async generateContextSummary(
     files: FileContext[],
     dependencyGraph: DependencyNode[],
-    objective: string
+    objective: string,
+    escalationContext?: string
   ): Promise<{ summary: string; usage: TokenUsage | null }> {
     const topFiles = files.slice(0, 10);
     const fileDescriptions = topFiles.map(f => `${f.path}: ${f.content.split('\n').slice(0, 3).join(' ')}`).join('\n');
 
-    const prompt = `Objective: ${objective}
+    const priorAttemptsBlock = escalationContext
+      ? `PRIOR ATTEMPTS:\n${escalationContext}\n\n`
+      : '';
+
+    const prompt = `${priorAttemptsBlock}Objective: ${objective}
 
 Top relevant files:
 ${fileDescriptions}

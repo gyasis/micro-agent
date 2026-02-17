@@ -48,6 +48,9 @@ program
   .option('--no-adversarial', 'Skip adversarial testing')
   .option('--reset-frequency <n>', 'Context reset frequency (1=every iteration)', '1')
   .option('--verbose', 'Enable verbose logging')
+  .option('--simple [n]', 'Run in simple mode (Artisan+Tests only) for N iterations before escalating to full mode (default: 5)', '5')
+  .option('--no-escalate', 'Disable auto-escalation to full mode — simple mode exits with failure if iterations exhausted')
+  .option('--full', 'Skip simple mode — run full pipeline (Librarian→Artisan→Critic→Tests) from iteration 1')
   .action(async (target, options) => {
     try {
       await runCommand(target, options);

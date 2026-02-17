@@ -90,3 +90,53 @@ export interface SessionLogEntry {
   event: string;
   data: any;
 }
+
+// ============================================================
+// Simple Mode & Escalation Types (002-simple-escalation)
+// ============================================================
+
+/**
+ * Record of a single simple mode iteration attempt.
+ * Accumulated in-memory during the simple loop.
+ */
+export interface SimpleIterationRecord {
+  iteration: number;              // 1-based attempt number
+  codeChangeSummary: string;      // What the Artisan changed (from ArtisanOutput.reasoning)
+  testStatus: 'passed' | 'failed' | 'error';
+  failedTests: string[];          // Test names that failed
+  errorMessages: string[];        // Unique error messages from this iteration
+  duration: number;               // ms
+  cost: number;                   // USD
+}
+
+/**
+ * Compressed record of all simple mode attempts.
+ * Passed as starting context to full mode Librarian on escalation.
+ */
+export interface FailureSummary {
+  totalSimpleIterations: number;
+  totalSimpleCost: number;            // USD
+  records: SimpleIterationRecord[];
+  uniqueErrorSignatures: string[];    // Deduplicated error patterns
+  finalTestState: {
+    totalTests: number;
+    failedTests: string[];
+    lastErrorMessages: string[];
+  };
+  naturalLanguageSummary: string;     // Plain text block for Librarian prompt injection
+}
+
+/**
+ * Snapshot of the escalation handoff moment.
+ */
+export interface EscalationEvent {
+  triggeredAt: Date;
+  reason: 'iterations-exhausted';
+  simpleIterationsRun: number;
+  remainingBudget: {
+    costUsd: number;
+    timeMinutes: number;
+    iterations: number;
+  };
+  failureSummary: FailureSummary;
+}

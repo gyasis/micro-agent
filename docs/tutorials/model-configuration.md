@@ -342,6 +342,105 @@ Configure different models for different languages:
 }
 ```
 
+## Advanced: N-Tier Model Escalation (Optional)
+
+Instead of configuring models in `.micro-agent.yml`, you can create a **tier config JSON file**
+that defines a chain of models to try in sequence — from cheapest/local to most powerful.
+
+This is activated via `--tier-config` (or `tierConfigFile` in your project config) and is
+**entirely optional** — the standard agent config above works without it.
+
+### When to use tiers
+
+- Start free: run Tier 1 on a local Ollama model — if it solves the bug, cost = $0
+- Pay progressively: only escalate to cloud models when cheaper tiers fail
+- Audit everything: every iteration at every tier is written to a SQLite audit log
+
+### Example tier config
+
+Create `tiers.json` in your project:
+
+```json
+{
+  "tiers": [
+    {
+      "name": "local-free",
+      "mode": "simple",
+      "maxIterations": 5,
+      "models": {
+        "artisan": "llama3"
+      }
+    },
+    {
+      "name": "cloud-haiku",
+      "mode": "simple",
+      "maxIterations": 5,
+      "models": {
+        "artisan": "claude-haiku-4-20250514"
+      }
+    },
+    {
+      "name": "cloud-sonnet-full",
+      "mode": "full",
+      "maxIterations": 10,
+      "models": {
+        "artisan": "claude-sonnet-4-20250514",
+        "librarian": "gemini-2.5-flash",
+        "critic": "gpt-4o-mini"
+      }
+    }
+  ],
+  "global": {
+    "auditDbPath": ".micro-agent/audit.db",
+    "maxTotalCostUsd": 2.00,
+    "maxTotalDurationMinutes": 30
+  }
+}
+```
+
+### Run with `--tier-config`
+
+```bash
+# Pass directly on the CLI
+ma-loop run src/buggy-file.ts \
+    --test "npx vitest run" \
+    --tier-config tiers.json
+
+# Or set it permanently in your project config
+# .micro-agent.yml:
+#   tierConfigFile: ./tiers.json
+```
+
+### Tier modes
+
+Each tier can independently use `simple` or `full` mode:
+
+| `mode` | Agents used | Cost |
+|--------|-------------|------|
+| `simple` | Artisan only | Cheapest |
+| `full` | Librarian + Artisan + Critic | Most thorough |
+
+Only `artisan` is required. `librarian` and `critic` are optional (used only for `full` mode tiers).
+
+### Cost comparison: standard vs tiered
+
+| Approach | Scenario | Typical cost |
+|----------|----------|-------------|
+| Standard `--full` from start | Complex bug | $0.05 – $0.30 |
+| Tiered: local → haiku → sonnet | Bug solved at Tier 1 | $0.00 |
+| Tiered: local → haiku → sonnet | Bug solved at Tier 2 | $0.003 – $0.01 |
+| Tiered: local → haiku → sonnet | Bug solved at Tier 3 | $0.05 – $0.30 |
+
+### Audit log
+
+When `global.auditDbPath` is set, every iteration across all tiers is written to a SQLite DB:
+
+```bash
+# Query the full history after a run
+sqlite3 .micro-agent/audit.db \
+  "SELECT tier_name, iteration, test_status, cost_usd FROM tier_attempts ORDER BY tier_index, iteration;"
+```
+
 ## Cost Monitoring
 
 Track costs during testing:

@@ -138,6 +138,7 @@ CLI Entry: src/cli/ralph-loop.ts
 ## Active Technologies
 - TypeScript 5.x (Node.js 20+) + commander (CLI), existing ArtisanAgent, TestRunner, AgentContext — all already in place (002-simple-escalation)
 - In-memory only (FailureSummary never written to disk) (002-simple-escalation)
+- SQLite (best-effort append-only audit log at `.micro-agent/audit.db`) (003-tiered-escalation)
 
 ## Recent Changes
 - 002-simple-escalation: Added TypeScript 5.x (Node.js 20+) + commander (CLI), existing ArtisanAgent, TestRunner, AgentContext — all already in place

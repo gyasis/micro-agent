@@ -475,6 +475,15 @@ async function runSimpleIteration(
   updatedContext = withArtisanCode(updatedContext, artisanResult.data);
   contextMonitor.trackTokens('artisan', artisanResult.tokensUsed);
 
+  // Log what the Artisan changed so the user can follow along
+  const reasoning = artisanResult.data.reasoning || '(no reasoning provided)';
+  logger.info(`  Artisan: ${reasoning.slice(0, 200)}${reasoning.length > 200 ? '...' : ''}`);
+  if (artisanResult.data.changes?.length) {
+    for (const change of artisanResult.data.changes.slice(0, 3)) {
+      logger.info(`  Change:  ${String(change).slice(0, 120)}`);
+    }
+  }
+
   // Phase 4: Testing - Run actual tests
   logger.info('Simple Mode: Running tests...');
   updatedContext = updatePhase(updatedContext, 'testing');
@@ -492,11 +501,19 @@ async function runSimpleIteration(
 
   const testsPass = testResult.success && testResult.results.summary.status === 'passed';
 
-  logger.info('Simple Mode: Tests completed', {
-    status: testResult.results.summary.status,
-    passed: testResult.results.summary.passed,
-    failed: testResult.results.summary.failed,
-  });
+  if (testsPass) {
+    logger.info(`  Tests: ✓ ALL PASSED (${testResult.results.summary.passed} tests)`);
+  } else {
+    logger.info(`  Tests: ✗ ${testResult.results.summary.failed} failed / ${testResult.results.summary.total} total`);
+    // Show each failing test and its error message
+    for (const failure of (testResult.results.failures || []).slice(0, 5)) {
+      logger.info(`    ✗ ${failure.testName}`);
+      if (failure.errorMessage) {
+        logger.info(`      ${failure.errorMessage.split('\n')[0].slice(0, 120)}`);
+      }
+    }
+  }
+  logger.info(`  Cost:  $${artisanResult.cost?.toFixed(4) || '0.0000'} this iteration`);
 
   return {
     context: updatedContext,

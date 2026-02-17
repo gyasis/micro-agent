@@ -134,3 +134,10 @@ CLI Entry: src/cli/ralph-loop.ts
 | TestRunner                 | `src/testing/test-runner.ts`                |
 | State machine              | `src/state-machine/ralph-machine.ts`        |
 | Tutorials                  | `docs/tutorials/`                           |
+
+## Active Technologies
+- TypeScript 5.x (Node.js 20+) + commander (CLI), existing ArtisanAgent, TestRunner, AgentContext — all already in place (002-simple-escalation)
+- In-memory only (FailureSummary never written to disk) (002-simple-escalation)
+
+## Recent Changes
+- 002-simple-escalation: Added TypeScript 5.x (Node.js 20+) + commander (CLI), existing ArtisanAgent, TestRunner, AgentContext — all already in place

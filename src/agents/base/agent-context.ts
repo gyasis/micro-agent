@@ -120,6 +120,9 @@ export interface AgentContext {
 
   // Additional context
   metadata?: Record<string, any>;
+
+  // Escalation context: plain text failure summary from simple mode (if escalated from simple → full)
+  escalationContext?: string;
 }
 
 /**
@@ -393,4 +396,17 @@ export function isBudgetExceeded(context: AgentContext): boolean {
   // Checking it here causes false positives (e.g., iteration 1 with maxIterations=1)
 
   return costExceeded || timeExceeded;
+}
+
+/**
+ * Update agent context with escalation context from simple mode failure summary
+ */
+export function withEscalationContext(
+  context: AgentContext,
+  naturalLanguageSummary: string
+): AgentContext {
+  return {
+    ...context,
+    escalationContext: naturalLanguageSummary,
+  };
 }

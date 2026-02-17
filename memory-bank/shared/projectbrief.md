@@ -2,7 +2,7 @@
 
 **Purpose**: North Star document - why this project exists
 
-**Last Updated**: 2026-02-16
+**Last Updated**: 2026-02-17
 
 ## Vision
 
@@ -25,11 +25,16 @@ system avoids the "Dumb Zone" degradation that plagues long conversations.
 
 ## Success Criteria
 
-- All 216 tests pass (currently: YES as of 2026-02-16)
+- All 269 tests pass (currently: YES as of 2026-02-17, +22 from 003-tiered-escalation)
 - End-to-end Ralph Loop workflow verified with real APIs (Gemini + Claude + GPT) -- VERIFIED
 - Cost per iteration is tracked and stays within configurable budget (~$0.02 typical)
 - Three agents collaborate to fix a real code bug (verified with `math.ts` example)
-- Branch `001-ralph-loop-2026` ready to merge to `main` (status: READY, PR pending)
+- Branch `001-ralph-loop-2026` merged to `main` (commit c527da1) -- DONE
+- Branch `002-simple-escalation` merged to `main` (commit 8d42927) -- DONE
+- Branch `003-tiered-escalation` merged to `main` (no-ff merge) -- DONE
+- Simple Mode + Auto-Escalation pipeline operational with `--simple`, `--full`, `--no-escalate` flags
+- N-Tier Model Escalation pipeline operational with `--tier-config <path>` flag and JSON/YAML
+  tier config files
 
 ## Constraints
 
@@ -37,5 +42,6 @@ system avoids the "Dumb Zone" degradation that plagues long conversations.
 - **Technical**: XState v5 API must be used (createActor pattern, not v4 machine.context)
 - **Technical**: Model names must be 2026-current: `gemini-2.5-flash`, `claude-sonnet-4-20250514`,
   `gpt-4o-mini`
+- **Technical**: Zod v3 API uses `.issues` not `.errors` on SafeParseError results
 - **Business**: Package published as `@builder.io/micro-agent` v0.1.5
 - **Process**: Only the `memory-bank-keeper` agent may modify the memory-bank folder

@@ -2,7 +2,7 @@
 
 **Purpose**: Technical constraints and environment
 
-**Last Updated**: 2026-02-16
+**Last Updated**: 2026-02-17 (003-tiered-escalation)
 
 ## Tech Stack
 
@@ -37,6 +37,7 @@
 - `dotenv` - Environment variable loading
 - `@dqbd/tiktoken` - Token counting
 - `uuid` - Session ID generation
+- `better-sqlite3` - Synchronous SQLite3 bindings (added in 003-tiered-escalation for tier audit DB)
 
 ## Project Directory Structure
 
@@ -60,7 +61,14 @@ src/
     completion-status.ts
     budget-enforcer.ts
     ralph-loop.ts          # Ralph Loop core
-    types.ts
+    types.ts               # SimpleIterationRecord, FailureSummary, EscalationEvent (002);
+                           #   TierConfig, TierModels, TierEscalationConfig, TierGlobal,
+                           #   TierAttemptRecord, RunMetadataRow, AccumulatedFailureSummary,
+                           #   TierRunResult (all added in 003-tiered-escalation)
+    tier-config.ts         # Zod schemas + loadTierConfig() + validateTierConfig() (003)
+    tier-engine.ts         # runTier() N-tier iteration loop with per-tier header logs (003)
+    tier-accumulator.ts    # buildAccumulatedSummary() + withTierEscalationContext() (003)
+    tier-db.ts             # SQLite audit log via better-sqlite3; best-effort (003)
   state-machine/
     ralph-machine.ts       # XState v5 machine definition
     ralph-orchestrator.ts  # Orchestrator using state machine
@@ -79,9 +87,10 @@ src/
     config-loader.ts       # Auto-discovery loader
     defaults.ts            # Default configuration
   cli/
-    ralph-loop.ts          # CLI entry point (loads dotenv here)
+    ralph-loop.ts          # CLI entry point (loads dotenv here); --simple/--no-escalate/--full flags
     commands/
-      run.ts               # Main run command
+      run.ts               # Main run command; 3-phase loop (Phase A/B/C); runSimpleIteration();
+                           #   buildFailureSummary(); per-phase cost tracking (rewritten in 002)
       config.ts            # Config inspection command
       status.ts            # Status command
       reset.ts             # Reset command
@@ -96,9 +105,15 @@ tests/
   unit/
     agents/                # Unit tests for each agent
     lifecycle/             # Lifecycle component tests
+                           #   simple-escalation.test.ts (13 tests, added in 002)
+                           #   tier-config.test.ts (unit tests for Zod schemas + loader, 003)
+                           #   tier-accumulator.test.ts (unit tests for accumulator, 003)
+                           #   tier-db.test.ts (unit tests for SQLite audit DB, 003)
     memory/                # MemoryVault tests
     parsers/               # Parser tests
   integration/             # Integration tests
+                           #   escalation-flow.test.ts (19 tests, T015/T023/T027, added in 002)
+                           #   tier-engine.test.ts (integration tests for N-tier loop, 003)
   e2e/
     context-freshness.test.ts   # E2E context reset verification
     typescript-project.test.ts  # TypeScript project E2E
@@ -109,7 +124,8 @@ docs/
     typescript-javascript.md
     python.md
     rust.md
-    model-configuration.md   # Added 2026-02-16
+    model-configuration.md   # Added 2026-02-16; updated 003 with N-tier escalation section
+    micro-agent-complete-walkthrough.ipynb  # Jupyter notebook; Part 13 added in 003
   api/                       # NOT YET WRITTEN
 ```
 
@@ -127,7 +143,7 @@ The `config()` call at the top of `src/cli/ralph-loop.ts` loads from `process.cw
 ## Build System
 
 - `npm run build` - TypeScript compile to `dist/`
-- `npm test` - Run Vitest (all 216 tests)
+- `npm test` - Run Vitest (all 269 tests as of 2026-02-17, +22 from 003-tiered-escalation)
 - `npm run lint` - ESLint
 - `npm run format` - Prettier
 
@@ -138,9 +154,13 @@ The `config()` call at the top of `src/cli/ralph-loop.ts` loads from `process.cw
 - Rust (cargo test)
 - Custom (any command with detectable output)
 
-## Git Branch Status (2026-02-16)
+## Git Branch Status (2026-02-17)
 
-- **Active branch**: `001-ralph-loop-2026`
-- **Target**: merge to `main`
-- **Last commit**: `eb4f4bf fix: Resolve SessionResetter crash and test framework detection`
-- **Status**: Working tree clean, all tests passing, ready for PR
+- **Active branch**: `main`
+- **001-ralph-loop-2026**: merged to main (commit `c527da1`)
+- **002-simple-escalation**: merged to main (feature commit `ec7e7c6`, merge commit `8d42927`)
+- **003-tiered-escalation**: merged to main via no-ff merge commit (all 31 tasks complete)
+  - Key commits: `b1e8506` (docs), `1afed92` (wire tier engine into runCommand),
+    `93177e0` (Wave 1 foundation), `9c8c192` (chore: tasks.md + execution_plan.json)
+- **Last merge commit**: no-ff merge of `003-tiered-escalation` into `main`
+- **Status**: 269/269 tests passing, main is stable

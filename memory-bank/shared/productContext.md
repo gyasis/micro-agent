@@ -2,7 +2,7 @@
 
 **Purpose**: Product strategy and user needs
 
-**Last Updated**: 2026-02-16
+**Last Updated**: 2026-02-17 (003-tiered-escalation)
 
 ## Target Users
 
@@ -38,11 +38,22 @@
 - Multi-provider by design: not locked to one LLM vendor; uses the best tool for each job
 - Test-driven convergence: success is defined by tests passing, not by LLM confidence
 - Cost control: configurable max cost with per-iteration tracking and early termination
+- Two-phase execution model: Simple Mode (fast, cheap) escalates to Full Mode (deep) only when
+  needed, with compressed failure history injected into the Librarian's context for informed
+  continuation -- avoids wasted cost on easy problems while preserving full power for hard ones
+- N-Tier Model Escalation (optional): A configurable tier chain where each tier uses a different
+  model combination; each tier receives the accumulated failure history from all prior tiers via
+  `escalationContext`, allowing progressively stronger/costlier models to be deployed only when
+  cheaper tiers fail. Defined via a YAML or JSON tier config file passed with `--tier-config`.
+  All tier attempts are recorded to a SQLite audit database for analysis.
 
 ## Documentation
 
 - `docs/tutorials/typescript-javascript.md` - TypeScript/JavaScript usage guide
 - `docs/tutorials/python.md` - Python usage guide
 - `docs/tutorials/rust.md` - Rust usage guide
-- `docs/tutorials/model-configuration.md` - Per-agent model configuration guide
+- `docs/tutorials/model-configuration.md` - Per-agent model configuration guide; updated with
+  "Advanced: N-Tier Model Escalation" section (added in 003-tiered-escalation)
+- `docs/tutorials/micro-agent-complete-walkthrough.ipynb` - Jupyter notebook walkthrough; Part 13
+  on N-tier escalation added in 003-tiered-escalation
 - API documentation in `docs/api/` -- NOT YET WRITTEN (pending task #3)

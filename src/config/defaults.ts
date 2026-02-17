@@ -18,22 +18,22 @@ export function getDefaults(): RalphConfig {
     models: {
       librarian: {
         provider: 'google',
-        model: 'gemini-2.0-pro',
+        model: 'gemini-2.0-flash-exp',
         temperature: 0.3, // Low temp for context analysis
       },
       artisan: {
         provider: 'anthropic',
-        model: 'claude-sonnet-4.5',
+        model: 'claude-sonnet-4-20250514',
         temperature: 0.7, // Moderate temp for code generation
       },
       critic: {
         provider: 'openai',
-        model: 'gpt-4.1-mini',
+        model: 'gpt-4o-mini',
         temperature: 0.2, // Low temp for logic review
       },
       chaos: {
         provider: 'anthropic',
-        model: 'claude-sonnet-4.5',
+        model: 'claude-sonnet-4-20250514',
         temperature: 0.9, // High temp for creative adversarial testing
       },
     },

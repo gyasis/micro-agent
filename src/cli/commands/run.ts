@@ -91,6 +91,11 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
       critic: agents.critic.getConfig().model,
     });
 
+    // Register agents with context monitor for token tracking
+    contextMonitor.registerAgent('librarian', agents.librarian.getConfig().model);
+    contextMonitor.registerAgent('artisan', agents.artisan.getConfig().model);
+    contextMonitor.registerAgent('critic', agents.critic.getConfig().model);
+
     // Step 5: Create initial context
     let context = createAgentContext({
       sessionId: uuidv4(),

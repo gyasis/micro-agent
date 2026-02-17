@@ -34,6 +34,11 @@ import {
 } from '../../agents/base/agent-context';
 import type { AgentContext } from '../../agents/base/agent-context';
 import { v4 as uuidv4 } from 'uuid';
+import { loadTierConfig, validateTierConfig } from '../../lifecycle/tier-config';
+import { runTier } from '../../lifecycle/tier-engine';
+import { buildAccumulatedSummary, withTierEscalationContext } from '../../lifecycle/tier-accumulator';
+import { openAuditDatabase, writeRunMetadata, updateRunMetadata, closeAuditDatabase } from '../../lifecycle/tier-db';
+import type { TierEscalationConfig } from '../../lifecycle/types';
 
 const logger = createLogger();
 
@@ -73,6 +78,13 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
     // Step 1: Load configuration
     const config = await loadConfig(options.config);
     logger.info('Configuration loaded');
+
+    // ── Tier Engine Path (when --tier-config is provided) ─────────────────────────
+    const tierConfigPath = options.tierConfig ?? config.tierConfigFile;
+    if (tierConfigPath) {
+      await runTierLoop(target, options, config, tierConfigPath);
+      return;
+    }
 
     // Step 2: Prepare run parameters
     const params = prepareRunParameters(target, options, config);
@@ -687,4 +699,221 @@ async function resetContext(agents: any, contextMonitor: ContextMonitor, session
   contextMonitor.reset();
 
   logger.info('Context reset complete');
+}
+
+/**
+ * Run the tier escalation loop when --tier-config is provided.
+ */
+async function runTierLoop(
+  target: string,
+  options: RunOptions,
+  config: any,
+  tierConfigPath: string,
+): Promise<void> {
+  // T030: Load and validate tier config
+  let tierConfig: TierEscalationConfig;
+  try {
+    tierConfig = await loadTierConfig(path.resolve(process.cwd(), tierConfigPath));
+  } catch (err: any) {
+    const errors = validateTierConfig(null);
+    logger.error(`Tier config error: ${err.message}`);
+    if (errors.length > 0) {
+      for (const e of errors) logger.error(`  - ${e}`);
+    }
+    process.exit(1);
+  }
+
+  // T029: Warn if legacy flags used alongside --tier-config
+  const legacyFlags: string[] = [];
+  if (options.simpleIterations) legacyFlags.push('--simple');
+  if (options.noEscalate) legacyFlags.push('--no-escalate');
+  if (options.fullMode) legacyFlags.push('--full');
+  if (legacyFlags.length > 0) {
+    logger.warn(`Warning: The following flags are ignored when --tier-config is active: ${legacyFlags.join(', ')}`);
+  }
+
+  // T009: Print startup banner — tier table
+  const totalTiers = tierConfig.tiers.length;
+  logger.info(`\n┌─────────────────────────────────────────┐`);
+  logger.info(`│  Tier Escalation Plan (${totalTiers} tier(s))${' '.repeat(Math.max(0, 9 - String(totalTiers).length))}       │`);
+  logger.info(`├──────┬────────────────┬────────┬────────┤`);
+  logger.info(`│  #   │  Name          │  Mode  │  Model │`);
+  logger.info(`├──────┼────────────────┼────────┼────────┤`);
+  for (let i = 0; i < tierConfig.tiers.length; i++) {
+    const t = tierConfig.tiers[i];
+    const num = String(i + 1).padEnd(2);
+    const name = t.name.slice(0, 14).padEnd(14);
+    const mode = t.mode.padEnd(6);
+    const model = t.models.artisan.slice(0, 6).padEnd(6);
+    logger.info(`│  ${num}  │  ${name}  │ ${mode} │ ${model} │`);
+  }
+  logger.info(`└──────┴────────────────┴────────┴────────┘`);
+
+  // T026: Open audit DB if configured
+  let auditDb = null;
+  const resolvedDbPath = tierConfig.global?.auditDbPath
+    ? path.resolve(process.cwd(), tierConfig.global.auditDbPath)
+    : null;
+  if (resolvedDbPath) {
+    try {
+      auditDb = openAuditDatabase(resolvedDbPath);
+      logger.info(`[audit] Opened SQLite DB at: ${resolvedDbPath}`);
+    } catch (err: any) {
+      logger.warn(`[audit] Failed to open audit DB: ${err.message} — continuing without audit`);
+    }
+  }
+
+  // T026: Generate runId and write initial run_metadata
+  const runId = uuidv4();
+  const startedAt = new Date().toISOString();
+  const params = prepareRunParameters(target, options, config);
+
+  if (auditDb) {
+    writeRunMetadata(auditDb, {
+      runId,
+      objective: params.objective,
+      workingDirectory: params.workingDirectory,
+      testCommand: params.testCommand,
+      tierConfigPath: path.resolve(process.cwd(), tierConfigPath),
+      startedAt,
+      outcome: 'in_progress',
+    });
+  }
+
+  // Initialize infrastructure + agents
+  const { providerRouter, costTracker, iterationManager, contextMonitor } =
+    await initializeInfrastructure(params, config);
+  const agents = await initializeAgents(config, providerRouter, costTracker, options);
+
+  contextMonitor.registerAgent('librarian', agents.librarian.getConfig().model);
+  contextMonitor.registerAgent('artisan', agents.artisan.getConfig().model);
+  contextMonitor.registerAgent('critic', agents.critic.getConfig().model);
+
+  // Create initial AgentContext
+  let context = createAgentContext({
+    sessionId: runId,
+    iteration: 0,
+    maxIterations: params.maxIterations,
+    objective: params.objective,
+    workingDirectory: params.workingDirectory,
+    testCommand: params.testCommand,
+    testFramework: params.testFramework as any,
+    maxCostUsd: params.maxBudget,
+    maxDurationMinutes: params.maxDuration,
+    targetFile: params.targetFile,
+    requirements: params.requirements,
+  });
+
+  // T008/T015/T016/T017: Loop through tiers
+  const tierResults: import('../../lifecycle/types').TierRunResult[] = [];
+  let overallSuccess = false;
+  let successTierName: string | undefined;
+  let successIteration: number | undefined;
+  let budgetStopped = false;
+
+  for (let i = 0; i < tierConfig.tiers.length; i++) {
+    const tier = tierConfig.tiers[i];
+
+    const { result, finalContext } = await runTier(
+      {
+        runId,
+        tierConfig: tier,
+        tierIndex: i,
+        totalTiers: tierConfig.tiers.length,
+        context,
+        agents,
+        testRunner: contextMonitor,
+        db: auditDb,
+      },
+      (ctx, ags, _testRunner) => runSimpleIteration(ctx, ags, contextMonitor),
+    );
+
+    tierResults.push(result);
+    context = finalContext;
+
+    if (result.success) {
+      overallSuccess = true;
+      successTierName = tier.name;
+      const successRecord = result.records.find(r => r.testStatus === 'passed');
+      successIteration = successRecord?.iteration;
+      break;
+    }
+
+    if (result.exitReason === 'budget_exhausted') {
+      budgetStopped = true;
+      break;
+    }
+
+    // Not last tier and not success: build accumulated summary and inject escalation context (T017)
+    if (i < tierConfig.tiers.length - 1) {
+      const summary = buildAccumulatedSummary(tierResults);
+      context = withTierEscalationContext(context, summary);
+      logger.info(`\n[tier-escalation] Tier ${i + 1} "${tier.name}" exhausted (${result.iterationsRan} iterations). Escalating to tier ${i + 2}...`);
+      logger.info(`  Accumulated: ${summary.totalIterationsAcrossTiers} iteration(s), $${summary.totalCostUsdAcrossTiers.toFixed(4)}`);
+      if (summary.lastFailedTests.length > 0) {
+        logger.info(`  Last failing tests: ${summary.lastFailedTests.slice(0, 3).join(', ')}`);
+      }
+    }
+  }
+
+  // T011/T018: Print final multi-tier report
+  const totalCost = tierResults.reduce((s, r) => s + r.totalCostUsd, 0);
+  const totalIterations = tierResults.reduce((s, r) => s + r.iterationsRan, 0);
+
+  logger.info('\n' + '='.repeat(60));
+  logger.info('Tier Escalation Report');
+  logger.info('='.repeat(60));
+  logger.info('');
+
+  // Per-tier rows
+  const statusLabel = (r: import('../../lifecycle/types').TierRunResult, idx: number): string => {
+    if (r.success) return 'success';
+    if (r.exitReason === 'budget_exhausted') return 'budget_stopped';
+    if (idx < tierResults.length) return 'failed';
+    return 'not_reached';
+  };
+
+  for (let i = 0; i < tierConfig.tiers.length; i++) {
+    const tier = tierConfig.tiers[i];
+    const result = tierResults[i];
+    if (!result) {
+      logger.info(`  Tier ${i + 1}: ${tier.name} [${tier.mode}] — not_reached`);
+      continue;
+    }
+    const label = statusLabel(result, i);
+    logger.info(
+      `  Tier ${i + 1}: ${tier.name} [${tier.mode}] — ${result.iterationsRan} iter(s), $${result.totalCostUsd.toFixed(4)} — ${label}`
+    );
+  }
+
+  logger.info('');
+  logger.info(`  Total: ${totalIterations} iteration(s), $${totalCost.toFixed(4)}`);
+  logger.info(`  Outcome: ${overallSuccess ? 'SUCCESS' : budgetStopped ? 'BUDGET_EXHAUSTED' : 'FAILED'}`);
+
+  // T027: Audit path + run ID
+  if (resolvedDbPath) {
+    logger.info('');
+    logger.info(`  Audit DB: ${resolvedDbPath}`);
+    logger.info(`  Run ID:   ${runId}`);
+    if (!overallSuccess) {
+      logger.info(`\n  Query hint: sqlite3 "${resolvedDbPath}" "SELECT * FROM tier_attempts WHERE run_id='${runId}' ORDER BY tier_index, iteration;"`);
+    }
+  }
+
+  logger.info('='.repeat(60));
+
+  // T026: Update run_metadata with final outcome
+  if (auditDb) {
+    const outcomeValue: 'success' | 'failed' | 'budget_exhausted' =
+      overallSuccess ? 'success' : budgetStopped ? 'budget_exhausted' : 'failed';
+    updateRunMetadata(auditDb, runId, {
+      completedAt: new Date().toISOString(),
+      outcome: outcomeValue,
+      resolvedTierName: successTierName,
+      resolvedIteration: successIteration,
+    });
+    closeAuditDatabase(auditDb);
+  }
+
+  process.exit(overallSuccess ? 0 : 1);
 }

@@ -1,0 +1,676 @@
+{
+  "execution_plan": {
+    "phase_id": "Documentation & Branding Polish",
+    "waves": [
+      {
+        "wave_id": 1,
+        "strategy": "PARALLEL_SWARM",
+        "rationale": "Wave 1: 58 independent task(s) with no file conflicts",
+        "tasks": [
+          {
+            "task_id": "T001",
+            "agent_role": "Developer",
+            "instruction": "T001 Initialize TypeScript project with Node.js 20+ and tsconfig.json configured for ES2022",
+            "file_locks": [
+              "tsconfig.json",
+              "Node.js"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T001 Initialize TypeScript project with Node.js 20+ and tsconfig.json configured for ES2022' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T002",
+            "agent_role": "Developer",
+            "instruction": "T002 Install core dependencies: LiteLLM, XState, ChromaDB, Zod, Vitest, dotenv",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T002 Install core dependencies: LiteLLM, XState, ChromaDB, Zod, Vitest, dotenv' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T003",
+            "agent_role": "Developer",
+            "instruction": "T003 [P] Configure ESLint and Prettier with TypeScript rules",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T003 [P] Configure ESLint and Prettier with TypeScript rules' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T004",
+            "agent_role": "Developer",
+            "instruction": "T004 [P] Setup Vitest configuration in vitest.config.ts",
+            "file_locks": [
+              "vitest.config.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T004 [P] Setup Vitest configuration in vitest.config.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T005",
+            "agent_role": "Developer",
+            "instruction": "T005 Create .gitignore for node_modules/, dist/, .ralph/, .env*, coverage/",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T005 Create .gitignore for node_modules/, dist/, .ralph/, .env*, coverage/' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T006",
+            "agent_role": "Developer",
+            "instruction": "T006 Create .dockerignore for node_modules/, .git/, .ralph/, *.log*",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T006 Create .dockerignore for node_modules/, .git/, .ralph/, *.log*' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T007",
+            "agent_role": "Developer",
+            "instruction": "T007 Create project directory structure per plan.md (src/agents/, src/lifecycle/, src/state-machine/, src/memory/, src/parsers/, src/llm/, src/plugins/, src/config/, src/cli/, src/utils/, tests/)",
+            "file_locks": [
+              "plan.md"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T007 Create project directory structure per plan.md (src/agents/, src/lifecycle/, src/state-machine/, src/memory/, src/parsers/, src/llm/, src/plugins/, src/config/, src/cli/, src/utils/, tests/)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T008",
+            "agent_role": "Developer",
+            "instruction": "T008 [P] Create package.json scripts for build, test, lint, format",
+            "file_locks": [
+              "package.json"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T008 [P] Create package.json scripts for build, test, lint, format' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T010",
+            "agent_role": "Developer",
+            "instruction": "T010 Implement fresh session lifecycle orchestrator in src/lifecycle/iteration-manager.ts",
+            "file_locks": [
+              "src/lifecycle/iteration-manager.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T010 Implement fresh session lifecycle orchestrator in src/lifecycle/iteration-manager.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T011",
+            "agent_role": "Developer",
+            "instruction": "T011 Implement context usage monitor tracking 40% smart zone boundary in src/lifecycle/context-monitor.ts",
+            "file_locks": [
+              "src/lifecycle/context-monitor.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T011 Implement context usage monitor tracking 40% smart zone boundary in src/lifecycle/context-monitor.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T012",
+            "agent_role": "Developer",
+            "instruction": "T012 Implement state persister for disk writes between iterations in src/lifecycle/state-persister.ts",
+            "file_locks": [
+              "src/lifecycle/state-persister.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T012 Implement state persister for disk writes between iterations in src/lifecycle/state-persister.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T013",
+            "agent_role": "Developer",
+            "instruction": "T013 Implement session resetter to destroy LLM context in src/lifecycle/session-resetter.ts",
+            "file_locks": [
+              "src/lifecycle/session-resetter.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T013 Implement session resetter to destroy LLM context in src/lifecycle/session-resetter.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T014",
+            "agent_role": "Developer",
+            "instruction": "T014 [P] Implement LiteLLM provider router in src/llm/provider-router.ts",
+            "file_locks": [
+              "src/llm/provider-router.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T014 [P] Implement LiteLLM provider router in src/llm/provider-router.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T015",
+            "agent_role": "Developer",
+            "instruction": "T015 [P] Implement cost tracker for token usage per agent in src/llm/cost-tracker.ts",
+            "file_locks": [
+              "src/llm/cost-tracker.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T015 [P] Implement cost tracker for token usage per agent in src/llm/cost-tracker.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T016",
+            "agent_role": "Developer",
+            "instruction": "T016 [P] Implement fallback handler for provider failover in src/llm/fallback-handler.ts",
+            "file_locks": [
+              "src/llm/fallback-handler.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T016 [P] Implement fallback handler for provider failover in src/llm/fallback-handler.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T017",
+            "agent_role": "Developer",
+            "instruction": "T017 Define XState state machine schema in src/state-machine/ralph-machine.ts (states: librarian, artisan, critic, testing, adversarial, completion, error)",
+            "file_locks": [
+              "src/state-machine/ralph-machine.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T017 Define XState state machine schema in src/state-machine/ralph-machine.ts (states: librarian, artisan, critic, testing, adversarial, completion, error)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T018",
+            "agent_role": "Developer",
+            "instruction": "T018 [P] Implement state transition logic in src/state-machine/transitions.ts",
+            "file_locks": [
+              "src/state-machine/transitions.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T018 [P] Implement state transition logic in src/state-machine/transitions.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T019",
+            "agent_role": "Developer",
+            "instruction": "T019 [P] Implement guard conditions for state changes in src/state-machine/guards.ts",
+            "file_locks": [
+              "src/state-machine/guards.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T019 [P] Implement guard conditions for state changes in src/state-machine/guards.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T020",
+            "agent_role": "Developer",
+            "instruction": "T020 Define configuration schema with Zod in src/config/schema-validator.ts",
+            "file_locks": [
+              "src/config/schema-validator.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T020 Define configuration schema with Zod in src/config/schema-validator.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T021",
+            "agent_role": "Developer",
+            "instruction": "T021 Implement config loader with auto-discovery in src/config/config-loader.ts",
+            "file_locks": [
+              "src/config/config-loader.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T021 Implement config loader with auto-discovery in src/config/config-loader.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T022",
+            "agent_role": "Developer",
+            "instruction": "T022 [P] Define built-in defaults in src/config/defaults.ts (context_reset_frequency=1, librarian=gemini-2.0-pro, artisan=claude-sonnet-4.5, critic=gpt-4.1-mini, max_iterations=30, max_cost=$2.00)",
+            "file_locks": [
+              "src/config/defaults.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T022 [P] Define built-in defaults in src/config/defaults.ts (context_reset_frequency=1, librarian=gemini-2.0-pro, artisan=claude-sonnet-4.5, critic=gpt-4.1-mini, max_iterations=30, max_cost=$2.00)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T023",
+            "agent_role": "Developer",
+            "instruction": "T023 [P] Implement structured logger in src/utils/logger.ts",
+            "file_locks": [
+              "src/utils/logger.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T023 [P] Implement structured logger in src/utils/logger.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T024",
+            "agent_role": "Developer",
+            "instruction": "T024 [P] Implement atomic file I/O utilities in src/utils/file-io.ts",
+            "file_locks": [
+              "src/utils/file-io.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T024 [P] Implement atomic file I/O utilities in src/utils/file-io.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T025",
+            "agent_role": "Developer",
+            "instruction": "T025 [P] Implement git working tree status utilities in src/utils/git-utils.ts",
+            "file_locks": [
+              "src/utils/git-utils.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T025 [P] Implement git working tree status utilities in src/utils/git-utils.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T026",
+            "agent_role": "Developer",
+            "instruction": "T026 [US1] Create base agent interface in src/agents/base-agent.ts",
+            "file_locks": [
+              "src/agents/base-agent.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T026 [US1] Create base agent interface in src/agents/base-agent.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T027",
+            "agent_role": "Developer",
+            "instruction": "T027 [US1] Create shared agent context structure in src/agents/base/agent-context.ts",
+            "file_locks": [
+              "src/agents/base/agent-context.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T027 [US1] Create shared agent context structure in src/agents/base/agent-context.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T028",
+            "agent_role": "Developer",
+            "instruction": "T028 [P] [US1] Implement Librarian agent with Gemini integration in src/agents/librarian/librarian.agent.ts",
+            "file_locks": [
+              "src/agents/librarian/librarian.agent.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T028 [P] [US1] Implement Librarian agent with Gemini integration in src/agents/librarian/librarian.agent.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T029",
+            "agent_role": "Developer",
+            "instruction": "T029 [P] [US1] Implement dependency graph parser using TypeScript compiler API in src/agents/librarian/dependency-graph.ts",
+            "file_locks": [
+              "src/agents/librarian/dependency-graph.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T029 [P] [US1] Implement dependency graph parser using TypeScript compiler API in src/agents/librarian/dependency-graph.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T030",
+            "agent_role": "Developer",
+            "instruction": "T030 [P] [US1] Implement file ranker by distance from target in src/agents/librarian/file-ranker.ts",
+            "file_locks": [
+              "src/agents/librarian/file-ranker.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T030 [P] [US1] Implement file ranker by distance from target in src/agents/librarian/file-ranker.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T031",
+            "agent_role": "Developer",
+            "instruction": "T031 [P] [US1] Implement Artisan agent with Claude integration in src/agents/artisan/artisan.agent.ts",
+            "file_locks": [
+              "src/agents/artisan/artisan.agent.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T031 [P] [US1] Implement Artisan agent with Claude integration in src/agents/artisan/artisan.agent.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T032",
+            "agent_role": "Developer",
+            "instruction": "T032 [P] [US1] Implement code writer utilities for file modifications in src/agents/artisan/code-writer.ts",
+            "file_locks": [
+              "src/agents/artisan/code-writer.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T032 [P] [US1] Implement code writer utilities for file modifications in src/agents/artisan/code-writer.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T033",
+            "agent_role": "Developer",
+            "instruction": "T033 [P] [US1] Implement Critic agent with GPT integration in src/agents/critic/critic.agent.ts",
+            "file_locks": [
+              "src/agents/critic/critic.agent.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T033 [P] [US1] Implement Critic agent with GPT integration in src/agents/critic/critic.agent.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T034",
+            "agent_role": "Developer",
+            "instruction": "T034 [P] [US1] Implement review validation checker in src/agents/critic/review-checker.ts",
+            "file_locks": [
+              "src/agents/critic/review-checker.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T034 [P] [US1] Implement review validation checker in src/agents/critic/review-checker.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T035",
+            "agent_role": "Developer",
+            "instruction": "T039 [US1] Implement main entry point ralph-loop CLI in src/cli/ralph-loop.ts",
+            "file_locks": [
+              "src/cli/ralph-loop.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T039 [US1] Implement main entry point ralph-loop CLI in src/cli/ralph-loop.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T036",
+            "agent_role": "Developer",
+            "instruction": "T040 [US1] Implement run command orchestrating multi-agent workflow in src/cli/commands/run.ts",
+            "file_locks": [
+              "src/cli/commands/run.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T040 [US1] Implement run command orchestrating multi-agent workflow in src/cli/commands/run.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T037",
+            "agent_role": "Developer",
+            "instruction": "T041 [P] [US1] Implement real-time progress display in src/cli/ui/progress-display.ts",
+            "file_locks": [
+              "src/cli/ui/progress-display.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T041 [P] [US1] Implement real-time progress display in src/cli/ui/progress-display.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T038",
+            "agent_role": "Developer",
+            "instruction": "T042 [P] [US1] Implement completion summary reporter in src/cli/ui/summary-reporter.ts",
+            "file_locks": [
+              "src/cli/ui/summary-reporter.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T042 [P] [US1] Implement completion summary reporter in src/cli/ui/summary-reporter.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T039",
+            "agent_role": "Developer",
+            "instruction": "T043 [P] [US4] Implement framework detector scanning manifest files in src/parsers/framework-detector.ts",
+            "file_locks": [
+              "src/parsers/framework-detector.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T043 [P] [US4] Implement framework detector scanning manifest files in src/parsers/framework-detector.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T040",
+            "agent_role": "Developer",
+            "instruction": "T044 [P] [US4] Define base parser interface with ralph-test-json schema in src/parsers/base-parser.ts",
+            "file_locks": [
+              "src/parsers/base-parser.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T044 [P] [US4] Define base parser interface with ralph-test-json schema in src/parsers/base-parser.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T041",
+            "agent_role": "Developer",
+            "instruction": "T045 [P] [US4] Implement Jest/Vitest parser for TypeScript/JavaScript in src/parsers/jest-parser.ts",
+            "file_locks": [
+              "src/parsers/jest-parser.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T045 [P] [US4] Implement Jest/Vitest parser for TypeScript/JavaScript in src/parsers/jest-parser.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T042",
+            "agent_role": "Developer",
+            "instruction": "T046 [P] [US4] Implement pytest parser for Python in src/parsers/pytest-parser.ts",
+            "file_locks": [
+              "src/parsers/pytest-parser.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T046 [P] [US4] Implement pytest parser for Python in src/parsers/pytest-parser.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T043",
+            "agent_role": "Developer",
+            "instruction": "T047 [P] [US4] Implement cargo test parser for Rust in src/parsers/cargo-parser.ts",
+            "file_locks": [
+              "src/parsers/cargo-parser.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T047 [P] [US4] Implement cargo test parser for Rust in src/parsers/cargo-parser.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T044",
+            "agent_role": "Developer",
+            "instruction": "T059 [P] [US2] Implement ChromaDB wrapper for MemoryVault in src/memory/memory-vault.ts",
+            "file_locks": [
+              "src/memory/memory-vault.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T059 [P] [US2] Implement ChromaDB wrapper for MemoryVault in src/memory/memory-vault.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T045",
+            "agent_role": "Developer",
+            "instruction": "T060 [P] [US2] Implement error categorizer (SYNTAX/LOGIC/ENVIRONMENT/FLAKY/PERFORMANCE) in src/memory/error-categorizer.ts",
+            "file_locks": [
+              "src/memory/error-categorizer.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T060 [P] [US2] Implement error categorizer (SYNTAX/LOGIC/ENVIRONMENT/FLAKY/PERFORMANCE) in src/memory/error-categorizer.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T046",
+            "agent_role": "Developer",
+            "instruction": "T061 [P] [US2] Implement fix recorder for successful attempts in src/memory/fix-recorder.ts",
+            "file_locks": [
+              "src/memory/fix-recorder.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T061 [P] [US2] Implement fix recorder for successful attempts in src/memory/fix-recorder.ts' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T047",
+            "agent_role": "Developer",
+            "instruction": "T067 Fix CLI commands and imports in quickstart.md (10 violations)",
+            "file_locks": [
+              "quickstart.md"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T067 Fix CLI commands and imports in quickstart.md (10 violations)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T048",
+            "agent_role": "Developer",
+            "instruction": "T068 Replace @ralph/* package scope with @builder.io/micro-agent-plugin-* (15 violations)",
+            "file_locks": [
+              "builder.io"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T068 Replace @ralph/* package scope with @builder.io/micro-agent-plugin-* (15 violations)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T049",
+            "agent_role": "Developer",
+            "instruction": "T069 Fix CLI commands in PRD/README.md (2 violations)",
+            "file_locks": [
+              "PRD/README.md"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T069 Fix CLI commands in PRD/README.md (2 violations)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T050",
+            "agent_role": "Developer",
+            "instruction": "T070 Fix plugin SDK import examples in contracts/plugin-sdk.d.ts (1 violation)",
+            "file_locks": [
+              "contracts/plugin-sdk.d.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T070 Fix plugin SDK import examples in contracts/plugin-sdk.d.ts (1 violation)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T051",
+            "agent_role": "Developer",
+            "instruction": "T071 Fix fake package references in spec.md (4 violations)",
+            "file_locks": [
+              "spec.md"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T071 Fix fake package references in spec.md (4 violations)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T052",
+            "agent_role": "Developer",
+            "instruction": "T072 Fix plugin examples in tasks.md files (2 violations)",
+            "file_locks": [
+              "tasks.md"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T072 Fix plugin examples in tasks.md files (2 violations)' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T053",
+            "agent_role": "Developer",
+            "instruction": "T073 Write TypeScript/JavaScript tutorial with Vitest/Jest examples",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T073 Write TypeScript/JavaScript tutorial with Vitest/Jest examples' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T054",
+            "agent_role": "Developer",
+            "instruction": "T074 Write Python tutorial with pytest examples",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T074 Write Python tutorial with pytest examples' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T055",
+            "agent_role": "Developer",
+            "instruction": "T075 Write Rust tutorial with cargo test examples",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T075 Write Rust tutorial with cargo test examples' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T056",
+            "agent_role": "Developer",
+            "instruction": "T076 Generate API documentation for all public modules",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T076 Generate API documentation for all public modules' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T058",
+            "agent_role": "Developer",
+            "instruction": "T078 Create PR to merge 001-ralph-loop-2026 \u2192 main",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T078 Create PR to merge 001-ralph-loop-2026 \u2192 main' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T059",
+            "agent_role": "Developer",
+            "instruction": "T079 Final validation: Ensure no \"ralph\" CLI commands in user-facing docs",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T079 Final validation: Ensure no \"ralph\" CLI commands in user-facing docs' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T060",
+            "agent_role": "Developer",
+            "instruction": "T080 Tag release as v2.0.0 (Micro Agent powered by Ralph Loop 2026)",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T080 Tag release as v2.0.0 (Micro Agent powered by Ralph Loop 2026)' to [x]",
+            "dependencies": []
+          }
+        ],
+        "checkpoint_after": {
+          "enabled": true,
+          "verification_criteria": "Verify all Wave 1 tasks are marked [x] in tasks.md",
+          "git_agent": "git-version-manager",
+          "memory_bank_agent": "memory-bank-keeper"
+        }
+      },
+      {
+        "wave_id": 2,
+        "strategy": "PARALLEL_SWARM",
+        "rationale": "Wave 2: 2 independent task(s) with no file conflicts",
+        "tasks": [
+          {
+            "task_id": "T009",
+            "agent_role": "Developer",
+            "instruction": "T009 [P] Setup TypeScript path aliases in tsconfig.json (@agents, @lifecycle, @memory, @parsers, @llm, @config, @utils)",
+            "file_locks": [
+              "tsconfig.json"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T009 [P] Setup TypeScript path aliases in tsconfig.json (@agents, @lifecycle, @memory, @parsers, @llm, @config, @utils)' to [x]",
+            "dependencies": [
+              "T001"
+            ]
+          },
+          {
+            "task_id": "T057",
+            "agent_role": "Developer",
+            "instruction": "T077 Update plan.md to reflect Micro Agent product naming",
+            "file_locks": [
+              "plan.md"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T077 Update plan.md to reflect Micro Agent product naming' to [x]",
+            "dependencies": [
+              "T007"
+            ]
+          }
+        ],
+        "checkpoint_after": {
+          "enabled": true,
+          "verification_criteria": "Verify all Wave 2 tasks are marked [x] in tasks.md",
+          "git_agent": "git-version-manager",
+          "memory_bank_agent": "memory-bank-keeper"
+        }
+      }
+    ]
+  }
+}

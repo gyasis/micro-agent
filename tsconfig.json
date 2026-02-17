@@ -1,14 +1,32 @@
 {
   "compilerOptions": {
-    "noEmit": true,
+    "target": "ES2022",
     "module": "ESNext",
-    "target": "ESNext",
+    "lib": ["ES2022"],
     "moduleResolution": "node",
-    "strict": true,
-    "resolveJsonModule": true,
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "resolveJsonModule": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "@agents/*": ["src/agents/*"],
+      "@lifecycle/*": ["src/lifecycle/*"],
+      "@memory/*": ["src/memory/*"],
+      "@parsers/*": ["src/parsers/*"],
+      "@llm/*": ["src/llm/*"],
+      "@config/*": ["src/config/*"],
+      "@utils/*": ["src/utils/*"]
+    },
+    "types": ["node", "vitest/globals"]
   },
-  "include": ["src"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "tests"]
 }

@@ -45,7 +45,7 @@ export interface SuccessCriteriaResult {
 export function evaluateSuccessCriteria(
   testResults: RalphTestResult | null,
   adversarialResults: any | null,
-  config: RalphConfig
+  config: RalphConfig,
 ): SuccessCriteriaResult {
   // Initialize result
   const result: SuccessCriteriaResult = {
@@ -76,7 +76,8 @@ export function evaluateSuccessCriteria(
   result.details.failedTests = summary.failed;
 
   // Criterion 1: Tests must pass
-  result.criteria.testsPassed = summary.status === 'passed' && summary.failed === 0;
+  result.criteria.testsPassed =
+    summary.status === 'passed' && summary.failed === 0;
 
   if (!result.criteria.testsPassed) {
     result.message = `Tests failed: ${summary.failed}/${summary.total} tests failed`;
@@ -94,7 +95,7 @@ export function evaluateSuccessCriteria(
   });
 
   // Criterion 2: Coverage threshold (optional)
-  const coverageThreshold = config.testing?.coverageThreshold;
+  const coverageThreshold = config.successCriteria?.coverageThreshold;
   if (coverageThreshold !== undefined && testResults.coverage) {
     const coverage = testResults.coverage;
 
@@ -122,9 +123,12 @@ export function evaluateSuccessCriteria(
 
   // Criterion 3: Adversarial tests (optional)
   if (config.testing?.adversarialTests && adversarialResults) {
-    const adversarialPassed = adversarialResults.passed || adversarialResults.success || false;
-    const adversarialTotal = adversarialResults.total || adversarialResults.testsRun || 0;
-    const adversarialPassedCount = adversarialResults.passedCount || adversarialResults.passed || 0;
+    const adversarialPassed =
+      adversarialResults.passed || adversarialResults.success || false;
+    const adversarialTotal =
+      adversarialResults.total || adversarialResults.testsRun || 0;
+    const adversarialPassedCount =
+      adversarialResults.passedCount || adversarialResults.passed || 0;
 
     result.criteria.adversarialPassed = adversarialPassed;
     result.details.adversarialTotal = adversarialTotal;
@@ -157,7 +161,7 @@ export function evaluateSuccessCriteria(
  */
 export function shouldRunAdversarialTests(
   testResults: RalphTestResult | null,
-  config: RalphConfig
+  config: RalphConfig,
 ): boolean {
   // Only run if:
   // 1. Enabled in config
@@ -186,13 +190,15 @@ export function formatSuccessCriteria(result: SuccessCriteriaResult): string {
 
   // Tests
   const testIcon = result.criteria.testsPassed ? '✅' : '❌';
-  lines.push(`${testIcon} Unit Tests: ${result.details.passedTests}/${result.details.totalTests} passed`);
+  lines.push(
+    `${testIcon} Unit Tests: ${result.details.passedTests}/${result.details.totalTests} passed`,
+  );
 
   // Coverage
   if (result.details.coverageThreshold !== undefined) {
     const coverageIcon = result.criteria.coverageThreshold ? '✅' : '❌';
     lines.push(
-      `${coverageIcon} Coverage: ${result.details.coveragePercentage?.toFixed(1)}% (threshold: ${result.details.coverageThreshold}%)`
+      `${coverageIcon} Coverage: ${result.details.coveragePercentage?.toFixed(1)}% (threshold: ${result.details.coverageThreshold}%)`,
     );
   }
 
@@ -200,7 +206,7 @@ export function formatSuccessCriteria(result: SuccessCriteriaResult): string {
   if (result.details.adversarialTotal !== undefined) {
     const adversarialIcon = result.criteria.adversarialPassed ? '✅' : '⚠️';
     lines.push(
-      `${adversarialIcon} Adversarial: ${result.details.adversarialPassed}/${result.details.adversarialTotal} passed`
+      `${adversarialIcon} Adversarial: ${result.details.adversarialPassed}/${result.details.adversarialTotal} passed`,
     );
   }
 
@@ -229,7 +235,9 @@ export function validateTestResults(testResults: RalphTestResult | null): {
 
   // Summary counts must be consistent
   const expectedTotal =
-    testResults.summary.passed + testResults.summary.failed + testResults.summary.skipped;
+    testResults.summary.passed +
+    testResults.summary.failed +
+    testResults.summary.skipped;
 
   if (expectedTotal !== testResults.summary.total) {
     return {
@@ -284,7 +292,7 @@ export function extractTestFailures(testResults: RalphTestResult): Array<{
  */
 export function calculateTestMetrics(
   currentResults: RalphTestResult,
-  previousResults: RalphTestResult | null
+  previousResults: RalphTestResult | null,
 ): {
   testsAdded: number;
   testsFixed: number;
@@ -305,14 +313,18 @@ export function calculateTestMetrics(
   }
 
   // Calculate changes
-  metrics.testsAdded = currentResults.summary.total - previousResults.summary.total;
-  metrics.testsFixed = previousResults.summary.failed - currentResults.summary.failed;
-  metrics.testsRegressed = currentResults.summary.failed - previousResults.summary.failed;
+  metrics.testsAdded =
+    currentResults.summary.total - previousResults.summary.total;
+  metrics.testsFixed =
+    previousResults.summary.failed - currentResults.summary.failed;
+  metrics.testsRegressed =
+    currentResults.summary.failed - previousResults.summary.failed;
 
   // Coverage change
   if (currentResults.coverage?.lines && previousResults.coverage?.lines) {
     metrics.coverageChange =
-      currentResults.coverage.lines.percentage - previousResults.coverage.lines.percentage;
+      currentResults.coverage.lines.percentage -
+      previousResults.coverage.lines.percentage;
   }
 
   return metrics;

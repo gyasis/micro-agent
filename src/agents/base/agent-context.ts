@@ -182,7 +182,12 @@ export interface CriticOutput {
 
 export interface ReviewIssue {
   severity: 'critical' | 'warning' | 'info';
-  category: 'logic' | 'edge-case' | 'performance' | 'maintainability' | 'security';
+  category:
+    | 'logic'
+    | 'edge-case'
+    | 'performance'
+    | 'maintainability'
+    | 'security';
   message: string;
   file?: string;
   line?: number;
@@ -261,7 +266,7 @@ export function createAgentContext(options: {
  */
 export function updatePhase(
   context: AgentContext,
-  phase: IterationState['currentPhase']
+  phase: IterationState['currentPhase'],
 ): AgentContext {
   return {
     ...context,
@@ -277,7 +282,7 @@ export function updatePhase(
  */
 export function withLibrarianContext(
   context: AgentContext,
-  librarianOutput: LibrarianOutput
+  librarianOutput: LibrarianOutput,
 ): AgentContext {
   return {
     ...context,
@@ -295,7 +300,7 @@ export function withLibrarianContext(
  */
 export function withArtisanCode(
   context: AgentContext,
-  artisanOutput: ArtisanOutput
+  artisanOutput: ArtisanOutput,
 ): AgentContext {
   return {
     ...context,
@@ -312,7 +317,7 @@ export function withArtisanCode(
  */
 export function withCriticReview(
   context: AgentContext,
-  criticOutput: CriticOutput
+  criticOutput: CriticOutput,
 ): AgentContext {
   return {
     ...context,
@@ -329,7 +334,7 @@ export function withCriticReview(
  */
 export function withTestResults(
   context: AgentContext,
-  testResults: any // RalphTestResult from parsers
+  testResults: any, // RalphTestResult from parsers
 ): AgentContext {
   // Convert RalphTestResult to TestResult
   const failures: TestFailure[] = testResults.tests
@@ -387,9 +392,11 @@ export function withTestResults(
  * Check if budget is exceeded
  */
 export function isBudgetExceeded(context: AgentContext): boolean {
-  const costExceeded = context.budget.currentCostUsd >= context.budget.maxCostUsd;
+  const costExceeded =
+    context.budget.currentCostUsd >= context.budget.maxCostUsd;
 
-  const elapsed = (Date.now() - context.budget.startTime.getTime()) / (1000 * 60);
+  const elapsed =
+    (Date.now() - context.budget.startTime.getTime()) / (1000 * 60);
   const timeExceeded = elapsed >= context.budget.maxDurationMinutes;
 
   // Note: Iteration count is checked by the while loop condition, not here
@@ -403,7 +410,7 @@ export function isBudgetExceeded(context: AgentContext): boolean {
  */
 export function withEscalationContext(
   context: AgentContext,
-  naturalLanguageSummary: string
+  naturalLanguageSummary: string,
 ): AgentContext {
   return {
     ...context,

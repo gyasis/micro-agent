@@ -94,7 +94,7 @@ export class RalphOrchestrator {
     targetFile: string,
     objective: string,
     config: RalphConfig,
-    plugins: PluginRegistryEntry[] = []
+    plugins: PluginRegistryEntry[] = [],
   ): Promise<OrchestrationResult> {
     const startTime = Date.now();
 
@@ -111,14 +111,14 @@ export class RalphOrchestrator {
       targetFile,
       objective,
       config,
-      plugins
+      plugins,
     );
 
     // Create actor
     const actor = createActor(machine);
 
     // Subscribe to state transitions
-    actor.subscribe(state => {
+    actor.subscribe((state) => {
       logger.debug(`State transition: ${state.value as string}`, {
         context: state.context,
       });
@@ -177,7 +177,7 @@ export class RalphOrchestrator {
    */
   private async executeStateMachine(
     actor: any,
-    plugins: PluginRegistryEntry[]
+    plugins: PluginRegistryEntry[],
   ): Promise<string> {
     // State machine will transition through states
     // We need to execute agents at each state
@@ -220,7 +220,7 @@ export class RalphOrchestrator {
         }
 
         // Wait for state transition
-        await new Promise(resolve => setTimeout(resolve, 100));
+        await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
         logger.error(`Error in state ${currentState}:`, error);
 
@@ -250,7 +250,7 @@ export class RalphOrchestrator {
   private async executeLibrarianState(
     actor: any,
     context: RalphContext,
-    plugins: PluginRegistryEntry[]
+    plugins: PluginRegistryEntry[],
   ): Promise<void> {
     logger.info('Executing Librarian agent...');
 
@@ -262,17 +262,11 @@ export class RalphOrchestrator {
     await this.hookExecutor.executeHook(
       'onBeforeGen',
       plugins,
-      this.createPluginContext(context)
+      this.createPluginContext(context),
     );
 
     // Execute Librarian agent
-    const result = await this.librarianAgent.execute({
-      sessionId: context.sessionId,
-      iteration: context.iteration,
-      targetFile: context.targetFile,
-      objective: context.objective,
-      codebaseFiles: context.codebaseFiles,
-    });
+    const result = await this.librarianAgent.execute();
 
     // Send success event to state machine
     actor.send({
@@ -289,7 +283,7 @@ export class RalphOrchestrator {
   private async executeArtisanState(
     actor: any,
     context: RalphContext,
-    plugins: PluginRegistryEntry[]
+    plugins: PluginRegistryEntry[],
   ): Promise<void> {
     logger.info('Executing Artisan agent...');
 
@@ -298,20 +292,14 @@ export class RalphOrchestrator {
     }
 
     // Execute Artisan agent
-    const result = await this.artisanAgent.execute({
-      sessionId: context.sessionId,
-      iteration: context.iteration,
-      targetFile: context.targetFile,
-      objective: context.objective,
-      librarianOutput: context.librarianOutput,
-    });
+    const result = await this.artisanAgent.execute();
 
     // Execute plugin hooks: onAfterGen
     await this.hookExecutor.executeHook(
       'onAfterGen',
       plugins,
       this.createPluginContext(context),
-      result
+      result,
     );
 
     // Send success event to state machine
@@ -329,7 +317,7 @@ export class RalphOrchestrator {
   private async executeCriticState(
     actor: any,
     context: RalphContext,
-    plugins: PluginRegistryEntry[]
+    plugins: PluginRegistryEntry[],
   ): Promise<void> {
     logger.info('Executing Critic agent...');
 
@@ -338,12 +326,7 @@ export class RalphOrchestrator {
     }
 
     // Execute Critic agent
-    const result = await this.criticAgent.execute({
-      sessionId: context.sessionId,
-      iteration: context.iteration,
-      targetFile: context.targetFile,
-      artisanOutput: context.artisanOutput,
-    });
+    const result = await this.criticAgent.execute();
 
     // Send success event to state machine
     actor.send({
@@ -365,7 +348,7 @@ export class RalphOrchestrator {
   private async executeTestingState(
     actor: any,
     context: RalphContext,
-    plugins: PluginRegistryEntry[]
+    plugins: PluginRegistryEntry[],
   ): Promise<void> {
     logger.info('Executing tests...');
 
@@ -375,7 +358,7 @@ export class RalphOrchestrator {
       const result = await executeTests({
         projectDir,
         targetFile: context.targetFile,
-        timeout: context.config.timeLimit || 120000,
+        timeout: (context.config.budgets?.maxDurationMinutes ?? 2) * 60000,
       });
 
       // Validate test result
@@ -402,7 +385,7 @@ export class RalphOrchestrator {
           'onTestFail',
           plugins,
           this.createPluginContext(context),
-          result.testResults
+          result.testResults,
         );
 
         actor.send({
@@ -456,7 +439,7 @@ export class RalphOrchestrator {
   private async executeAdversarialState(
     actor: any,
     context: RalphContext,
-    plugins: PluginRegistryEntry[]
+    plugins: PluginRegistryEntry[],
   ): Promise<void> {
     logger.info('Executing Chaos agent (adversarial testing)...');
 
@@ -470,12 +453,7 @@ export class RalphOrchestrator {
     }
 
     // Execute Chaos agent
-    const result = await this.chaosAgent.execute({
-      sessionId: context.sessionId,
-      iteration: context.iteration,
-      targetFile: context.targetFile,
-      artisanOutput: context.artisanOutput,
-    });
+    const result = await this.chaosAgent.execute();
 
     // Send result event
     if (result.success) {

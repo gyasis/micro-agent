@@ -35,7 +35,14 @@ export interface ImportInfo {
 
 export interface ExportInfo {
   name: string;
-  kind: 'variable' | 'function' | 'class' | 'interface' | 'type' | 'enum' | 'namespace';
+  kind:
+    | 'variable'
+    | 'function'
+    | 'class'
+    | 'interface'
+    | 'type'
+    | 'enum'
+    | 'namespace';
   isDefault: boolean;
   isTypeOnly: boolean;
 }
@@ -67,7 +74,7 @@ export class DependencyGraphCache {
    */
   async getFileDependencies(
     filePath: string,
-    rootDir: string
+    rootDir: string,
   ): Promise<DependencyInfo | null> {
     const cacheKey = path.relative(rootDir, filePath);
     const cached = this._fileCache.get(cacheKey);
@@ -94,7 +101,7 @@ export class DependencyGraphCache {
   async setFileDependencies(
     filePath: string,
     rootDir: string,
-    info: DependencyInfo
+    info: DependencyInfo,
   ): Promise<void> {
     const cacheKey = path.relative(rootDir, filePath);
 
@@ -105,7 +112,7 @@ export class DependencyGraphCache {
       // Evict oldest entries if cache too large
       if (this._fileCache.size > this._maxCacheSize) {
         const firstKey = this._fileCache.keys().next().value;
-        this._fileCache.delete(firstKey);
+        if (firstKey !== undefined) this._fileCache.delete(firstKey);
       }
     } catch {
       // Ignore stat errors
@@ -118,7 +125,7 @@ export class DependencyGraphCache {
   getModuleResolution(
     modulePath: string,
     fromDir: string,
-    rootDir: string
+    rootDir: string,
   ): string | null | undefined {
     const cacheKey = `${fromDir}:${modulePath}`;
     return this._moduleResolutionCache.get(cacheKey);
@@ -131,7 +138,7 @@ export class DependencyGraphCache {
     modulePath: string,
     fromDir: string,
     rootDir: string,
-    resolved: string | null
+    resolved: string | null,
   ): void {
     const cacheKey = `${fromDir}:${modulePath}`;
     this._moduleResolutionCache.set(cacheKey, resolved);
@@ -139,7 +146,7 @@ export class DependencyGraphCache {
     // Evict oldest entries if cache too large
     if (this._moduleResolutionCache.size > this._maxCacheSize) {
       const firstKey = this._moduleResolutionCache.keys().next().value;
-      this._moduleResolutionCache.delete(firstKey);
+      if (firstKey !== undefined) this._moduleResolutionCache.delete(firstKey);
     }
   }
 
@@ -148,7 +155,7 @@ export class DependencyGraphCache {
    */
   async getGraph(
     files: string[],
-    rootDir: string
+    rootDir: string,
   ): Promise<DependencyGraph | null> {
     const cacheKey = files.sort().join(':');
     const cached = this._graphCache.get(cacheKey);
@@ -187,7 +194,7 @@ export class DependencyGraphCache {
     if (this._graphCache.size > 100) {
       // Keep graph cache smaller
       const firstKey = this._graphCache.keys().next().value;
-      this._graphCache.delete(firstKey);
+      if (firstKey !== undefined) this._graphCache.delete(firstKey);
     }
   }
 
@@ -225,7 +232,7 @@ const globalCache = new DependencyGraphCache();
 export async function parseFileDependencies(
   filePath: string,
   rootDir: string,
-  cache: DependencyGraphCache = globalCache
+  cache: DependencyGraphCache = globalCache,
 ): Promise<DependencyInfo> {
   // Check cache first
   const cached = await cache.getFileDependencies(filePath, rootDir);
@@ -240,18 +247,23 @@ export async function parseFileDependencies(
     filePath,
     content,
     ts.ScriptTarget.Latest,
-    true
+    true,
   );
 
   const imports = extractImports(sourceFile);
   const exports = extractExports(sourceFile);
 
   // Resolve import paths (with caching)
-  const resolvedImports = await resolveImports(imports, filePath, rootDir, cache);
+  const resolvedImports = await resolveImports(
+    imports,
+    filePath,
+    rootDir,
+    cache,
+  );
 
   const dependencies = resolvedImports
-    .filter(imp => imp.resolved)
-    .map(imp => imp.resolved!);
+    .filter((imp) => imp.resolved)
+    .map((imp) => imp.resolved!);
 
   const info: DependencyInfo = {
     file: path.relative(rootDir, filePath),
@@ -389,7 +401,9 @@ function hasExportModifier(node: ts.Node): boolean {
   if (!modifiers) return false;
 
   return modifiers.some(
-    m => m.kind === ts.SyntaxKind.ExportKeyword || m.kind === ts.SyntaxKind.DefaultKeyword
+    (m) =>
+      m.kind === ts.SyntaxKind.ExportKeyword ||
+      m.kind === ts.SyntaxKind.DefaultKeyword,
   );
 }
 
@@ -436,7 +450,9 @@ function parseExportedDeclaration(node: ts.Node): ExportInfo | null {
   if (ts.canHaveModifiers(node)) {
     const modifiers = ts.getModifiers(node);
     if (modifiers) {
-      isDefault = modifiers.some(m => m.kind === ts.SyntaxKind.DefaultKeyword);
+      isDefault = modifiers.some(
+        (m) => m.kind === ts.SyntaxKind.DefaultKeyword,
+      );
     }
   }
 
@@ -450,7 +466,7 @@ async function resolveImports(
   imports: ImportInfo[],
   fromFile: string,
   rootDir: string,
-  cache: DependencyGraphCache = globalCache
+  cache: DependencyGraphCache = globalCache,
 ): Promise<ImportInfo[]> {
   const resolved = [...imports];
 
@@ -461,7 +477,12 @@ async function resolveImports(
     }
 
     const fromDir = path.dirname(fromFile);
-    const resolvedPath = await resolveModulePath(imp.module, fromDir, rootDir, cache);
+    const resolvedPath = await resolveModulePath(
+      imp.module,
+      fromDir,
+      rootDir,
+      cache,
+    );
 
     if (resolvedPath) {
       imp.resolved = path.relative(rootDir, resolvedPath);
@@ -478,7 +499,7 @@ async function resolveModulePath(
   modulePath: string,
   fromDir: string,
   rootDir: string,
-  cache: DependencyGraphCache = globalCache
+  cache: DependencyGraphCache = globalCache,
 ): Promise<string | null> {
   // Check cache first
   const cached = cache.getModuleResolution(modulePath, fromDir, rootDir);
@@ -506,7 +527,9 @@ async function resolveModulePath(
   }
 
   // Try index files
-  const indexPaths = extensions.map(ext => path.join(basePath, `index${ext}`));
+  const indexPaths = extensions.map((ext) =>
+    path.join(basePath, `index${ext}`),
+  );
   for (const indexPath of indexPaths) {
     if (await fileExists(indexPath)) {
       cache.setModuleResolution(modulePath, fromDir, rootDir, indexPath);
@@ -537,7 +560,7 @@ async function fileExists(filePath: string): Promise<boolean> {
 export async function buildDependencyGraph(
   files: string[],
   rootDir: string,
-  cache: DependencyGraphCache = globalCache
+  cache: DependencyGraphCache = globalCache,
 ): Promise<DependencyGraph> {
   // Check cache first
   const cachedGraph = await cache.getGraph(files, rootDir);
@@ -580,7 +603,7 @@ export async function buildDependencyGraph(
  */
 export function calculateDistances(
   graph: DependencyGraph,
-  targetFile: string
+  targetFile: string,
 ): Map<string, number> {
   const distances = new Map<string, number>();
   const queue: Array<{ file: string; distance: number }> = [
@@ -612,9 +635,7 @@ export function calculateDistances(
 /**
  * Find circular dependencies in graph
  */
-export function findCircularDependencies(
-  graph: DependencyGraph
-): string[][] {
+export function findCircularDependencies(graph: DependencyGraph): string[][] {
   const cycles: string[][] = [];
   const visited = new Set<string>();
   const recursionStack = new Set<string>();

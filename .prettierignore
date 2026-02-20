@@ -1,3 +1,38 @@
-**/*.prompt.md
+# Build and compiled output
+dist/
 .next
+
+# Dependencies
+node_modules/
+
+# Specifications and documentation
+specs/
+PRD/
+research_reports/
+docs/tutorials/*.ipynb
+
+# Test and example files
+test/
+tests/
+test-example/
+
+# Scripts and utilities
+scripts/
+
+# Generated metadata and session data
+.specstory/
+.specify/
+memory-bank/
+
+# IDE and tool configuration
+.vscode/
+.devkid/
+.claude/
+.husky/
+.github/
+
+# Changelog
 CHANGELOG.md
+
+# Prompts
+**/*.prompt.md

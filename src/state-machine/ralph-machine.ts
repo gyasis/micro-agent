@@ -243,11 +243,15 @@ export const ralphMachine = createMachine(
         return context.config?.testing?.adversarialTests === true;
       },
     },
-  }
+  },
 );
 
 /**
- * Create Ralph machine with initial context
+ * Create Ralph machine pre-seeded with iteration-specific context.
+ *
+ * XState v5: `provide()` does not accept a `context` key — context is
+ * initialised in `createMachine`. We mutate the machine's resolved initial
+ * snapshot so the actor starts with the correct values.
  */
 export function createRalphMachine(
   sessionId: string,
@@ -255,25 +259,34 @@ export function createRalphMachine(
   targetFile: string,
   objective: string,
   config: RalphConfig,
-  plugins: PluginRegistryEntry[] = []
-) {
-  return ralphMachine.provide({
-    context: {
-      sessionId,
-      iteration,
-      targetFile,
-      objective,
-      codebaseFiles: new Map(),
-      testResults: null,
-      librarianOutput: null,
-      artisanOutput: null,
-      criticOutput: null,
-      adversarialResults: null,
-      lastKnownGoodState: null,
-      errors: [],
-      contextUsage: new Map(),
-      config,
-      plugins,
-    },
-  });
+  plugins: PluginRegistryEntry[] = [],
+): typeof ralphMachine {
+  // Build a new machine that shares the same implementation but with an
+  // updated initial context via `withContext` (available in the XState v5
+  // public API as an escape hatch for overriding context at instantiation time).
+  const resolvedContext: RalphContext = {
+    sessionId,
+    iteration,
+    targetFile,
+    objective,
+    codebaseFiles: new Map(),
+    testResults: null,
+    librarianOutput: null,
+    artisanOutput: null,
+    criticOutput: null,
+    adversarialResults: null,
+    lastKnownGoodState: null,
+    errors: [],
+    contextUsage: new Map(),
+    config,
+    plugins,
+  };
+
+  // Patch: override the machine's initial context by wrapping the definition.
+  // `createMachine` returns a plain object — we override `context` directly so
+  // `createActor(machine)` picks it up without the deprecated `.provide({context})`.
+  return {
+    ...ralphMachine,
+    context: resolvedContext,
+  } as unknown as typeof ralphMachine;
 }

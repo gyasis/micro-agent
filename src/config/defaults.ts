@@ -87,12 +87,6 @@ export function getDefaults(): RalphConfig {
       contextResetFrequency: 1, // GOLD STANDARD - fresh context every iteration
     },
 
-    entropy: {
-      threshold: 3, // Circuit breaker at 3 identical errors (T058)
-      windowSize: 10, // Track last 10 errors
-      resetOnDifferentError: true, // Reset counter when different error occurs
-    },
-
     plugins: [],
 
     sandbox: {
@@ -107,7 +101,9 @@ export function getDefaults(): RalphConfig {
 /**
  * Get default model for specific agent
  */
-export function getDefaultModel(agent: 'librarian' | 'artisan' | 'critic' | 'chaos'): {
+export function getDefaultModel(
+  agent: 'librarian' | 'artisan' | 'critic' | 'chaos',
+): {
   provider: string;
   model: string;
   temperature: number;
@@ -135,11 +131,13 @@ export function getDefaultBudgets(): {
   maxDurationMinutes: number;
 } {
   const defaults = getDefaults();
-  return defaults.budgets || {
-    maxIterations: 30,
-    maxCostUsd: 2.0,
-    maxDurationMinutes: 15,
-  };
+  return (
+    defaults.budgets || {
+      maxIterations: 30,
+      maxCostUsd: 2.0,
+      maxDurationMinutes: 15,
+    }
+  );
 }
 
 /**
@@ -152,11 +150,12 @@ export function getDefaultSuccessCriteria(): {
   mutationScoreMin: number;
 } {
   const defaults = getDefaults();
-  return defaults.successCriteria || {
-    testsPass: true,
-    adversarialTestsPass: true,
-    coverageThreshold: 90,
-    mutationScoreMin: 80,
+  const sc = defaults.successCriteria;
+  return {
+    testsPass: sc?.testsPass ?? true,
+    adversarialTestsPass: sc?.adversarialTestsPass ?? true,
+    coverageThreshold: sc?.coverageThreshold ?? 90,
+    mutationScoreMin: sc?.mutationScoreMin ?? 80,
   };
 }
 
@@ -179,8 +178,7 @@ export function getDefaultEntropyConfig(): {
   windowSize: number;
   resetOnDifferentError: boolean;
 } {
-  const defaults = getDefaults();
-  return defaults.entropy || {
+  return {
     threshold: 3,
     windowSize: 10,
     resetOnDifferentError: true,

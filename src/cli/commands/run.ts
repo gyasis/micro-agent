@@ -34,10 +34,21 @@ import {
 } from '../../agents/base/agent-context';
 import type { AgentContext } from '../../agents/base/agent-context';
 import { v4 as uuidv4 } from 'uuid';
-import { loadTierConfig, validateTierConfig } from '../../lifecycle/tier-config';
+import {
+  loadTierConfig,
+  validateTierConfig,
+} from '../../lifecycle/tier-config';
 import { runTier } from '../../lifecycle/tier-engine';
-import { buildAccumulatedSummary, withTierEscalationContext } from '../../lifecycle/tier-accumulator';
-import { openAuditDatabase, writeRunMetadata, updateRunMetadata, closeAuditDatabase } from '../../lifecycle/tier-db';
+import {
+  buildAccumulatedSummary,
+  withTierEscalationContext,
+} from '../../lifecycle/tier-accumulator';
+import {
+  openAuditDatabase,
+  writeRunMetadata,
+  updateRunMetadata,
+  closeAuditDatabase,
+} from '../../lifecycle/tier-db';
 import type { TierEscalationConfig } from '../../lifecycle/types';
 
 const logger = createLogger();
@@ -57,16 +68,19 @@ export interface RunOptions {
   adversarial?: boolean;
   resetFrequency?: string;
   verbose?: boolean;
-  simpleIterations?: string;  // --simple N (default "5")
-  noEscalate?: boolean;       // --no-escalate flag
-  fullMode?: boolean;         // --full flag
-  tierConfig?: string;        // --tier-config <path>
+  simpleIterations?: string; // --simple N (default "5")
+  noEscalate?: boolean; // --no-escalate flag
+  fullMode?: boolean; // --full flag
+  tierConfig?: string; // --tier-config <path>
 }
 
 /**
  * Run Micro Agent (Ralph Loop engine) for target file or objective
  */
-export async function runCommand(target: string, options: RunOptions): Promise<void> {
+export async function runCommand(
+  target: string,
+  options: RunOptions,
+): Promise<void> {
   const startTime = Date.now();
 
   logger.info('🤖 Micro Agent starting (Ralph Loop engine)', {
@@ -76,7 +90,9 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
 
   try {
     // Step 1: Load configuration
-    const config = await loadConfig(options.config);
+    const config = await loadConfig(
+      options.config ? { configPath: options.config } : undefined,
+    );
     logger.info('Configuration loaded');
 
     // ── Tier Engine Path (when --tier-config is provided) ─────────────────────────
@@ -100,7 +116,7 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
       config,
       providerRouter,
       costTracker,
-      options
+      options,
     );
     logger.info('Agents initialized', {
       librarian: agents.librarian.getConfig().model,
@@ -109,7 +125,10 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
     });
 
     // Register agents with context monitor for token tracking
-    contextMonitor.registerAgent('librarian', agents.librarian.getConfig().model);
+    contextMonitor.registerAgent(
+      'librarian',
+      agents.librarian.getConfig().model,
+    );
     contextMonitor.registerAgent('artisan', agents.artisan.getConfig().model);
     contextMonitor.registerAgent('critic', agents.critic.getConfig().model);
 
@@ -179,7 +198,11 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
           const iterStart = Date.now();
           const prevCost = context.budget.currentCostUsd;
 
-          const result = await runSimpleIteration(context, agents, contextMonitor);
+          const result = await runSimpleIteration(
+            context,
+            agents,
+            contextMonitor,
+          );
           context = result.context;
           success = result.success;
 
@@ -188,9 +211,13 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
 
           // Get failure info from last test result
           const lastResult = context.test.lastResult;
-          const failedTests = lastResult?.failures.map(f => f.testName) || [];
-          const errorMessages = lastResult?.failures.map(f => f.errorMessage).filter((v, i, a) => a.indexOf(v) === i) || [];
-          const artisanReasoning = context.artisanCode?.reasoning || 'code modified';
+          const failedTests = lastResult?.failures.map((f) => f.testName) || [];
+          const errorMessages =
+            lastResult?.failures
+              .map((f) => f.errorMessage)
+              .filter((v, i, a) => a.indexOf(v) === i) || [];
+          const artisanReasoning =
+            context.artisanCode?.reasoning || 'code modified';
 
           simpleRecords.push({
             iteration: simpleIterationCount,
@@ -203,16 +230,26 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
           });
 
           if (success) {
-            logger.info(`Simple Mode: Solved in ${simpleIterationCount}/${simpleMax} iterations`);
+            logger.info(
+              `Simple Mode: Solved in ${simpleIterationCount}/${simpleMax} iterations`,
+            );
             break;
           }
 
           // Context reset every iteration (Ralph Loop gold standard)
           if (iterationManager.shouldResetContext()) {
-            await resetContext(agents, contextMonitor, context.sessionId, iteration);
+            await resetContext(
+              agents,
+              contextMonitor,
+              context.sessionId,
+              iteration,
+            );
           }
         } catch (error) {
-          logger.error(`Simple mode iteration ${simpleIterationCount} error`, error);
+          logger.error(
+            `Simple mode iteration ${simpleIterationCount} error`,
+            error,
+          );
           const errorSignature = String(error);
           const shouldStop = iterationManager.trackError(errorSignature);
           if (shouldStop) {
@@ -224,24 +261,39 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
     }
 
     // ── Phase B: Escalation ────────────────────────────────────────────────
-    if (!success && !noEscalate && !useFullMode && simpleRecords.length > 0 && !isBudgetExceeded(context)) {
+    if (
+      !success &&
+      !noEscalate &&
+      !useFullMode &&
+      simpleRecords.length > 0 &&
+      !isBudgetExceeded(context)
+    ) {
       const summary = buildFailureSummary(simpleRecords);
       context = withEscalationContext(context, summary.naturalLanguageSummary);
 
       logger.info(`\n${'='.repeat(60)}`);
-      logger.info(`Escalating to Full Mode after ${simpleIterationCount} simple iteration(s)`);
-      logger.info(`   Summary: ${summary.naturalLanguageSummary.slice(0, 200)}...`);
-      logger.info(`   Remaining budget: $${(context.budget.maxCostUsd - context.budget.currentCostUsd).toFixed(3)}`);
+      logger.info(
+        `Escalating to Full Mode after ${simpleIterationCount} simple iteration(s)`,
+      );
+      logger.info(
+        `   Summary: ${summary.naturalLanguageSummary.slice(0, 200)}...`,
+      );
+      logger.info(
+        `   Remaining budget: $${(context.budget.maxCostUsd - context.budget.currentCostUsd).toFixed(3)}`,
+      );
       logger.info('='.repeat(60));
     }
 
     // ── Phase C: Full mode loop ────────────────────────────────────────────
-    const shouldRunFullMode = useFullMode || (!success && !noEscalate && !isBudgetExceeded(context));
+    const shouldRunFullMode =
+      useFullMode || (!success && !noEscalate && !isBudgetExceeded(context));
     const remainingIterations = params.maxIterations - simpleIterationCount;
 
     if (shouldRunFullMode && remainingIterations > 0) {
       logger.info(`\n${'='.repeat(60)}`);
-      logger.info(`Full Mode: up to ${remainingIterations} iteration(s) remaining`);
+      logger.info(
+        `Full Mode: up to ${remainingIterations} iteration(s) remaining`,
+      );
       logger.info('='.repeat(60));
 
       while (fullIterationCount < remainingIterations && !success) {
@@ -259,7 +311,12 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
 
           const prevCost = context.budget.currentCostUsd;
 
-          const result = await runSingleIteration(context, agents, iterationManager, contextMonitor);
+          const result = await runSingleIteration(
+            context,
+            agents,
+            iterationManager,
+            contextMonitor,
+          );
           context = result.context;
           success = result.success;
 
@@ -268,26 +325,37 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
           // Capture full mode errors for failure report
           if (!success) {
             const lastResult = context.test.lastResult;
-            const errs = lastResult?.failures.map(f => f.errorMessage) || [];
+            const errs = lastResult?.failures.map((f) => f.errorMessage) || [];
             for (const e of errs) {
               if (!fullErrorMessages.includes(e)) fullErrorMessages.push(e);
             }
           }
 
           if (iterationManager.shouldResetContext()) {
-            await resetContext(agents, contextMonitor, context.sessionId, iteration);
+            await resetContext(
+              agents,
+              contextMonitor,
+              context.sessionId,
+              iteration,
+            );
           }
 
-          logger.info(`Full Mode iteration ${fullIterationCount} ${success ? 'SUCCESS' : 'FAILED'}`, {
-            cost: context.budget.currentCostUsd.toFixed(3),
-          });
+          logger.info(
+            `Full Mode iteration ${fullIterationCount} ${success ? 'SUCCESS' : 'FAILED'}`,
+            {
+              cost: context.budget.currentCostUsd.toFixed(3),
+            },
+          );
 
           if (success) {
             logger.info('Objective achieved!');
             break;
           }
         } catch (error) {
-          logger.error(`Full mode iteration ${fullIterationCount} error`, error);
+          logger.error(
+            `Full mode iteration ${fullIterationCount} error`,
+            error,
+          );
           const errorSignature = String(error);
           const shouldStop = iterationManager.trackError(errorSignature);
           if (shouldStop) {
@@ -313,29 +381,42 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
 
     logger.info('\n' + '='.repeat(60));
     if (success) {
-      logger.info(fullIterationCount > 0
-        ? `Full Mode: Solved in ${fullIterationCount} additional iteration(s)`
-        : `Simple Mode: Solved in ${simpleIterationCount}/${params.simpleIterations} iterations`);
+      logger.info(
+        fullIterationCount > 0
+          ? `Full Mode: Solved in ${fullIterationCount} additional iteration(s)`
+          : `Simple Mode: Solved in ${simpleIterationCount}/${params.simpleIterations} iterations`,
+      );
     } else {
-      logger.info(escalated ? 'Both modes exhausted without success' : 'Micro Agent Complete');
+      logger.info(
+        escalated
+          ? 'Both modes exhausted without success'
+          : 'Micro Agent Complete',
+      );
     }
     logger.info('='.repeat(60));
     logger.info(`Status:     ${success ? 'SUCCESS' : 'FAILED'}`);
     logger.info(`Mode:       ${modeLabel}`);
-    logger.info(`Iterations: ${simpleIterationCount} simple / ${fullIterationCount} full / ${simpleIterationCount + fullIterationCount} total`);
-    logger.info(`Cost:       $${simpleCost.toFixed(3)} simple / $${fullCost.toFixed(3)} full / $${context.budget.currentCostUsd.toFixed(3)} total`);
+    logger.info(
+      `Iterations: ${simpleIterationCount} simple / ${fullIterationCount} full / ${simpleIterationCount + fullIterationCount} total`,
+    );
+    logger.info(
+      `Cost:       $${simpleCost.toFixed(3)} simple / $${fullCost.toFixed(3)} full / $${context.budget.currentCostUsd.toFixed(3)} total`,
+    );
     logger.info(`Duration:   ${duration.toFixed(1)}s`);
 
     // On full failure, show per-phase error summary
     if (!success) {
-      const simpleErrors = [...new Set(simpleRecords.flatMap(r => r.errorMessages))].slice(0, 5);
+      const simpleErrors = [
+        ...new Set(simpleRecords.flatMap((r) => r.errorMessages)),
+      ].slice(0, 5);
       if (simpleErrors.length > 0) {
         logger.info('\nSimple mode errors:');
         for (const e of simpleErrors) logger.info(`  - "${e}"`);
       }
       if (fullErrorMessages.length > 0) {
         logger.info('\nFull mode errors:');
-        for (const e of fullErrorMessages.slice(0, 5)) logger.info(`  - "${e}"`);
+        for (const e of fullErrorMessages.slice(0, 5))
+          logger.info(`  - "${e}"`);
       }
     }
 
@@ -352,7 +433,7 @@ export async function runCommand(target: string, options: RunOptions): Promise<v
 function prepareRunParameters(
   target: string,
   options: RunOptions,
-  config: any
+  config: any,
 ): {
   objective: string;
   targetFile?: string;
@@ -371,8 +452,7 @@ function prepareRunParameters(
 
   return {
     objective:
-      options.objective ||
-      (isFile ? `Make ${target} pass all tests` : target),
+      options.objective || (isFile ? `Make ${target} pass all tests` : target),
     targetFile: isFile ? target : undefined,
     workingDirectory: process.cwd(),
     testCommand: options.test || config.testing?.defaultCommand || 'npm test',
@@ -390,20 +470,19 @@ function prepareRunParameters(
  * Initialize infrastructure components
  */
 async function initializeInfrastructure(params: any, config: any) {
-  const providerRouter = new ProviderRouter(logger);
-  const costTracker = new CostTracker(params.maxBudget, logger);
+  const providerRouter = new ProviderRouter();
+  const costTracker = new CostTracker(params.maxBudget);
 
-  const iterationManager = new IterationManager(
-    {
-      maxIterations: params.maxIterations,
-      maxCostUsd: params.maxBudget,
-      maxDurationMinutes: params.maxDuration,
-      contextResetFrequency: config.memory?.contextResetFrequency || 1,
-    },
-    logger
-  );
+  const iterationManager = new IterationManager({
+    sessionId: 'run',
+    maxIterations: params.maxIterations,
+    maxCostUsd: params.maxBudget,
+    maxDurationMinutes: params.maxDuration,
+    contextResetFrequency: config.memory?.contextResetFrequency || 1,
+    entropyThreshold: 3,
+  });
 
-  const contextMonitor = new ContextMonitor(logger);
+  const contextMonitor = new ContextMonitor();
 
   return { providerRouter, costTracker, iterationManager, contextMonitor };
 }
@@ -415,19 +494,21 @@ async function initializeAgents(
   config: any,
   providerRouter: ProviderRouter,
   costTracker: CostTracker,
-  options: RunOptions
+  options: RunOptions,
 ) {
   const librarianConfig = {
     type: 'librarian' as const,
     provider: config.models?.librarian?.provider || 'google',
-    model: options.librarian || config.models?.librarian?.model || 'gemini-2.0-pro',
+    model:
+      options.librarian || config.models?.librarian?.model || 'gemini-2.0-pro',
     temperature: config.models?.librarian?.temperature || 0.3,
   };
 
   const artisanConfig = {
     type: 'artisan' as const,
     provider: config.models?.artisan?.provider || 'anthropic',
-    model: options.artisan || config.models?.artisan?.model || 'claude-sonnet-4.5',
+    model:
+      options.artisan || config.models?.artisan?.model || 'claude-sonnet-4.5',
     temperature: config.models?.artisan?.temperature || 0.7,
   };
 
@@ -442,21 +523,21 @@ async function initializeAgents(
     librarianConfig,
     logger,
     providerRouter,
-    costTracker
+    costTracker,
   );
 
   const artisan = new ArtisanAgent(
     artisanConfig,
     logger,
     providerRouter,
-    costTracker
+    costTracker,
   );
 
   const critic = new CriticAgent(
     criticConfig,
     logger,
     providerRouter,
-    costTracker
+    costTracker,
   );
 
   return { librarian, artisan, critic };
@@ -469,7 +550,7 @@ async function initializeAgents(
 async function runSimpleIteration(
   context: AgentContext,
   agents: any,
-  contextMonitor: ContextMonitor
+  contextMonitor: ContextMonitor,
 ): Promise<{
   context: AgentContext;
   success: boolean;
@@ -490,7 +571,9 @@ async function runSimpleIteration(
 
   // Log what the Artisan changed so the user can follow along
   const reasoning = artisanResult.data.reasoning || '(no reasoning provided)';
-  logger.info(`  Artisan: ${reasoning.slice(0, 200)}${reasoning.length > 200 ? '...' : ''}`);
+  logger.info(
+    `  Artisan: ${reasoning.slice(0, 200)}${reasoning.length > 200 ? '...' : ''}`,
+  );
   if (artisanResult.data.changes?.length) {
     for (const change of artisanResult.data.changes.slice(0, 3)) {
       logger.info(`  Change:  ${String(change).slice(0, 120)}`);
@@ -512,21 +595,33 @@ async function runSimpleIteration(
 
   updatedContext = withTestResults(updatedContext, testResult.results);
 
-  const testsPass = testResult.success && testResult.results.summary.status === 'passed';
+  const testsPass =
+    testResult.success && testResult.results.summary.status === 'passed';
 
   if (testsPass) {
-    logger.info(`  Tests: ✓ ALL PASSED (${testResult.results.summary.passed} tests)`);
+    logger.info(
+      `  Tests: ✓ ALL PASSED (${testResult.results.summary.passed} tests)`,
+    );
   } else {
-    logger.info(`  Tests: ✗ ${testResult.results.summary.failed} failed / ${testResult.results.summary.total} total`);
+    logger.info(
+      `  Tests: ✗ ${testResult.results.summary.failed} failed / ${testResult.results.summary.total} total`,
+    );
     // Show each failing test and its error message
-    for (const failure of (testResult.results.failures || []).slice(0, 5)) {
-      logger.info(`    ✗ ${failure.testName}`);
-      if (failure.errorMessage) {
-        logger.info(`      ${failure.errorMessage.split('\n')[0].slice(0, 120)}`);
+    const failedTests = (testResult.results.tests || []).filter(
+      (t) => t.status === 'failed' || t.status === 'error',
+    );
+    for (const failure of failedTests.slice(0, 5)) {
+      logger.info(`    ✗ ${failure.name}`);
+      if (failure.error?.message) {
+        logger.info(
+          `      ${failure.error.message.split('\n')[0].slice(0, 120)}`,
+        );
       }
     }
   }
-  logger.info(`  Cost:  $${artisanResult.cost?.toFixed(4) || '0.0000'} this iteration`);
+  logger.info(
+    `  Cost:  $${artisanResult.cost?.toFixed(4) || '0.0000'} this iteration`,
+  );
 
   return {
     context: updatedContext,
@@ -538,15 +633,17 @@ async function runSimpleIteration(
  * Build a structured failure summary from simple mode iteration records.
  * The naturalLanguageSummary is injected into the Librarian prompt on escalation.
  */
-function buildFailureSummary(records: Array<{
-  iteration: number;
-  codeChangeSummary: string;
-  testStatus: 'passed' | 'failed' | 'error';
-  failedTests: string[];
-  errorMessages: string[];
-  duration: number;
-  cost: number;
-}>): {
+function buildFailureSummary(
+  records: Array<{
+    iteration: number;
+    codeChangeSummary: string;
+    testStatus: 'passed' | 'failed' | 'error';
+    failedTests: string[];
+    errorMessages: string[];
+    duration: number;
+    cost: number;
+  }>,
+): {
   totalSimpleIterations: number;
   totalSimpleCost: number;
   uniqueErrorSignatures: string[];
@@ -556,7 +653,7 @@ function buildFailureSummary(records: Array<{
   const totalSimpleCost = records.reduce((sum, r) => sum + r.cost, 0);
 
   // Deduplicate error signatures
-  const allErrors = records.flatMap(r => r.errorMessages);
+  const allErrors = records.flatMap((r) => r.errorMessages);
   const uniqueErrorSignatures = [...new Set(allErrors)];
 
   // Last iteration state
@@ -573,18 +670,25 @@ function buildFailureSummary(records: Array<{
   ];
 
   for (const r of records) {
-    const errSummary = r.errorMessages.slice(0, 2).join('; ') || 'no error captured';
-    lines.push(`Iteration ${r.iteration}: ${r.codeChangeSummary || 'code modified'}. Tests: ${errSummary}`);
+    const errSummary =
+      r.errorMessages.slice(0, 2).join('; ') || 'no error captured';
+    lines.push(
+      `Iteration ${r.iteration}: ${r.codeChangeSummary || 'code modified'}. Tests: ${errSummary}`,
+    );
   }
 
   lines.push('');
-  lines.push(`Unique error patterns: ${uniqueErrorSignatures.slice(0, 5).join(' | ') || 'none'}`);
+  lines.push(
+    `Unique error patterns: ${uniqueErrorSignatures.slice(0, 5).join(' | ') || 'none'}`,
+  );
 
   // Cap at ~500 tokens (roughly 2000 chars)
   const rawSummary = lines.join('\n');
-  const naturalLanguageSummary = rawSummary.length > 2000
-    ? rawSummary.slice(0, 1950) + '\n[summary truncated for context efficiency]'
-    : rawSummary;
+  const naturalLanguageSummary =
+    rawSummary.length > 2000
+      ? rawSummary.slice(0, 1950) +
+        '\n[summary truncated for context efficiency]'
+      : rawSummary;
 
   return {
     totalSimpleIterations: records.length,
@@ -602,7 +706,7 @@ async function runSingleIteration(
   context: AgentContext,
   agents: any,
   iterationManager: IterationManager,
-  contextMonitor: ContextMonitor
+  contextMonitor: ContextMonitor,
 ): Promise<{
   context: AgentContext;
   success: boolean;
@@ -667,7 +771,8 @@ async function runSingleIteration(
   // Update context with test results (T091)
   updatedContext = withTestResults(updatedContext, testResult.results);
 
-  const testsPass = testResult.success && testResult.results.summary.status === 'passed';
+  const testsPass =
+    testResult.success && testResult.results.summary.status === 'passed';
 
   logger.info('Tests completed', {
     status: testResult.results.summary.status,
@@ -686,7 +791,12 @@ async function runSingleIteration(
 /**
  * Reset agent contexts
  */
-async function resetContext(agents: any, contextMonitor: ContextMonitor, sessionId: string, iteration: number): Promise<void> {
+async function resetContext(
+  agents: any,
+  contextMonitor: ContextMonitor,
+  sessionId: string,
+  iteration: number,
+): Promise<void> {
   const resetter = new SessionResetter({ sessionId, verbose: false });
 
   // Register agent cleanup hooks so resetter actually wipes agent state
@@ -713,7 +823,9 @@ async function runTierLoop(
   // T030: Load and validate tier config
   let tierConfig: TierEscalationConfig;
   try {
-    tierConfig = await loadTierConfig(path.resolve(process.cwd(), tierConfigPath));
+    tierConfig = await loadTierConfig(
+      path.resolve(process.cwd(), tierConfigPath),
+    );
   } catch (err: any) {
     const errors = validateTierConfig(null);
     logger.error(`Tier config error: ${err.message}`);
@@ -729,13 +841,17 @@ async function runTierLoop(
   if (options.noEscalate) legacyFlags.push('--no-escalate');
   if (options.fullMode) legacyFlags.push('--full');
   if (legacyFlags.length > 0) {
-    logger.warn(`Warning: The following flags are ignored when --tier-config is active: ${legacyFlags.join(', ')}`);
+    logger.warn(
+      `Warning: The following flags are ignored when --tier-config is active: ${legacyFlags.join(', ')}`,
+    );
   }
 
   // T009: Print startup banner — tier table
   const totalTiers = tierConfig.tiers.length;
   logger.info(`\n┌─────────────────────────────────────────┐`);
-  logger.info(`│  Tier Escalation Plan (${totalTiers} tier(s))${' '.repeat(Math.max(0, 9 - String(totalTiers).length))}       │`);
+  logger.info(
+    `│  Tier Escalation Plan (${totalTiers} tier(s))${' '.repeat(Math.max(0, 9 - String(totalTiers).length))}       │`,
+  );
   logger.info(`├──────┬────────────────┬────────┬────────┤`);
   logger.info(`│  #   │  Name          │  Mode  │  Model │`);
   logger.info(`├──────┼────────────────┼────────┼────────┤`);
@@ -759,7 +875,9 @@ async function runTierLoop(
       auditDb = openAuditDatabase(resolvedDbPath);
       logger.info(`[audit] Opened SQLite DB at: ${resolvedDbPath}`);
     } catch (err: any) {
-      logger.warn(`[audit] Failed to open audit DB: ${err.message} — continuing without audit`);
+      logger.warn(
+        `[audit] Failed to open audit DB: ${err.message} — continuing without audit`,
+      );
     }
   }
 
@@ -783,7 +901,12 @@ async function runTierLoop(
   // Initialize infrastructure + agents
   const { providerRouter, costTracker, iterationManager, contextMonitor } =
     await initializeInfrastructure(params, config);
-  const agents = await initializeAgents(config, providerRouter, costTracker, options);
+  const agents = await initializeAgents(
+    config,
+    providerRouter,
+    costTracker,
+    options,
+  );
 
   contextMonitor.registerAgent('librarian', agents.librarian.getConfig().model);
   contextMonitor.registerAgent('artisan', agents.artisan.getConfig().model);
@@ -834,7 +957,9 @@ async function runTierLoop(
     if (result.success) {
       overallSuccess = true;
       successTierName = tier.name;
-      const successRecord = result.records.find(r => r.testStatus === 'passed');
+      const successRecord = result.records.find(
+        (r) => r.testStatus === 'passed',
+      );
       successIteration = successRecord?.iteration;
       break;
     }
@@ -848,10 +973,16 @@ async function runTierLoop(
     if (i < tierConfig.tiers.length - 1) {
       const summary = buildAccumulatedSummary(tierResults);
       context = withTierEscalationContext(context, summary);
-      logger.info(`\n[tier-escalation] Tier ${i + 1} "${tier.name}" exhausted (${result.iterationsRan} iterations). Escalating to tier ${i + 2}...`);
-      logger.info(`  Accumulated: ${summary.totalIterationsAcrossTiers} iteration(s), $${summary.totalCostUsdAcrossTiers.toFixed(4)}`);
+      logger.info(
+        `\n[tier-escalation] Tier ${i + 1} "${tier.name}" exhausted (${result.iterationsRan} iterations). Escalating to tier ${i + 2}...`,
+      );
+      logger.info(
+        `  Accumulated: ${summary.totalIterationsAcrossTiers} iteration(s), $${summary.totalCostUsdAcrossTiers.toFixed(4)}`,
+      );
       if (summary.lastFailedTests.length > 0) {
-        logger.info(`  Last failing tests: ${summary.lastFailedTests.slice(0, 3).join(', ')}`);
+        logger.info(
+          `  Last failing tests: ${summary.lastFailedTests.slice(0, 3).join(', ')}`,
+        );
       }
     }
   }
@@ -866,7 +997,10 @@ async function runTierLoop(
   logger.info('');
 
   // Per-tier rows
-  const statusLabel = (r: import('../../lifecycle/types').TierRunResult, idx: number): string => {
+  const statusLabel = (
+    r: import('../../lifecycle/types').TierRunResult,
+    idx: number,
+  ): string => {
     if (r.success) return 'success';
     if (r.exitReason === 'budget_exhausted') return 'budget_stopped';
     if (idx < tierResults.length) return 'failed';
@@ -882,13 +1016,17 @@ async function runTierLoop(
     }
     const label = statusLabel(result, i);
     logger.info(
-      `  Tier ${i + 1}: ${tier.name} [${tier.mode}] — ${result.iterationsRan} iter(s), $${result.totalCostUsd.toFixed(4)} — ${label}`
+      `  Tier ${i + 1}: ${tier.name} [${tier.mode}] — ${result.iterationsRan} iter(s), $${result.totalCostUsd.toFixed(4)} — ${label}`,
     );
   }
 
   logger.info('');
-  logger.info(`  Total: ${totalIterations} iteration(s), $${totalCost.toFixed(4)}`);
-  logger.info(`  Outcome: ${overallSuccess ? 'SUCCESS' : budgetStopped ? 'BUDGET_EXHAUSTED' : 'FAILED'}`);
+  logger.info(
+    `  Total: ${totalIterations} iteration(s), $${totalCost.toFixed(4)}`,
+  );
+  logger.info(
+    `  Outcome: ${overallSuccess ? 'SUCCESS' : budgetStopped ? 'BUDGET_EXHAUSTED' : 'FAILED'}`,
+  );
 
   // T027: Audit path + run ID
   if (resolvedDbPath) {
@@ -896,7 +1034,9 @@ async function runTierLoop(
     logger.info(`  Audit DB: ${resolvedDbPath}`);
     logger.info(`  Run ID:   ${runId}`);
     if (!overallSuccess) {
-      logger.info(`\n  Query hint: sqlite3 "${resolvedDbPath}" "SELECT * FROM tier_attempts WHERE run_id='${runId}' ORDER BY tier_index, iteration;"`);
+      logger.info(
+        `\n  Query hint: sqlite3 "${resolvedDbPath}" "SELECT * FROM tier_attempts WHERE run_id='${runId}' ORDER BY tier_index, iteration;"`,
+      );
     }
   }
 
@@ -905,7 +1045,11 @@ async function runTierLoop(
   // T026: Update run_metadata with final outcome
   if (auditDb) {
     const outcomeValue: 'success' | 'failed' | 'budget_exhausted' =
-      overallSuccess ? 'success' : budgetStopped ? 'budget_exhausted' : 'failed';
+      overallSuccess
+        ? 'success'
+        : budgetStopped
+          ? 'budget_exhausted'
+          : 'failed';
     updateRunMetadata(auditDb, runId, {
       completedAt: new Date().toISOString(),
       outcome: outcomeValue,

@@ -98,7 +98,7 @@ export const MemoryConfigSchema = z.object({
 export const PluginConfigSchema = z.object({
   name: z.string(),
   enabled: z.boolean().default(true),
-  config: z.record(z.any()).optional(),
+  config: z.record(z.string(), z.any()).optional(),
 });
 
 export const PluginsConfigSchema = z.array(PluginConfigSchema).optional();
@@ -160,8 +160,9 @@ export function validateConfigWithErrors(config: unknown): {
     return { valid: true, config: result.data };
   }
 
-  const errors = result.error.errors.map(
-    (err) => `${err.path.join('.')}: ${err.message}`
+  const errors = result.error.issues.map(
+    (err: { path: PropertyKey[]; message: string }) =>
+      `${(err.path as (string | number)[]).join('.')}: ${err.message}`,
   );
 
   return { valid: false, errors };

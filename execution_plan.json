@@ -1,158 +1,122 @@
 {
   "execution_plan": {
-    "phase_id": "Multi-Tier Model Escalation",
+    "phase_id": "Unified Test Generation",
     "waves": [
       {
         "wave_id": 1,
         "strategy": "PARALLEL_SWARM",
-        "rationale": "Wave 1: 13 independent task(s) with no file conflicts",
+        "rationale": "Wave 1: 11 independent task(s) with no file conflicts",
         "tasks": [
           {
             "task_id": "T001",
             "agent_role": "Developer",
-            "instruction": "T001 Install `better-sqlite3` and `@types/better-sqlite3` \u2014 add to `package.json` dependencies and devDependencies via `npm install better-sqlite3 && npm install -D @types/better-sqlite3`",
-            "file_locks": [
-              "package.json"
-            ],
+            "instruction": "T001 Confirm active branch is `005-unified-test-gen` and `npm test` reports 273/273 passing before any changes (baseline validation)",
+            "file_locks": [],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T001 Install `better-sqlite3` and `@types/better-sqlite3` \u2014 add to `package.json` dependencies and devDependencies via `npm install better-sqlite3 && npm install -D @types/better-sqlite3`' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T001 Confirm active branch is `005-unified-test-gen` and `npm test` reports 273/273 passing before any changes (baseline validation)' to [x]",
             "dependencies": []
           },
           {
             "task_id": "T002",
             "agent_role": "Developer",
-            "instruction": "T002 Create `src/lifecycle/types.ts` with shared interfaces: `TierAttemptRecord`, `TierRunResult`, `RunMetadataRow`, `AccumulatedFailureSummary` \u2014 field definitions from `specs/003-tiered-escalation/data-model.md`",
+            "instruction": "T002 Create `src/helpers/test-generator.ts` with module docblock, imports (`path`, `fs/promises`, `glob`, `ProviderRouter`, `Message`), and export the two interface stubs (`TestGeneratorOptions`, `TestGeneratorResult`) \u2014 no function bodies yet",
             "file_locks": [
-              "specs/003-tiered-escalation/data-model.md",
-              "src/lifecycle/types.ts"
+              "src/helpers/test-generator.ts"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T002 Create `src/lifecycle/types.ts` with shared interfaces: `TierAttemptRecord`, `TierRunResult`, `RunMetadataRow`, `AccumulatedFailureSummary` \u2014 field definitions from `specs/003-tiered-escalation/data-model.md`' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T002 Create `src/helpers/test-generator.ts` with module docblock, imports (`path`, `fs/promises`, `glob`, `ProviderRouter`, `Message`), and export the two interface stubs (`TestGeneratorOptions`, `TestGeneratorResult`) \u2014 no function bodies yet' to [x]",
             "dependencies": []
           },
           {
-            "task_id": "T003",
+            "task_id": "T008",
             "agent_role": "Developer",
-            "instruction": "T003 Create Zod schemas `TierModelsSchema`, `TierConfigSchema`, `TierEscalationConfigSchema` in `src/lifecycle/tier-config.ts` \u2014 schema exactly as specified in `specs/003-tiered-escalation/contracts/tier-config-schema.md` and `specs/003-tiered-escalation/research.md` Decision 2",
-            "file_locks": [
-              "src/lifecycle/tier-config.ts",
-              "specs/003-tiered-escalation/research.md",
-              "specs/003-tiered-escalation/contracts/tier-config-schema.md"
-            ],
+            "instruction": "T008 Verify foundational checkpoint: run `npx tsc --noEmit` (0 errors) and `npm test` (273/273 pass) \u2014 do NOT proceed to user story phases until both pass",
+            "file_locks": [],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T003 Create Zod schemas `TierModelsSchema`, `TierConfigSchema`, `TierEscalationConfigSchema` in `src/lifecycle/tier-config.ts` \u2014 schema exactly as specified in `specs/003-tiered-escalation/contracts/tier-config-schema.md` and `specs/003-tiered-escalation/research.md` Decision 2' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T008 Verify foundational checkpoint: run `npx tsc --noEmit` (0 errors) and `npm test` (273/273 pass) \u2014 do NOT proceed to user story phases until both pass' to [x]",
             "dependencies": []
           },
           {
-            "task_id": "T005",
+            "task_id": "T009",
             "agent_role": "Developer",
-            "instruction": "T005 [P] Add `tierConfig?: string` field to `RunOptions` interface and register `--tier-config <path>` CLI flag in `src/ralph-loop.ts` \u2014 follows existing commander option registration pattern",
+            "instruction": "T009 [US1] Write unit test group `describe('generateTestFile')` in `tests/unit/helpers/test-generator.test.ts` \u2014 9 cases: router.complete() called with `provider: 'anthropic'`; default model is `claude-sonnet-4-20250514`; model override honored when `options.model` set; `fs.writeFile` called with resolved path and extracted code; returns correct `testCommand` for vitest; returns correct `testCommand` for pytest; throws when `.rs` target resolved (null path); includes up to 2 example contents in messages when available; falls back to package.json block when no examples",
             "file_locks": [
-              "src/ralph-loop.ts"
+              "tests/unit/helpers/test-generator.test.ts",
+              "options.model",
+              "fs.writeFile",
+              "package.json"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T005 [P] Add `tierConfig?: string` field to `RunOptions` interface and register `--tier-config <path>` CLI flag in `src/ralph-loop.ts` \u2014 follows existing commander option registration pattern' to [x]",
-            "dependencies": []
-          },
-          {
-            "task_id": "T006",
-            "agent_role": "Developer",
-            "instruction": "T006 [P] Add `tierConfigFile?: string` to YAML config schema in `src/config/` (whichever file defines the config type) so that `micro-agent.yml` entries are respected as a fallback when `--tier-config` flag is absent",
-            "file_locks": [
-              "micro-agent.yml"
-            ],
-            "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T006 [P] Add `tierConfigFile?: string` to YAML config schema in `src/config/` (whichever file defines the config type) so that `micro-agent.yml` entries are respected as a fallback when `--tier-config` flag is absent' to [x]",
-            "dependencies": []
-          },
-          {
-            "task_id": "T007",
-            "agent_role": "Developer",
-            "instruction": "T007 [US1] Create `runTier(tier, tierIndex, context, agents, testRunner, db, runId)` in `src/lifecycle/tier-engine.ts` \u2014 implements the simple-mode iteration loop: calls `runSimpleIteration()` (from `src/cli/commands/run.ts`) up to `tier.maxIterations` times, records each iteration into `TierAttemptRecord[]`, checks `isBudgetExceeded()` after each iteration, exits loop on success or budget exhaustion, returns `TierRunResult` with `exitReason: 'success' | 'iterations_exhausted' | 'budget_exhausted' | 'provider_error'`",
-            "file_locks": [
-              "src/cli/commands/run.ts",
-              "tier.maxIterations",
-              "src/lifecycle/tier-engine.ts"
-            ],
-            "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T007 [US1] Create `runTier(tier, tierIndex, context, agents, testRunner, db, runId)` in `src/lifecycle/tier-engine.ts` \u2014 implements the simple-mode iteration loop: calls `runSimpleIteration()` (from `src/cli/commands/run.ts`) up to `tier.maxIterations` times, records each iteration into `TierAttemptRecord[]`, checks `isBudgetExceeded()` after each iteration, exits loop on success or budget exhaustion, returns `TierRunResult` with `exitReason: 'success' | 'iterations_exhausted' | 'budget_exhausted' | 'provider_error'`' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T009 [US1] Write unit test group `describe('generateTestFile')` in `tests/unit/helpers/test-generator.test.ts` \u2014 9 cases: router.complete() called with `provider: 'anthropic'`; default model is `claude-sonnet-4-20250514`; model override honored when `options.model` set; `fs.writeFile` called with resolved path and extracted code; returns correct `testCommand` for vitest; returns correct `testCommand` for pytest; throws when `.rs` target resolved (null path); includes up to 2 example contents in messages when available; falls back to package.json block when no examples' to [x]",
             "dependencies": []
           },
           {
             "task_id": "T012",
             "agent_role": "Developer",
-            "instruction": "T012 [P] [US1] Write unit tests for `loadTierConfig()` and `validateTierConfig()` in `tests/unit/lifecycle/tier-config.test.ts`:",
+            "instruction": "T012 [US1] Add `generate?: boolean` field to `RunOptions` interface in `src/cli/commands/run.ts` (after `tierConfig?: string` field, line ~79)",
             "file_locks": [
-              "tests/unit/lifecycle/tier-config.test.ts"
+              "src/cli/commands/run.ts"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T012 [P] [US1] Write unit tests for `loadTierConfig()` and `validateTierConfig()` in `tests/unit/lifecycle/tier-config.test.ts`:' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T012 [US1] Add `generate?: boolean` field to `RunOptions` interface in `src/cli/commands/run.ts` (after `tierConfig?: string` field, line ~79)' to [x]",
             "dependencies": []
           },
           {
-            "task_id": "T013",
+            "task_id": "T014",
             "agent_role": "Developer",
-            "instruction": "T013 [US2] Create `buildAccumulatedSummary(priorResults: TierRunResult[]): AccumulatedFailureSummary` in `src/lifecycle/tier-accumulator.ts` \u2014 concatenates each prior tier's records into natural-language blocks with `=== TIER N FAILURES: <name> (K iterations) ===` headers; deduplicates error signatures across all tiers; caps total at 4000 characters by truncating oldest tier history first with `[truncated]` marker; includes total-across-tiers footer line",
+            "instruction": "T014 [US1] Verify US1 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors), smoke test `quickstart.md Test 1` (test file created and loop runs)",
             "file_locks": [
-              "src/lifecycle/tier-accumulator.ts"
+              "quickstart.md"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T013 [US2] Create `buildAccumulatedSummary(priorResults: TierRunResult[]): AccumulatedFailureSummary` in `src/lifecycle/tier-accumulator.ts` \u2014 concatenates each prior tier's records into natural-language blocks with `=== TIER N FAILURES: <name> (K iterations) ===` headers; deduplicates error signatures across all tiers; caps total at 4000 characters by truncating oldest tier history first with `[truncated]` marker; includes total-across-tiers footer line' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T014 [US1] Verify US1 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors), smoke test `quickstart.md Test 1` (test file created and loop runs)' to [x]",
             "dependencies": []
           },
           {
-            "task_id": "T019",
+            "task_id": "T016",
             "agent_role": "Developer",
-            "instruction": "T019 [P] [US2] Write unit tests for `buildAccumulatedSummary()` in `tests/unit/lifecycle/tier-accumulator.test.ts`:",
-            "file_locks": [
-              "tests/unit/lifecycle/tier-accumulator.test.ts"
-            ],
+            "instruction": "T016 [US2] Confirm `findExistingTests()` (implemented in T010) correctly handles all passthrough patterns \u2014 no new code needed; verify via unit tests from T015 that all 5 patterns pass",
+            "file_locks": [],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T019 [P] [US2] Write unit tests for `buildAccumulatedSummary()` in `tests/unit/lifecycle/tier-accumulator.test.ts`:' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T016 [US2] Confirm `findExistingTests()` (implemented in T010) correctly handles all passthrough patterns \u2014 no new code needed; verify via unit tests from T015 that all 5 patterns pass' to [x]",
             "dependencies": []
           },
           {
-            "task_id": "T020",
+            "task_id": "T018",
             "agent_role": "Developer",
-            "instruction": "T020 [US2] Write integration test for 2-tier escalation flow in `tests/integration/tier-engine.test.ts`:",
+            "instruction": "T018 [US3] Add `--no-generate` option to the `run` command in `src/cli/ralph-loop.ts` after the existing `--tier-config` option (~line 84): `.option('--no-generate', 'Skip automatic test file generation when no test file exists')`",
             "file_locks": [
-              "tests/integration/tier-engine.test.ts"
+              "src/cli/ralph-loop.ts"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T020 [US2] Write integration test for 2-tier escalation flow in `tests/integration/tier-engine.test.ts`:' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T018 [US3] Add `--no-generate` option to the `run` command in `src/cli/ralph-loop.ts` after the existing `--tier-config` option (~line 84): `.option('--no-generate', 'Skip automatic test file generation when no test file exists')`' to [x]",
             "dependencies": []
           },
           {
-            "task_id": "T021",
+            "task_id": "T024",
             "agent_role": "Developer",
-            "instruction": "T021 [US3] Create `openAuditDatabase(dbPath: string): Database` in `src/lifecycle/tier-db.ts` \u2014 creates directory if missing, opens SQLite file with `better-sqlite3`, runs DDL from `specs/003-tiered-escalation/contracts/sqlite-schema.md` (both `CREATE TABLE IF NOT EXISTS` statements and all three indexes); returns database handle",
-            "file_locks": [
-              "src/lifecycle/tier-db.ts",
-              "specs/003-tiered-escalation/contracts/sqlite-schema.md"
-            ],
+            "instruction": "T024 [US5] Confirm `resolveTestFilePath()` (implemented in T003) handles all 6 cases \u2014 no new code needed; verify via unit tests from T023 that all cases pass",
+            "file_locks": [],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T021 [US3] Create `openAuditDatabase(dbPath: string): Database` in `src/lifecycle/tier-db.ts` \u2014 creates directory if missing, opens SQLite file with `better-sqlite3`, runs DDL from `specs/003-tiered-escalation/contracts/sqlite-schema.md` (both `CREATE TABLE IF NOT EXISTS` statements and all three indexes); returns database handle' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T024 [US5] Confirm `resolveTestFilePath()` (implemented in T003) handles all 6 cases \u2014 no new code needed; verify via unit tests from T023 that all cases pass' to [x]",
+            "dependencies": []
+          },
+          {
+            "task_id": "T027",
+            "agent_role": "Developer",
+            "instruction": "T027 Run full combined acceptance gate: `npm test` (all 273 original + all new unit tests pass), `npx tsc --noEmit` (0 errors) \u2014 MUST pass before proceeding",
+            "file_locks": [],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T027 Run full combined acceptance gate: `npm test` (all 273 original + all new unit tests pass), `npx tsc --noEmit` (0 errors) \u2014 MUST pass before proceeding' to [x]",
             "dependencies": []
           },
           {
             "task_id": "T028",
             "agent_role": "Developer",
-            "instruction": "T028 [P] [US3] Write unit tests for `tier-db.ts` in `tests/unit/lifecycle/tier-db.test.ts` (use in-memory `:memory:` path for speed):",
-            "file_locks": [
-              "tests/unit/lifecycle/tier-db.test.ts",
-              "tier-db.ts"
-            ],
-            "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T028 [P] [US3] Write unit tests for `tier-db.ts` in `tests/unit/lifecycle/tier-db.test.ts` (use in-memory `:memory:` path for speed):' to [x]",
-            "dependencies": []
-          },
-          {
-            "task_id": "T031",
-            "agent_role": "Developer",
-            "instruction": "T031 Run full vitest test suite and confirm \u2265 290 tests pass (247 existing + ~43 new); confirm zero regressions \u2014 `npx vitest run`",
+            "instruction": "T028 Commit all changes: `feat: add unified test generation for ma-loop \u2014 auto-generates tests when none exist`",
             "file_locks": [],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T031 Run full vitest test suite and confirm \u2265 290 tests pass (247 existing + ~43 new); confirm zero regressions \u2014 `npx vitest run`' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T028 Commit all changes: `feat: add unified test generation for ma-loop \u2014 auto-generates tests when none exist`' to [x]",
             "dependencies": []
           }
         ],
@@ -169,58 +133,63 @@
         "rationale": "Wave 2: 4 independent task(s) with no file conflicts",
         "tasks": [
           {
-            "task_id": "T004",
+            "task_id": "T003",
             "agent_role": "Developer",
-            "instruction": "T004 Implement `loadTierConfig(filePath: string): TierEscalationConfig` and `validateTierConfig(config): string[]` in `src/lifecycle/tier-config.ts` \u2014 reads JSON file, runs Zod parse, returns typed config or array of error strings; `validateTierConfig` returns ALL errors (not just first) so startup can report them all at once (FR-012)",
+            "instruction": "T003 Implement `resolveTestFilePath(targetFile: string, framework: string): string | null` (NOT exported) in `src/helpers/test-generator.ts` \u2014 maps `.ts`\u2192`.test.ts`, `.js`\u2192`.test.js`, `.py`\u2192`test_{name}.py`, `.rs`\u2192`null`, `.rb`\u2192`{name}_spec.rb`, other\u2192`.test.{ext}`, all in same directory as target",
             "file_locks": [
-              "src/lifecycle/tier-config.ts"
+              "{name}_spec.rb",
+              "test.ts",
+              "test.js",
+              ".test.js",
+              "src/helpers/test-generator.ts",
+              ".test.ts",
+              "test_{name}.py",
+              "_spec.rb"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T004 Implement `loadTierConfig(filePath: string): TierEscalationConfig` and `validateTierConfig(config): string[]` in `src/lifecycle/tier-config.ts` \u2014 reads JSON file, runs Zod parse, returns typed config or array of error strings; `validateTierConfig` returns ALL errors (not just first) so startup can report them all at once (FR-012)' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T003 Implement `resolveTestFilePath(targetFile: string, framework: string): string | null` (NOT exported) in `src/helpers/test-generator.ts` \u2014 maps `.ts`\u2192`.test.ts`, `.js`\u2192`.test.js`, `.py`\u2192`test_{name}.py`, `.rs`\u2192`null`, `.rb`\u2192`{name}_spec.rb`, other\u2192`.test.{ext}`, all in same directory as target' to [x]",
             "dependencies": [
-              "T003"
+              "T002"
             ]
           },
           {
-            "task_id": "T008",
+            "task_id": "T013",
             "agent_role": "Developer",
-            "instruction": "T008 [US1] Wire tier engine into `runCommand()` in `src/cli/commands/run.ts` \u2014 detect `options.tierConfig ?? config.tierConfigFile`; if present: call `loadTierConfig()`, call `validateTierConfig()` and exit with all errors if invalid (before any LLM call), then enter tier loop; if absent: fall through to existing simple/full path unchanged",
+            "instruction": "T013 [US1] Insert generation block in `src/cli/commands/run.ts` after `prepareRunParameters()` call (~line 111) and BEFORE `initializeInfrastructure()` call (~line 113) \u2014 dynamic import `test-generator`, call `findExistingTests`, branch on result: if null and not `.rs` call `generateTestFile` and update `params.testCommand`, else log \"Using existing tests:\", wrap generate call in try/catch to warn-and-continue on LLM failure",
             "file_locks": [
               "src/cli/commands/run.ts",
-              "options.tierConfig ?? config.tierConfigFile"
+              "params.testCommand"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T008 [US1] Wire tier engine into `runCommand()` in `src/cli/commands/run.ts` \u2014 detect `options.tierConfig ?? config.tierConfigFile`; if present: call `loadTierConfig()`, call `validateTierConfig()` and exit with all errors if invalid (before any LLM call), then enter tier loop; if absent: fall through to existing simple/full path unchanged' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T013 [US1] Insert generation block in `src/cli/commands/run.ts` after `prepareRunParameters()` call (~line 111) and BEFORE `initializeInfrastructure()` call (~line 113) \u2014 dynamic import `test-generator`, call `findExistingTests`, branch on result: if null and not `.rs` call `generateTestFile` and update `params.testCommand`, else log \"Using existing tests:\", wrap generate call in try/catch to warn-and-continue on LLM failure' to [x]",
             "dependencies": [
-              "T007"
+              "T012"
             ]
           },
           {
-            "task_id": "T014",
+            "task_id": "T017",
             "agent_role": "Developer",
-            "instruction": "T014 [P] [US2] Create `withTierEscalationContext(context: AgentContext, summary: AccumulatedFailureSummary): AgentContext` in `src/lifecycle/tier-accumulator.ts` \u2014 calls existing `withEscalationContext(context, summary.naturalLanguageSummary)` from `src/agents/base/agent-context.ts`; returns new context without mutating original",
+            "instruction": "T017 [US2] Verify US2 acceptance gate: run `npm test` (273+ pass), smoke test `quickstart.md Test 2` (logs \"Using existing tests:\", NO new file written)",
             "file_locks": [
-              "src/lifecycle/tier-accumulator.ts",
-              "src/agents/base/agent-context.ts"
+              "quickstart.md"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T014 [P] [US2] Create `withTierEscalationContext(context: AgentContext, summary: AccumulatedFailureSummary): AgentContext` in `src/lifecycle/tier-accumulator.ts` \u2014 calls existing `withEscalationContext(context, summary.naturalLanguageSummary)` from `src/agents/base/agent-context.ts`; returns new context without mutating original' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T017 [US2] Verify US2 acceptance gate: run `npm test` (273+ pass), smoke test `quickstart.md Test 2` (logs \"Using existing tests:\", NO new file written)' to [x]",
             "dependencies": [
-              "T013"
+              "T014"
             ]
           },
           {
-            "task_id": "T022",
+            "task_id": "T019",
             "agent_role": "Developer",
-            "instruction": "T022 [US3] Create `writeAttemptRecord(db: Database, record: TierAttemptRecord): void` in `src/lifecycle/tier-db.ts` \u2014 prepared `INSERT INTO tier_attempts (...)` statement with all columns; `failedTests` and `errorMessages` serialized as `JSON.stringify()`; entire call wrapped in `try/catch`; on error: `logger.warn('[audit] DB write failed: ...')` and return (never throw)",
+            "instruction": "T019 [US3] Update `run` command description in `src/cli/ralph-loop.ts` line 35 from `'Run Ralph Loop iterations for a file or objective'` to `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`",
             "file_locks": [
-              "logger.warn",
-              "src/lifecycle/tier-db.ts"
+              "src/cli/ralph-loop.ts"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T022 [US3] Create `writeAttemptRecord(db: Database, record: TierAttemptRecord): void` in `src/lifecycle/tier-db.ts` \u2014 prepared `INSERT INTO tier_attempts (...)` statement with all columns; `failedTests` and `errorMessages` serialized as `JSON.stringify()`; entire call wrapped in `try/catch`; on error: `logger.warn('[audit] DB write failed: ...')` and return (never throw)' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T019 [US3] Update `run` command description in `src/cli/ralph-loop.ts` line 35 from `'Run Ralph Loop iterations for a file or objective'` to `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`' to [x]",
             "dependencies": [
-              "T021"
+              "T018"
             ]
           }
         ],
@@ -234,36 +203,54 @@
       {
         "wave_id": 3,
         "strategy": "PARALLEL_SWARM",
-        "rationale": "Wave 3: 2 independent task(s) with no file conflicts",
+        "rationale": "Wave 3: 3 independent task(s) with no file conflicts",
         "tasks": [
           {
-            "task_id": "T009",
+            "task_id": "T004",
             "agent_role": "Developer",
-            "instruction": "T009 [US1] Add startup banner in `src/cli/commands/run.ts` when tier config is active \u2014 print tier plan table matching `contracts/cli-interface.md` \"Startup\" format: tier index, name, mode, model, max iterations",
+            "instruction": "T004 Implement `extractCodeBlock(raw: string): string` (NOT exported) in `src/helpers/test-generator.ts` \u2014 finds first ` ``` ` fence, skips optional language specifier line, reads until closing ` ``` `, returns trimmed content; returns `raw.trim()` if no fence found",
             "file_locks": [
-              "src/cli/commands/run.ts",
-              "contracts/cli-interface.md"
+              "src/helpers/test-generator.ts",
+              "raw.trim"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T009 [US1] Add startup banner in `src/cli/commands/run.ts` when tier config is active \u2014 print tier plan table matching `contracts/cli-interface.md` \"Startup\" format: tier index, name, mode, model, max iterations' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T004 Implement `extractCodeBlock(raw: string): string` (NOT exported) in `src/helpers/test-generator.ts` \u2014 finds first ` ``` ` fence, skips optional language specifier line, reads until closing ` ``` `, returns trimmed content; returns `raw.trim()` if no fence found' to [x]",
             "dependencies": [
-              "T008",
-              "T007"
+              "T003",
+              "T002"
             ]
           },
           {
-            "task_id": "T023",
+            "task_id": "T015",
             "agent_role": "Developer",
-            "instruction": "T023 [P] [US3] Create `writeRunMetadata(db: Database, metadata: RunMetadataRow): void` and `updateRunMetadata(db: Database, runId: string, updates: Partial<RunMetadataRow>): void` in `src/lifecycle/tier-db.ts` \u2014 `writeRunMetadata` does `INSERT INTO run_metadata`; `updateRunMetadata` does `UPDATE run_metadata SET ... WHERE run_id = ?`; both wrapped in `try/catch` with `logger.warn` on failure",
+            "instruction": "T015 [US2] Add unit test group `describe('findExistingTests')` in `tests/unit/helpers/test-generator.test.ts` \u2014 5 cases: returns null when no `.test.ts` file exists; returns path when `foo.test.ts` exists adjacent; returns path when `foo.spec.ts` exists adjacent; always returns null for `.rs` files; returns path for `test_foo.py` prefix convention (Python)",
             "file_locks": [
-              "logger.warn",
-              "src/lifecycle/tier-db.ts"
+              "test.ts",
+              "tests/unit/helpers/test-generator.test.ts",
+              "foo.test.ts",
+              "foo.spec.ts",
+              ".test.ts",
+              "test_foo.py"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T023 [P] [US3] Create `writeRunMetadata(db: Database, metadata: RunMetadataRow): void` and `updateRunMetadata(db: Database, runId: string, updates: Partial<RunMetadataRow>): void` in `src/lifecycle/tier-db.ts` \u2014 `writeRunMetadata` does `INSERT INTO run_metadata`; `updateRunMetadata` does `UPDATE run_metadata SET ... WHERE run_id = ?`; both wrapped in `try/catch` with `logger.warn` on failure' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T015 [US2] Add unit test group `describe('findExistingTests')` in `tests/unit/helpers/test-generator.test.ts` \u2014 5 cases: returns null when no `.test.ts` file exists; returns path when `foo.test.ts` exists adjacent; returns path when `foo.spec.ts` exists adjacent; always returns null for `.rs` files; returns path for `test_foo.py` prefix convention (Python)' to [x]",
             "dependencies": [
-              "T021",
-              "T022"
+              "T009",
+              "T003"
+            ]
+          },
+          {
+            "task_id": "T020",
+            "agent_role": "Developer",
+            "instruction": "T020 [US3] Verify US3 acceptance gate: run `npx ralph-loop run --help` and confirm `--no-generate` appears; run `npm test` (273+ pass); smoke test `quickstart.md Test 3` (no file generated with `--no-generate`)",
+            "file_locks": [
+              "quickstart.md"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T020 [US3] Verify US3 acceptance gate: run `npx ralph-loop run --help` and confirm `--no-generate` appears; run `npm test` (273+ pass); smoke test `quickstart.md Test 3` (no file generated with `--no-generate`)' to [x]",
+            "dependencies": [
+              "T017",
+              "T014"
             ]
           }
         ],
@@ -277,36 +264,62 @@
       {
         "wave_id": 4,
         "strategy": "PARALLEL_SWARM",
-        "rationale": "Wave 4: 2 independent task(s) with no file conflicts",
+        "rationale": "Wave 4: 3 independent task(s) with no file conflicts",
         "tasks": [
           {
-            "task_id": "T010",
+            "task_id": "T005",
             "agent_role": "Developer",
-            "instruction": "T010 [US1] Add per-tier header output at start of each tier in `src/lifecycle/tier-engine.ts` \u2014 print `\u2501\u2501\u2501\u2501 \u25b6 Tier N/total: <name> [mode, model] \u2501\u2501\u2501\u2501` divider matching `contracts/cli-interface.md` format",
+            "instruction": "T005 Implement `buildTestCommand(testFilePath: string, framework: string): string` (NOT exported) in `src/helpers/test-generator.ts` \u2014 vitest\u2192`npx vitest run {basename-no-ext}`, jest\u2192`npx jest {basename-no-ext} --no-watch`, pytest\u2192`pytest {relativeTestFilePath}`, mocha\u2192`npx mocha {testFilePath}`, rspec\u2192`bundle exec rspec {testFilePath}`, cargo/custom\u2192`npm test` fallback",
             "file_locks": [
-              "contracts/cli-interface.md",
-              "src/lifecycle/tier-engine.ts"
+              "src/helpers/test-generator.ts"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T010 [US1] Add per-tier header output at start of each tier in `src/lifecycle/tier-engine.ts` \u2014 print `\u2501\u2501\u2501\u2501 \u25b6 Tier N/total: <name> [mode, model] \u2501\u2501\u2501\u2501` divider matching `contracts/cli-interface.md` format' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T005 Implement `buildTestCommand(testFilePath: string, framework: string): string` (NOT exported) in `src/helpers/test-generator.ts` \u2014 vitest\u2192`npx vitest run {basename-no-ext}`, jest\u2192`npx jest {basename-no-ext} --no-watch`, pytest\u2192`pytest {relativeTestFilePath}`, mocha\u2192`npx mocha {testFilePath}`, rspec\u2192`bundle exec rspec {testFilePath}`, cargo/custom\u2192`npm test` fallback' to [x]",
             "dependencies": [
-              "T009",
-              "T007"
+              "T003",
+              "T002",
+              "T004"
             ]
           },
           {
-            "task_id": "T024",
+            "task_id": "T021",
             "agent_role": "Developer",
-            "instruction": "T024 [P] [US3] Create `closeAuditDatabase(db: Database): void` in `src/lifecycle/tier-db.ts` \u2014 calls `db.close()` in `try/catch`; logs warning on failure but never throws",
+            "instruction": "T021 [US4] Confirm the `!options.test` guard in the generation block (inserted in T013) correctly skips generation when `--test` is provided \u2014 no new code needed; verify by reading the block and smoke-testing `quickstart.md Test 4`",
             "file_locks": [
-              "src/lifecycle/tier-db.ts"
+              "quickstart.md",
+              "options.test",
+              "!options.test"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T024 [P] [US3] Create `closeAuditDatabase(db: Database): void` in `src/lifecycle/tier-db.ts` \u2014 calls `db.close()` in `try/catch`; logs warning on failure but never throws' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T021 [US4] Confirm the `!options.test` guard in the generation block (inserted in T013) correctly skips generation when `--test` is provided \u2014 no new code needed; verify by reading the block and smoke-testing `quickstart.md Test 4`' to [x]",
             "dependencies": [
-              "T023",
-              "T021",
-              "T022"
+              "T017",
+              "T020",
+              "T014"
+            ]
+          },
+          {
+            "task_id": "T023",
+            "agent_role": "Developer",
+            "instruction": "T023 [US5] Add unit test group `describe('resolveTestFilePath')` in `tests/unit/helpers/test-generator.test.ts` \u2014 6 cases: `.ts`\u2192`.test.ts` in same dir; `.js`\u2192`.test.js` in same dir; `.py`\u2192`test_{name}.py` in same dir; `.rs`\u2192`null`; `.rb`\u2192`{name}_spec.rb` in same dir; nested path `src/util/math.ts`\u2192`src/util/math.test.ts`",
+            "file_locks": [
+              "{name}_spec.rb",
+              "test.ts",
+              "test.js",
+              "tests/unit/helpers/test-generator.test.ts",
+              ".test.js",
+              "src/util/math.test.ts",
+              "src/util/math.ts",
+              ".test.ts",
+              "test_{name}.py",
+              "_spec.rb"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T023 [US5] Add unit test group `describe('resolveTestFilePath')` in `tests/unit/helpers/test-generator.test.ts` \u2014 6 cases: `.ts`\u2192`.test.ts` in same dir; `.js`\u2192`.test.js` in same dir; `.py`\u2192`test_{name}.py` in same dir; `.rs`\u2192`null`; `.rb`\u2192`{name}_spec.rb` in same dir; nested path `src/util/math.ts`\u2192`src/util/math.test.ts`' to [x]",
+            "dependencies": [
+              "T015",
+              "T009",
+              "T003"
             ]
           }
         ],
@@ -320,39 +333,53 @@
       {
         "wave_id": 5,
         "strategy": "PARALLEL_SWARM",
-        "rationale": "Wave 5: 2 independent task(s) with no file conflicts",
+        "rationale": "Wave 5: 3 independent task(s) with no file conflicts",
         "tasks": [
           {
-            "task_id": "T011",
+            "task_id": "T006",
             "agent_role": "Developer",
-            "instruction": "T011 [US1] Add final report for single-tier outcome in `src/cli/commands/run.ts` \u2014 per-tier row table (name, mode, iterations, cost, status), total line, audit path + run ID, SQLite query hint on failure \u2014 matching all three report formats in `contracts/cli-interface.md`",
+            "instruction": "T006 Implement `gatherExampleTests(workingDir: string): Promise<string[]>` (NOT exported) in `src/helpers/test-generator.ts` \u2014 globs `**/*.{test,spec}.{ts,js,py,rb}` ignoring `node_modules`, `dist`, `.git`; reads up to 2 files; returns array of content strings",
             "file_locks": [
-              "src/cli/commands/run.ts",
-              "contracts/cli-interface.md"
+              "src/helpers/test-generator.ts"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T011 [US1] Add final report for single-tier outcome in `src/cli/commands/run.ts` \u2014 per-tier row table (name, mode, iterations, cost, status), total line, audit path + run ID, SQLite query hint on failure \u2014 matching all three report formats in `contracts/cli-interface.md`' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T006 Implement `gatherExampleTests(workingDir: string): Promise<string[]>` (NOT exported) in `src/helpers/test-generator.ts` \u2014 globs `**/*.{test,spec}.{ts,js,py,rb}` ignoring `node_modules`, `dist`, `.git`; reads up to 2 files; returns array of content strings' to [x]",
             "dependencies": [
-              "T008",
-              "T009",
-              "T007",
-              "T010"
+              "T005",
+              "T003",
+              "T002",
+              "T004"
             ]
           },
           {
-            "task_id": "T015",
+            "task_id": "T022",
             "agent_role": "Developer",
-            "instruction": "T015 [US2] Extend `runTier()` in `src/lifecycle/tier-engine.ts` to support `full` mode tiers \u2014 when `tier.mode === 'full'`: calls `runSingleIteration()` (Librarian + Artisan + Critic + Tests) instead of `runSimpleIteration()`; Librarian receives `context.escalationContext` which was injected before this tier started",
+            "instruction": "T022 [US4] Verify US4 acceptance gate: smoke test `quickstart.md Test 4` (generation skipped when `--test` provided); run `npm test` (273+ pass)",
             "file_locks": [
-              "context.escalationContext",
-              "tier.mode",
-              "src/lifecycle/tier-engine.ts"
+              "quickstart.md"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T015 [US2] Extend `runTier()` in `src/lifecycle/tier-engine.ts` to support `full` mode tiers \u2014 when `tier.mode === 'full'`: calls `runSingleIteration()` (Librarian + Artisan + Critic + Tests) instead of `runSimpleIteration()`; Librarian receives `context.escalationContext` which was injected before this tier started' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T022 [US4] Verify US4 acceptance gate: smoke test `quickstart.md Test 4` (generation skipped when `--test` provided); run `npm test` (273+ pass)' to [x]",
             "dependencies": [
-              "T007",
-              "T010"
+              "T017",
+              "T020",
+              "T014",
+              "T021"
+            ]
+          },
+          {
+            "task_id": "T026",
+            "agent_role": "Developer",
+            "instruction": "T026 [P] Add unit test group `describe('extractCodeBlock')` in `tests/unit/helpers/test-generator.test.ts` \u2014 4 cases: extracts from ` ```typescript ``` ` fence; extracts from ` ```python ``` ` fence; returns raw string when no fence present; handles ` ``` ` without language specifier",
+            "file_locks": [
+              "tests/unit/helpers/test-generator.test.ts"
+            ],
+            "constitution_rules": [],
+            "completion_handshake": "Upon success, update tasks.md line containing 'T026 [P] Add unit test group `describe('extractCodeBlock')` in `tests/unit/helpers/test-generator.test.ts` \u2014 4 cases: extracts from ` ```typescript ``` ` fence; extracts from ` ```python ``` ` fence; returns raw string when no fence present; handles ` ``` ` without language specifier' to [x]",
+            "dependencies": [
+              "T015",
+              "T009",
+              "T023"
             ]
           }
         ],
@@ -369,34 +396,39 @@
         "rationale": "Wave 6: 2 independent task(s) with no file conflicts",
         "tasks": [
           {
-            "task_id": "T016",
+            "task_id": "T007",
             "agent_role": "Developer",
-            "instruction": "T016 [US2] Add multi-tier escalation loop in `runCommand()` in `src/cli/commands/run.ts` \u2014 after each tier's `TierRunResult`:",
+            "instruction": "T007 Implement `buildGenerationMessages(targetFile, targetContent, objective, testFilePath, exampleTests, packageJson): Message[]` (NOT exported) in `src/helpers/test-generator.ts` \u2014 returns `[systemMsg, userMsg]` per the prompt design in `contracts/test-generator-api.md`; includes `<examples>` block if examples exist, else `<package-json>` block if packageJson non-empty",
             "file_locks": [
-              "src/cli/commands/run.ts"
+              "src/helpers/test-generator.ts",
+              "contracts/test-generator-api.md"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T016 [US2] Add multi-tier escalation loop in `runCommand()` in `src/cli/commands/run.ts` \u2014 after each tier's `TierRunResult`:' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T007 Implement `buildGenerationMessages(targetFile, targetContent, objective, testFilePath, exampleTests, packageJson): Message[]` (NOT exported) in `src/helpers/test-generator.ts` \u2014 returns `[systemMsg, userMsg]` per the prompt design in `contracts/test-generator-api.md`; includes `<examples>` block if examples exist, else `<package-json>` block if packageJson non-empty' to [x]",
             "dependencies": [
-              "T008",
-              "T009",
-              "T011",
-              "T007"
+              "T005",
+              "T004",
+              "T003",
+              "T002",
+              "T006"
             ]
           },
           {
             "task_id": "T025",
             "agent_role": "Developer",
-            "instruction": "T025 [US3] Wire DB writes into `runTier()` in `src/lifecycle/tier-engine.ts` \u2014 after each iteration completes, call `writeAttemptRecord(db, record)` with all fields populated: `runId`, `tierIndex`, `tierName`, `tierMode`, `modelArtisan`, `modelLibrarian` (null for simple mode), `modelCritic` (null for simple mode), `iteration`, `codeChangeSummary`, `testStatus`, `failedTests`, `errorMessages`, `costUsd`, `durationMs`, `timestamp` (ISO 8601 UTC)",
+            "instruction": "T025 [US5] Verify US5 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors); smoke tests `quickstart.md Test 5` (Rust skipped) and `quickstart.md Test 6` (Python `test_math.py` naming)",
             "file_locks": [
-              "src/lifecycle/tier-engine.ts"
+              "quickstart.md",
+              "test_math.py"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T025 [US3] Wire DB writes into `runTier()` in `src/lifecycle/tier-engine.ts` \u2014 after each iteration completes, call `writeAttemptRecord(db, record)` with all fields populated: `runId`, `tierIndex`, `tierName`, `tierMode`, `modelArtisan`, `modelLibrarian` (null for simple mode), `modelCritic` (null for simple mode), `iteration`, `codeChangeSummary`, `testStatus`, `failedTests`, `errorMessages`, `costUsd`, `durationMs`, `timestamp` (ISO 8601 UTC)' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T025 [US5] Verify US5 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors); smoke tests `quickstart.md Test 5` (Rust skipped) and `quickstart.md Test 6` (Python `test_math.py` naming)' to [x]",
             "dependencies": [
-              "T015",
-              "T007",
-              "T010"
+              "T022",
+              "T017",
+              "T020",
+              "T014",
+              "T021"
             ]
           }
         ],
@@ -413,22 +445,21 @@
         "rationale": "Wave 7: 1 independent task(s) with no file conflicts",
         "tasks": [
           {
-            "task_id": "T017",
+            "task_id": "T010",
             "agent_role": "Developer",
-            "instruction": "T017 [US2] Add escalation event log in `src/cli/commands/run.ts` between tiers \u2014 print: tier failure summary, escalation target tier name, count of prior iterations carried forward \u2014 matching `contracts/cli-interface.md` \"Tier Escalation Event\" format",
+            "instruction": "T010 [US1] Implement `findExistingTests(targetFile: string, workingDir: string): Promise<string | null>` (EXPORTED) in `src/helpers/test-generator.ts` \u2014 resolves absolute path, checks for `.test.{ext}`, `.spec.{ext}`, `test_{name}.{ext}`, `{name}_spec.{ext}` patterns in same directory; returns found path or null; `.rs` files always return null",
             "file_locks": [
-              "src/cli/commands/run.ts",
-              "contracts/cli-interface.md"
+              "src/helpers/test-generator.ts"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T017 [US2] Add escalation event log in `src/cli/commands/run.ts` between tiers \u2014 print: tier failure summary, escalation target tier name, count of prior iterations carried forward \u2014 matching `contracts/cli-interface.md` \"Tier Escalation Event\" format' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T010 [US1] Implement `findExistingTests(targetFile: string, workingDir: string): Promise<string | null>` (EXPORTED) in `src/helpers/test-generator.ts` \u2014 resolves absolute path, checks for `.test.{ext}`, `.spec.{ext}`, `test_{name}.{ext}`, `{name}_spec.{ext}` patterns in same directory; returns found path or null; `.rs` files always return null' to [x]",
             "dependencies": [
-              "T009",
-              "T011",
-              "T010",
+              "T005",
+              "T004",
               "T007",
-              "T016",
-              "T008"
+              "T003",
+              "T002",
+              "T006"
             ]
           }
         ],
@@ -445,171 +476,30 @@
         "rationale": "Wave 8: 1 independent task(s) with no file conflicts",
         "tasks": [
           {
-            "task_id": "T018",
+            "task_id": "T011",
             "agent_role": "Developer",
-            "instruction": "T018 [P] [US2] Update final report in `src/cli/commands/run.ts` for multi-tier outcomes \u2014 all three report scenarios (success mid-tier, all-failed, budget-stopped) from `contracts/cli-interface.md`; \"\u2014 (not reached)\" for skipped tiers",
+            "instruction": "T011 [US1] Implement `generateTestFile(options: TestGeneratorOptions): Promise<TestGeneratorResult>` (EXPORTED) in `src/helpers/test-generator.ts` \u2014 calls `resolveTestFilePath` (throws if null), reads source file, calls `gatherExampleTests`, reads `package.json`, calls `buildGenerationMessages`, calls `new ProviderRouter().complete({provider:'anthropic', model, messages, temperature:0.7, maxTokens:4096})`, extracts code block, writes file, returns result with `buildTestCommand` output",
             "file_locks": [
-              "src/cli/commands/run.ts",
-              "contracts/cli-interface.md"
+              "src/helpers/test-generator.ts",
+              "package.json"
             ],
             "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T018 [P] [US2] Update final report in `src/cli/commands/run.ts` for multi-tier outcomes \u2014 all three report scenarios (success mid-tier, all-failed, budget-stopped) from `contracts/cli-interface.md`; \"\u2014 (not reached)\" for skipped tiers' to [x]",
+            "completion_handshake": "Upon success, update tasks.md line containing 'T011 [US1] Implement `generateTestFile(options: TestGeneratorOptions): Promise<TestGeneratorResult>` (EXPORTED) in `src/helpers/test-generator.ts` \u2014 calls `resolveTestFilePath` (throws if null), reads source file, calls `gatherExampleTests`, reads `package.json`, calls `buildGenerationMessages`, calls `new ProviderRouter().complete({provider:'anthropic', model, messages, temperature:0.7, maxTokens:4096})`, extracts code block, writes file, returns result with `buildTestCommand` output' to [x]",
             "dependencies": [
+              "T005",
               "T009",
-              "T017",
-              "T011",
-              "T010",
+              "T004",
               "T007",
-              "T016",
-              "T008"
+              "T003",
+              "T002",
+              "T010",
+              "T006"
             ]
           }
         ],
         "checkpoint_after": {
           "enabled": true,
           "verification_criteria": "Verify all Wave 8 tasks are marked [x] in tasks.md",
-          "git_agent": "git-version-manager",
-          "memory_bank_agent": "memory-bank-keeper"
-        }
-      },
-      {
-        "wave_id": 9,
-        "strategy": "SEQUENTIAL_MERGE",
-        "rationale": "Wave 9: 1 independent task(s) with no file conflicts",
-        "tasks": [
-          {
-            "task_id": "T026",
-            "agent_role": "Developer",
-            "instruction": "T026 [US3] Wire run metadata into `runCommand()` in `src/cli/commands/run.ts` \u2014 generate `runId = uuidv4()` at run start; call `openAuditDatabase(resolvedDbPath)` where `resolvedDbPath` is `global.auditDbPath` resolved relative to `options.workingDirectory`; call `writeRunMetadata()` with `outcome='in_progress'`; after all tiers complete, call `updateRunMetadata()` with final `outcome`, `completedAt`, `resolvedTierName`, `resolvedIteration`; call `closeAuditDatabase()` in a `finally` block",
-            "file_locks": [
-              "src/cli/commands/run.ts",
-              "options.workingDirectory",
-              "global.auditDbPath"
-            ],
-            "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T026 [US3] Wire run metadata into `runCommand()` in `src/cli/commands/run.ts` \u2014 generate `runId = uuidv4()` at run start; call `openAuditDatabase(resolvedDbPath)` where `resolvedDbPath` is `global.auditDbPath` resolved relative to `options.workingDirectory`; call `writeRunMetadata()` with `outcome='in_progress'`; after all tiers complete, call `updateRunMetadata()` with final `outcome`, `completedAt`, `resolvedTierName`, `resolvedIteration`; call `closeAuditDatabase()` in a `finally` block' to [x]",
-            "dependencies": [
-              "T009",
-              "T018",
-              "T017",
-              "T011",
-              "T007",
-              "T016",
-              "T008"
-            ]
-          }
-        ],
-        "checkpoint_after": {
-          "enabled": true,
-          "verification_criteria": "Verify all Wave 9 tasks are marked [x] in tasks.md",
-          "git_agent": "git-version-manager",
-          "memory_bank_agent": "memory-bank-keeper"
-        }
-      },
-      {
-        "wave_id": 10,
-        "strategy": "SEQUENTIAL_MERGE",
-        "rationale": "Wave 10: 1 independent task(s) with no file conflicts",
-        "tasks": [
-          {
-            "task_id": "T027",
-            "agent_role": "Developer",
-            "instruction": "T027 [US3] Show audit log path and run ID in final report in `src/cli/commands/run.ts` \u2014 `Audit: <path>  (run: <runId[:8]>)`; when all tiers fail, also print the SQLite query hint: `sqlite3 <path> \"SELECT * FROM tier_attempts WHERE run_id='<runId>' ORDER BY tier_index, iteration;\"`",
-            "file_locks": [
-              "src/cli/commands/run.ts"
-            ],
-            "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T027 [US3] Show audit log path and run ID in final report in `src/cli/commands/run.ts` \u2014 `Audit: <path>  (run: <runId[:8]>)`; when all tiers fail, also print the SQLite query hint: `sqlite3 <path> \"SELECT * FROM tier_attempts WHERE run_id='<runId>' ORDER BY tier_index, iteration;\"`' to [x]",
-            "dependencies": [
-              "T009",
-              "T018",
-              "T017",
-              "T011",
-              "T026",
-              "T007",
-              "T016",
-              "T008"
-            ]
-          }
-        ],
-        "checkpoint_after": {
-          "enabled": true,
-          "verification_criteria": "Verify all Wave 10 tasks are marked [x] in tasks.md",
-          "git_agent": "git-version-manager",
-          "memory_bank_agent": "memory-bank-keeper"
-        }
-      },
-      {
-        "wave_id": 11,
-        "strategy": "SEQUENTIAL_MERGE",
-        "rationale": "Wave 11: 1 independent task(s) with no file conflicts",
-        "tasks": [
-          {
-            "task_id": "T029",
-            "agent_role": "Developer",
-            "instruction": "T029 [P] Add warning in `src/cli/commands/run.ts` when legacy flags (`--simple`, `--full`, `--no-escalate`) are used alongside `--tier-config` \u2014 log `logger.warn('\u26a0 --tier-config is active; --simple/--full/--no-escalate flags are ignored')` before entering tier engine path",
-            "file_locks": [
-              "src/cli/commands/run.ts",
-              "logger.warn"
-            ],
-            "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T029 [P] Add warning in `src/cli/commands/run.ts` when legacy flags (`--simple`, `--full`, `--no-escalate`) are used alongside `--tier-config` \u2014 log `logger.warn('\u26a0 --tier-config is active; --simple/--full/--no-escalate flags are ignored')` before entering tier engine path' to [x]",
-            "dependencies": [
-              "T009",
-              "T018",
-              "T017",
-              "T011",
-              "T026",
-              "T027",
-              "T022",
-              "T023",
-              "T007",
-              "T016",
-              "T008"
-            ]
-          }
-        ],
-        "checkpoint_after": {
-          "enabled": true,
-          "verification_criteria": "Verify all Wave 11 tasks are marked [x] in tasks.md",
-          "git_agent": "git-version-manager",
-          "memory_bank_agent": "memory-bank-keeper"
-        }
-      },
-      {
-        "wave_id": 12,
-        "strategy": "SEQUENTIAL_MERGE",
-        "rationale": "Wave 12: 1 independent task(s) with no file conflicts",
-        "tasks": [
-          {
-            "task_id": "T030",
-            "agent_role": "Developer",
-            "instruction": "T030 [P] Add validation error reporter in `runCommand()` in `src/cli/commands/run.ts` \u2014 when `validateTierConfig()` returns errors, print each error with index (`Error 1: ...`, `Error 2: ...`) and a trailing `Fix the errors above and re-run. No LLM calls were made.` line; then `process.exit(1)` \u2014 matching `contracts/cli-interface.md` \"Validation Error Output\" format",
-            "file_locks": [
-              "process.exit",
-              "src/cli/commands/run.ts",
-              "contracts/cli-interface.md"
-            ],
-            "constitution_rules": [],
-            "completion_handshake": "Upon success, update tasks.md line containing 'T030 [P] Add validation error reporter in `runCommand()` in `src/cli/commands/run.ts` \u2014 when `validateTierConfig()` returns errors, print each error with index (`Error 1: ...`, `Error 2: ...`) and a trailing `Fix the errors above and re-run. No LLM calls were made.` line; then `process.exit(1)` \u2014 matching `contracts/cli-interface.md` \"Validation Error Output\" format' to [x]",
-            "dependencies": [
-              "T009",
-              "T029",
-              "T018",
-              "T017",
-              "T011",
-              "T026",
-              "T027",
-              "T010",
-              "T007",
-              "T016",
-              "T008"
-            ]
-          }
-        ],
-        "checkpoint_after": {
-          "enabled": true,
-          "verification_criteria": "Verify all Wave 12 tasks are marked [x] in tasks.md",
           "git_agent": "git-version-manager",
           "memory_bank_agent": "memory-bank-keeper"
         }

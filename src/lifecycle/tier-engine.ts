@@ -30,8 +30,16 @@ export interface TierEngineContext {
  */
 export async function runTier(
   tierCtx: TierEngineContext,
-  runSimpleIteration: (ctx: AgentContext, agents: any, testRunner: any) => Promise<{ context: AgentContext; success: boolean }>,
-  runFullIteration?: (ctx: AgentContext, agents: any, testRunner: any) => Promise<{ context: AgentContext; success: boolean }>,
+  runSimpleIteration: (
+    ctx: AgentContext,
+    agents: any,
+    testRunner: any,
+  ) => Promise<{ context: AgentContext; success: boolean }>,
+  runFullIteration?: (
+    ctx: AgentContext,
+    agents: any,
+    testRunner: any,
+  ) => Promise<{ context: AgentContext; success: boolean }>,
 ): Promise<{ result: TierRunResult; finalContext: AgentContext }> {
   const { runId, tierConfig, tierIndex, totalTiers, db } = tierCtx;
   let context = tierCtx.context;
@@ -41,24 +49,33 @@ export async function runTier(
   let exitReason: TierRunResult['exitReason'] = 'iterations_exhausted';
   let totalCostUsd = 0;
 
-  logger.info(`\n━━━━ ▶ Tier ${tierIndex + 1}/${totalTiers}: ${tierConfig.name} [${tierConfig.mode}, ${tierConfig.models.artisan}] ━━━━`);
+  logger.info(
+    `\n━━━━ ▶ Tier ${tierIndex + 1}/${totalTiers}: ${tierConfig.name} [${tierConfig.mode}, ${tierConfig.models.artisan}] ━━━━`,
+  );
 
   for (let iteration = 1; iteration <= tierConfig.maxIterations; iteration++) {
     if (isBudgetExceeded(context)) {
-      logger.warn(`[tier-engine] Budget exceeded before iteration ${iteration} of tier "${tierConfig.name}"`);
+      logger.warn(
+        `[tier-engine] Budget exceeded before iteration ${iteration} of tier "${tierConfig.name}"`,
+      );
       exitReason = 'budget_exhausted';
       break;
     }
 
     const iterStart = Date.now();
 
-    const runner = (tierConfig.mode === 'full' && runFullIteration) ? runFullIteration : runSimpleIteration;
+    const runner =
+      tierConfig.mode === 'full' && runFullIteration
+        ? runFullIteration
+        : runSimpleIteration;
 
     let iterResult: { context: AgentContext; success: boolean };
     try {
       iterResult = await runner(context, tierCtx.agents, tierCtx.testRunner);
     } catch (err: any) {
-      logger.error(`[tier-engine] Provider error on tier "${tierConfig.name}" iter ${iteration}: ${err.message}`);
+      logger.error(
+        `[tier-engine] Provider error on tier "${tierConfig.name}" iter ${iteration}: ${err.message}`,
+      );
       exitReason = 'provider_error';
       break;
     }
@@ -71,9 +88,14 @@ export async function runTier(
     const testResults = (context as any).testResults;
     const testStatus: TierAttemptRecord['testStatus'] = iterResult.success
       ? 'passed'
-      : (testResults?.status === 'error' ? 'error' : 'failed');
-    const failedTests: string[] = testResults?.failures?.map((f: any) => f.testName) ?? [];
-    const errorMessages: string[] = testResults?.failures?.map((f: any) => f.errorMessage).filter(Boolean) ?? [];
+      : testResults?.status === 'error'
+        ? 'error'
+        : 'failed';
+    const failedTests: string[] =
+      testResults?.failures?.map((f: any) => f.testName) ?? [];
+    const errorMessages: string[] =
+      testResults?.failures?.map((f: any) => f.errorMessage).filter(Boolean) ??
+      [];
 
     const record: TierAttemptRecord = {
       runId,
@@ -102,7 +124,9 @@ export async function runTier(
     if (iterResult.success) {
       success = true;
       exitReason = 'success';
-      logger.info(`[tier-engine] Tier "${tierConfig.name}" succeeded on iteration ${iteration}`);
+      logger.info(
+        `[tier-engine] Tier "${tierConfig.name}" succeeded on iteration ${iteration}`,
+      );
       break;
     }
 

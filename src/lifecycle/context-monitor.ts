@@ -60,8 +60,8 @@ export const DEFAULT_CONTEXT_LIMITS: ModelContextLimits = {
   'o1-preview': 128_000,
 
   // Ollama (varies by model, conservative default)
-  'llama3': 8_000,
-  'mistral': 8_000,
+  llama3: 8_000,
+  mistral: 8_000,
 };
 
 /**
@@ -90,7 +90,9 @@ export class ContextMonitor extends EventEmitter {
     this.agentModels.set(agent, model);
 
     if (!this.contextLimits[model]) {
-      console.warn(`⚠️  Unknown model "${model}" - using conservative 8k token limit`);
+      console.warn(
+        `⚠️  Unknown model "${model}" - using conservative 8k token limit`,
+      );
       this.contextLimits[model] = 8_000;
     }
   }
@@ -102,7 +104,9 @@ export class ContextMonitor extends EventEmitter {
   public trackTokens(agent: string, tokens: number): ContextWarning | null {
     const model = this.agentModels.get(agent);
     if (!model) {
-      throw new Error(`Agent "${agent}" not registered. Call registerAgent() first.`);
+      throw new Error(
+        `Agent "${agent}" not registered. Call registerAgent() first.`,
+      );
     }
 
     const current = this.tokenCounts.get(agent) || 0;
@@ -272,6 +276,8 @@ export class ContextMonitor extends EventEmitter {
 /**
  * Factory function to create context monitor with defaults
  */
-export function createContextMonitor(customLimits?: ModelContextLimits): ContextMonitor {
+export function createContextMonitor(
+  customLimits?: ModelContextLimits,
+): ContextMonitor {
   return new ContextMonitor({ ...DEFAULT_CONTEXT_LIMITS, ...customLimits });
 }

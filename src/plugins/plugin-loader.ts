@@ -72,7 +72,9 @@ export class PluginLoader {
 
       // Load and parse YAML
       const config = await this.loadConfig();
-      logger.info(`Loading ${config.plugins.length} plugin(s) from ${this.configPath}`);
+      logger.info(
+        `Loading ${config.plugins.length} plugin(s) from ${this.configPath}`,
+      );
 
       // Load each plugin
       const entries: PluginRegistryEntry[] = [];
@@ -101,7 +103,7 @@ export class PluginLoader {
    * Load single plugin
    */
   private async loadPlugin(
-    definition: PluginDefinition
+    definition: PluginDefinition,
   ): Promise<PluginRegistryEntry | null> {
     const startTime = Date.now();
 
@@ -133,7 +135,7 @@ export class PluginLoader {
       const loadTime = Date.now() - startTime;
 
       logger.info(
-        `Loaded plugin: ${plugin.name} v${plugin.version} (${loadTime}ms)`
+        `Loaded plugin: ${plugin.name} v${plugin.version} (${loadTime}ms)`,
       );
 
       return {
@@ -167,7 +169,7 @@ export class PluginLoader {
 
     if (!plugin) {
       throw new Error(
-        `Plugin file must export default or named "plugin": ${filePath}`
+        `Plugin file must export default or named "plugin": ${filePath}`,
       );
     }
 
@@ -187,7 +189,7 @@ export class PluginLoader {
 
       if (!plugin) {
         throw new Error(
-          `Package must export default or named "plugin": ${packageName}`
+          `Package must export default or named "plugin": ${packageName}`,
         );
       }
 
@@ -195,7 +197,7 @@ export class PluginLoader {
     } catch (error) {
       if ((error as any).code === 'MODULE_NOT_FOUND') {
         throw new Error(
-          `Plugin package not found: ${packageName}. Run: npm install ${packageName}`
+          `Plugin package not found: ${packageName}. Run: npm install ${packageName}`,
         );
       }
       throw error;
@@ -227,10 +229,14 @@ export class PluginLoader {
       'onEntropyDetected',
     ];
 
-    const hasHook = hooks.some(hook => typeof (plugin as any)[hook] === 'function');
+    const hasHook = hooks.some(
+      (hook) => typeof (plugin as any)[hook] === 'function',
+    );
 
     if (!hasHook && !plugin.initialize && !plugin.cleanup) {
-      throw new Error('Plugin must implement at least one hook or lifecycle method');
+      throw new Error(
+        'Plugin must implement at least one hook or lifecycle method',
+      );
     }
   }
 
@@ -295,7 +301,7 @@ export class PluginLoader {
    * Get enabled plugins only
    */
   getEnabledPlugins(): PluginRegistryEntry[] {
-    return this.getAllPlugins().filter(entry => entry.enabled);
+    return this.getAllPlugins().filter((entry) => entry.enabled);
   }
 
   /**

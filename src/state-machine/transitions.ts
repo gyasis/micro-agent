@@ -21,7 +21,7 @@ export interface TransitionResult {
 export function determineNextState(
   currentState: string,
   event: RalphEvent,
-  context: RalphContext
+  context: RalphContext,
 ): TransitionResult | null {
   switch (currentState) {
     case 'librarian':
@@ -143,7 +143,7 @@ export function determineNextState(
 export async function executeTransitionActions(
   actions: string[],
   context: RalphContext,
-  event: RalphEvent
+  event: RalphEvent,
 ): Promise<void> {
   for (const action of actions) {
     try {
@@ -160,7 +160,7 @@ export async function executeTransitionActions(
 async function executeAction(
   action: string,
   context: RalphContext,
-  event: RalphEvent
+  event: RalphEvent,
 ): Promise<void> {
   switch (action) {
     case 'trackLibrarianTokens':
@@ -208,7 +208,9 @@ async function executeAction(
       break;
 
     case 'notifyAdversarialFailure':
-      console.info('ℹ️  Adversarial tests revealed potential improvements (unit tests still pass)');
+      console.info(
+        'ℹ️  Adversarial tests revealed potential improvements (unit tests still pass)',
+      );
       break;
 
     default:
@@ -222,7 +224,7 @@ async function executeAction(
 export function isTransitionValid(
   fromState: string,
   toState: string,
-  context: RalphContext
+  context: RalphContext,
 ): boolean {
   // Define allowed transitions
   const validTransitions: Record<string, string[]> = {

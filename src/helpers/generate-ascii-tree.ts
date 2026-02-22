@@ -34,7 +34,7 @@ export function generateAsciiTree(paths: (string | null | number)[]): string {
   function generateTreeString(
     node: TreeNode,
     prefix: string = '',
-    isLast: boolean = true
+    isLast: boolean = true,
   ): string {
     const keys = Object.keys(node);
     let result = '';
@@ -48,7 +48,7 @@ export function generateAsciiTree(paths: (string | null | number)[]): string {
         result += generateTreeString(
           node[key] as TreeNode,
           prefix + (isThisLast ? '    ' : '│   '),
-          isThisLast
+          isThisLast,
         );
       }
     });

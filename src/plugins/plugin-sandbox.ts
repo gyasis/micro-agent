@@ -130,14 +130,14 @@ class ResourceTracker {
     const memoryMB = this.getMemoryUsageMB();
     if (memoryMB > policy.maxMemoryMB) {
       throw new Error(
-        `Memory limit exceeded: ${memoryMB.toFixed(2)}MB > ${policy.maxMemoryMB}MB`
+        `Memory limit exceeded: ${memoryMB.toFixed(2)}MB > ${policy.maxMemoryMB}MB`,
       );
     }
 
     const cpuMs = this.getCpuTimeMs();
     if (cpuMs > policy.maxCpuTime) {
       throw new Error(
-        `CPU time limit exceeded: ${cpuMs.toFixed(0)}ms > ${policy.maxCpuTime}ms`
+        `CPU time limit exceeded: ${cpuMs.toFixed(0)}ms > ${policy.maxCpuTime}ms`,
       );
     }
   }
@@ -197,7 +197,14 @@ export class ContextValidator {
     }
 
     // Prevent absolute paths to sensitive directories
-    const dangerousPaths = ['/etc', '/root', '/home', '/usr/bin', '/bin', '/sbin'];
+    const dangerousPaths = [
+      '/etc',
+      '/root',
+      '/home',
+      '/usr/bin',
+      '/bin',
+      '/sbin',
+    ];
     for (const dangerous of dangerousPaths) {
       if (sanitized.startsWith(dangerous)) {
         throw new Error(`Access to ${dangerous} is not allowed`);
@@ -242,12 +249,15 @@ export class OutputSanitizer {
   /**
    * Validate output size (prevent memory exhaustion)
    */
-  static validateSize(output: unknown, maxSizeBytes: number = 1024 * 1024): void {
+  static validateSize(
+    output: unknown,
+    maxSizeBytes: number = 1024 * 1024,
+  ): void {
     // 1MB default
     const size = JSON.stringify(output).length;
     if (size > maxSizeBytes) {
       throw new Error(
-        `Output size ${size} bytes exceeds limit ${maxSizeBytes} bytes`
+        `Output size ${size} bytes exceeds limit ${maxSizeBytes} bytes`,
       );
     }
   }
@@ -271,19 +281,16 @@ export class PluginSandbox {
   async execute<T extends any[], R>(
     plugin: RalphPlugin,
     hookFn: Function,
-    args: T
+    args: T,
   ): Promise<R> {
     // Audit log
-    logger.info(
-      `[SECURITY] Executing plugin ${plugin.name} in sandbox`,
-      {
-        policy: this.policy,
-        hook: hookFn.name,
-      }
-    );
+    logger.info(`[SECURITY] Executing plugin ${plugin.name} in sandbox`, {
+      policy: this.policy,
+      hook: hookFn.name,
+    });
 
     // Validate inputs
-    const sanitizedArgs = args.map(arg => {
+    const sanitizedArgs = args.map((arg) => {
       if (this.isPluginContext(arg)) {
         return ContextValidator.validate(arg);
       }
@@ -295,8 +302,8 @@ export class PluginSandbox {
 
     try {
       // Execute hook with periodic resource checks
-      const result = await this.executeWithResourceMonitoring(
-        () => hookFn.apply(plugin, sanitizedArgs)
+      const result = await this.executeWithResourceMonitoring(() =>
+        hookFn.apply(plugin, sanitizedArgs),
       );
 
       // Sanitize output
@@ -326,7 +333,7 @@ export class PluginSandbox {
    * Execute with periodic resource monitoring
    */
   private async executeWithResourceMonitoring<R>(
-    fn: () => Promise<R> | R
+    fn: () => Promise<R> | R,
   ): Promise<R> {
     // Check resources periodically during execution
     const checkInterval = setInterval(() => {
@@ -384,7 +391,7 @@ export class PluginSandbox {
  * Create sandboxed plugin executor
  */
 export function createPluginSandbox(
-  policy?: Partial<SecurityPolicy>
+  policy?: Partial<SecurityPolicy>,
 ): PluginSandbox {
   const fullPolicy = policy
     ? { ...DEFAULT_SECURITY_POLICY, ...policy }

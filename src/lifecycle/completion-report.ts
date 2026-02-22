@@ -15,7 +15,10 @@
 import type { RalphTestResult } from '../parsers/base-parser';
 import type { BudgetStatus } from './iteration-manager';
 import type { CompletionStatusResult } from './completion-status';
-import { formatCompletionStatus, getRecommendedNextSteps } from './completion-status';
+import {
+  formatCompletionStatus,
+  getRecommendedNextSteps,
+} from './completion-status';
 import { formatBudgetStatus } from './budget-enforcer';
 import { createLogger } from '../utils/logger';
 
@@ -94,7 +97,7 @@ export function generateCompletionReport(
   iterations: IterationSummary[],
   budgetStatus: BudgetStatus,
   finalTestResults: RalphTestResult | null,
-  patterns: LearnedPattern[] = []
+  patterns: LearnedPattern[] = [],
 ): CompletionReport {
   // Calculate cost breakdown (placeholder - actual implementation would track by agent)
   const costBreakdown: CostBreakdown = {
@@ -106,18 +109,23 @@ export function generateCompletionReport(
   };
 
   // Calculate testing metrics
-  const totalTestsRun = iterations.reduce((sum, iter) => sum + iter.testsTotal, 0);
-  const totalTestsPassed = iterations.filter(iter => iter.testsPassed).length;
+  const totalTestsRun = iterations.reduce(
+    (sum, iter) => sum + iter.testsTotal,
+    0,
+  );
+  const totalTestsPassed = iterations.filter((iter) => iter.testsPassed).length;
   const totalTestsFailed = iterations.length - totalTestsPassed;
 
   // Calculate performance metrics
   const totalDuration = budgetStatus.elapsedMinutes;
   const averageDurationPerIteration =
     iterations.length > 0 ? totalDuration / iterations.length : 0;
-  const iterationsPerMinute = totalDuration > 0 ? iterations.length / totalDuration : 0;
+  const iterationsPerMinute =
+    totalDuration > 0 ? iterations.length / totalDuration : 0;
   const costPerIteration =
     iterations.length > 0 ? budgetStatus.totalCost / iterations.length : 0;
-  const successRate = iterations.length > 0 ? (totalTestsPassed / iterations.length) * 100 : 0;
+  const successRate =
+    iterations.length > 0 ? (totalTestsPassed / iterations.length) * 100 : 0;
 
   // Get recommended next steps
   const nextSteps = getRecommendedNextSteps(status);
@@ -184,14 +192,18 @@ export function formatCompletionReport(report: CompletionReport): string {
   lines.push(`Total Cost: $${report.budget.totalCost.toFixed(2)}`);
   lines.push('');
   lines.push('Cost Breakdown:');
-  lines.push(`  Librarian: $${report.budget.costBreakdown.librarian.toFixed(2)}`);
+  lines.push(
+    `  Librarian: $${report.budget.costBreakdown.librarian.toFixed(2)}`,
+  );
   lines.push(`  Artisan:   $${report.budget.costBreakdown.artisan.toFixed(2)}`);
   lines.push(`  Critic:    $${report.budget.costBreakdown.critic.toFixed(2)}`);
   lines.push(`  Chaos:     $${report.budget.costBreakdown.chaos.toFixed(2)}`);
   lines.push('');
-  lines.push(`Total Duration: ${report.budget.totalDuration.toFixed(1)} minutes`);
   lines.push(
-    `Average Duration per Iteration: ${report.budget.averageDurationPerIteration.toFixed(1)} min`
+    `Total Duration: ${report.budget.totalDuration.toFixed(1)} minutes`,
+  );
+  lines.push(
+    `Average Duration per Iteration: ${report.budget.averageDurationPerIteration.toFixed(1)} min`,
   );
   lines.push('');
 
@@ -204,21 +216,25 @@ export function formatCompletionReport(report: CompletionReport): string {
     const results = report.testing.finalResults;
     lines.push(`Framework: ${results.framework}`);
     lines.push(
-      `Final Test Results: ${results.summary.passed}/${results.summary.total} passed`
+      `Final Test Results: ${results.summary.passed}/${results.summary.total} passed`,
     );
     lines.push(`  Passed:  ${results.summary.passed}`);
     lines.push(`  Failed:  ${results.summary.failed}`);
     lines.push(`  Skipped: ${results.summary.skipped}`);
 
     if (report.testing.coveragePercentage !== undefined) {
-      lines.push(`  Coverage: ${report.testing.coveragePercentage.toFixed(1)}%`);
+      lines.push(
+        `  Coverage: ${report.testing.coveragePercentage.toFixed(1)}%`,
+      );
     }
   } else {
     lines.push('No test results available');
   }
 
   lines.push('');
-  lines.push(`Total Tests Run Across All Iterations: ${report.testing.totalTestsRun}`);
+  lines.push(
+    `Total Tests Run Across All Iterations: ${report.testing.totalTestsRun}`,
+  );
   lines.push('');
 
   // Iteration Breakdown
@@ -231,7 +247,7 @@ export function formatCompletionReport(report: CompletionReport): string {
     const icon = iter.testsPassed ? '✅' : '❌';
     lines.push(
       `${icon} Iteration ${iter.iteration}: ${iter.testsTotal - iter.testsFailed}/${iter.testsTotal} tests | ` +
-        `$${iter.cost.toFixed(2)} | ${iter.duration.toFixed(1)}s | ${iter.state}`
+        `$${iter.cost.toFixed(2)} | ${iter.duration.toFixed(1)}s | ${iter.state}`,
     );
   }
 
@@ -242,9 +258,11 @@ export function formatCompletionReport(report: CompletionReport): string {
   lines.push('Performance Metrics');
   lines.push('─'.repeat(80));
   lines.push(
-    `Iterations per Minute: ${report.performance.iterationsPerMinute.toFixed(2)}`
+    `Iterations per Minute: ${report.performance.iterationsPerMinute.toFixed(2)}`,
   );
-  lines.push(`Cost per Iteration: $${report.performance.costPerIteration.toFixed(2)}`);
+  lines.push(
+    `Cost per Iteration: $${report.performance.costPerIteration.toFixed(2)}`,
+  );
   lines.push(`Success Rate: ${report.performance.successRate.toFixed(1)}%`);
   lines.push('');
 
@@ -326,7 +344,7 @@ export function createIterationSummary(
   duration: number,
   cost: number,
   testResults: RalphTestResult | null,
-  state: string
+  state: string,
 ): IterationSummary {
   return {
     iteration,

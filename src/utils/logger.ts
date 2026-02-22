@@ -48,10 +48,7 @@ export class Logger {
    * Create child logger with additional context
    */
   public child(additionalContext: LogContext): Logger {
-    return new Logger(
-      { ...this.context, ...additionalContext },
-      this.minLevel
-    );
+    return new Logger({ ...this.context, ...additionalContext }, this.minLevel);
   }
 
   /**
@@ -79,13 +76,14 @@ export class Logger {
    * Log error
    */
   public error(message: string, error?: Error | any): void {
-    const data = error instanceof Error
-      ? {
-          name: error.name,
-          message: error.message,
-          stack: error.stack,
-        }
-      : error;
+    const data =
+      error instanceof Error
+        ? {
+            name: error.name,
+            message: error.message,
+            stack: error.stack,
+          }
+        : error;
 
     this.log('error', message, data);
   }
@@ -188,8 +186,8 @@ export class Logger {
   private colorizeLevel(level: LogLevel): string {
     const colors: Record<LogLevel, string> = {
       debug: '\x1b[36m', // Cyan
-      info: '\x1b[32m',  // Green
-      warn: '\x1b[33m',  // Yellow
+      info: '\x1b[32m', // Green
+      warn: '\x1b[33m', // Yellow
       error: '\x1b[31m', // Red
     };
     const reset = '\x1b[0m';
@@ -257,6 +255,9 @@ export function getLogger(context?: LogContext): Logger {
 /**
  * Create a new logger instance
  */
-export function createLogger(context?: LogContext, minLevel?: LogLevel): Logger {
+export function createLogger(
+  context?: LogContext,
+  minLevel?: LogLevel,
+): Logger {
   return new Logger(context, minLevel);
 }

@@ -8,7 +8,8 @@ import type { AgentContext } from '../agents/base/agent-context';
 import type { TierRunResult, AccumulatedFailureSummary } from './types';
 
 const MAX_SUMMARY_CHARS = 4000;
-const TRUNCATION_MARKER = '\n[prior tier history truncated for context efficiency]';
+const TRUNCATION_MARKER =
+  '\n[prior tier history truncated for context efficiency]';
 
 export function buildAccumulatedSummary(
   priorResults: TierRunResult[],
@@ -26,8 +27,8 @@ export function buildAccumulatedSummary(
   const totalIterations = priorResults.reduce((s, r) => s + r.iterationsRan, 0);
   const totalCost = priorResults.reduce((s, r) => s + r.totalCostUsd, 0);
 
-  const allErrors = priorResults.flatMap(r =>
-    r.records.flatMap(rec => rec.errorMessages)
+  const allErrors = priorResults.flatMap((r) =>
+    r.records.flatMap((rec) => rec.errorMessages),
   );
   const allUniqueErrorSignatures = [...new Set(allErrors)];
 
@@ -36,7 +37,7 @@ export function buildAccumulatedSummary(
   const lastFailedTests = lastRecord?.failedTests ?? [];
 
   const blocks: string[] = priorResults.map((result, idx) =>
-    buildTierBlock(result, idx + 1)
+    buildTierBlock(result, idx + 1),
   );
 
   const footer = `\n[total accumulated across ${priorResults.length} tier(s): ${totalIterations} iterations, $${totalCost.toFixed(4)}]`;
@@ -54,7 +55,8 @@ export function buildAccumulatedSummary(
     }
     if (truncated === footer + TRUNCATION_MARKER) {
       const hardCap = MAX_SUMMARY_CHARS - TRUNCATION_MARKER.length;
-      truncated = blocks[blocks.length - 1].slice(0, hardCap) + TRUNCATION_MARKER;
+      truncated =
+        blocks[blocks.length - 1].slice(0, hardCap) + TRUNCATION_MARKER;
     }
     summary = truncated;
   }
@@ -73,15 +75,20 @@ function buildTierBlock(result: TierRunResult, displayIndex: number): string {
   const lines: string[] = [header, ''];
 
   for (const rec of result.records) {
-    const errSummary = rec.errorMessages.slice(0, 2).join('; ') || 'no error captured';
+    const errSummary =
+      rec.errorMessages.slice(0, 2).join('; ') || 'no error captured';
     lines.push(
-      `Iteration ${rec.iteration}: ${rec.codeChangeSummary || 'code modified'}. Tests: ${errSummary}`
+      `Iteration ${rec.iteration}: ${rec.codeChangeSummary || 'code modified'}. Tests: ${errSummary}`,
     );
   }
 
-  const tierErrors = [...new Set(result.records.flatMap(r => r.errorMessages))];
+  const tierErrors = [
+    ...new Set(result.records.flatMap((r) => r.errorMessages)),
+  ];
   lines.push('');
-  lines.push(`Unique error patterns: ${tierErrors.slice(0, 5).join(' | ') || 'none'}`);
+  lines.push(
+    `Unique error patterns: ${tierErrors.slice(0, 5).join(' | ') || 'none'}`,
+  );
 
   return lines.join('\n');
 }

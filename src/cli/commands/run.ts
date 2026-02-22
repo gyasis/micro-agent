@@ -38,6 +38,10 @@ import {
   loadTierConfig,
   validateTierConfig,
 } from '../../lifecycle/tier-config';
+import {
+  detectFramework,
+  getDefaultTestCommand,
+} from '../../parsers/framework-detector';
 import { runTier } from '../../lifecycle/tier-engine';
 import {
   buildAccumulatedSummary,
@@ -72,6 +76,7 @@ export interface RunOptions {
   noEscalate?: boolean; // --no-escalate flag
   fullMode?: boolean; // --full flag
   tierConfig?: string; // --tier-config <path>
+  generate?: boolean; // Commander sets false when --no-generate is passed
 }
 
 /**
@@ -103,8 +108,50 @@ export async function runCommand(
     }
 
     // Step 2: Prepare run parameters
-    const params = prepareRunParameters(target, options, config);
+    const params = await prepareRunParameters(target, options, config);
     logger.info('Run parameters prepared', params);
+
+    // Step 2.5: Test Generation
+    // Skip if: --no-generate set, --test provided, no target file, or Rust target
+    if (params.targetFile && options.generate !== false && !options.test) {
+      const { findExistingTests, generateTestFile } = await import(
+        '../../helpers/test-generator'
+      );
+      const ext = path.extname(params.targetFile);
+      if (ext === '.rs') {
+        logger.info(
+          `Skipping test generation for Rust (.rs) — use inline #[test] blocks`,
+        );
+      } else {
+        const existingTest = await findExistingTests(
+          params.targetFile,
+          params.workingDirectory,
+        );
+        if (!existingTest) {
+          logger.info(
+            `No tests found for ${params.targetFile} — generating with Sonnet...`,
+          );
+          try {
+            const genResult = await generateTestFile({
+              targetFile: params.targetFile,
+              objective: params.objective,
+              workingDir: params.workingDirectory,
+              framework: params.testFramework,
+              model: options.artisan || 'claude-sonnet-4-20250514',
+              verbose: options.verbose,
+            });
+            logger.info(`Generated: ${genResult.testFilePath}`);
+            params.testCommand = genResult.testCommand;
+          } catch (genErr) {
+            logger.warn(
+              `Test generation failed: ${String(genErr)} — continuing without generated test`,
+            );
+          }
+        } else {
+          logger.info(`Using existing tests: ${existingTest}`);
+        }
+      }
+    }
 
     // Step 3: Initialize infrastructure
     const { providerRouter, costTracker, iterationManager, contextMonitor } =
@@ -428,13 +475,14 @@ export async function runCommand(
 }
 
 /**
- * Prepare run parameters
+ * Prepare run parameters.
+ * Auto-detects test framework and command from the project when not explicitly provided.
  */
-function prepareRunParameters(
+async function prepareRunParameters(
   target: string,
   options: RunOptions,
   config: any,
-): {
+): Promise<{
   objective: string;
   targetFile?: string;
   workingDirectory: string;
@@ -447,16 +495,37 @@ function prepareRunParameters(
   simpleIterations: number;
   noEscalate: boolean;
   fullMode: boolean;
-} {
-  const isFile = target.endsWith('.ts') || target.endsWith('.js');
+}> {
+  const isFile = target.endsWith('.ts') || target.endsWith('.js')
+    || target.endsWith('.py') || target.endsWith('.rs')
+    || target.endsWith('.rb') || target.endsWith('.java');
+
+  // Auto-detect framework and test command from project manifest files
+  // (package.json, pyproject.toml, Cargo.toml, Gemfile, pom.xml, etc.)
+  let detectedCommand: string | undefined;
+  let detectedFramework: string | undefined;
+  if (!options.test || !options.framework) {
+    const detection = await detectFramework(process.cwd());
+    detectedCommand = detection.command;
+    detectedFramework = detection.framework;
+    if (detection.command) {
+      logger.info(`Auto-detected test framework: ${detection.framework} → ${detection.command}`);
+    }
+  }
+
+  const testFramework = options.framework || detectedFramework || 'vitest';
+  const testCommand = options.test
+    || config.testing?.defaultCommand
+    || detectedCommand
+    || getDefaultTestCommand(testFramework as any);
 
   return {
     objective:
       options.objective || (isFile ? `Make ${target} pass all tests` : target),
     targetFile: isFile ? target : undefined,
     workingDirectory: process.cwd(),
-    testCommand: options.test || config.testing?.defaultCommand || 'npm test',
-    testFramework: options.framework || 'vitest',
+    testCommand,
+    testFramework,
     maxIterations: parseInt(options.maxIterations || '30', 10),
     maxBudget: parseFloat(options.maxBudget || '2.00'),
     maxDuration: parseInt(options.maxDuration || '15', 10),
@@ -884,7 +953,7 @@ async function runTierLoop(
   // T026: Generate runId and write initial run_metadata
   const runId = uuidv4();
   const startedAt = new Date().toISOString();
-  const params = prepareRunParameters(target, options, config);
+  const params = await prepareRunParameters(target, options, config);
 
   if (auditDb) {
     writeRunMetadata(auditDb, {

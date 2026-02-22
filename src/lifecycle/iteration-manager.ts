@@ -46,9 +46,15 @@ export class IterationManager extends EventEmitter {
 
     // Warn if context reset frequency > 1 (violates Ralph Loop gold standard)
     if (config.contextResetFrequency > 1) {
-      console.warn(`⚠️  context_reset_frequency=${config.contextResetFrequency} degrades quality`);
-      console.warn('   Gold standard is context_reset_frequency=1 (fresh context every iteration)');
-      console.warn('   Automatic reset will trigger at 40% context usage regardless');
+      console.warn(
+        `⚠️  context_reset_frequency=${config.contextResetFrequency} degrades quality`,
+      );
+      console.warn(
+        '   Gold standard is context_reset_frequency=1 (fresh context every iteration)',
+      );
+      console.warn(
+        '   Automatic reset will trigger at 40% context usage regardless',
+      );
     }
   }
 
@@ -209,7 +215,7 @@ export class IterationManager extends EventEmitter {
  */
 export function createIterationManager(
   sessionId: string,
-  overrides?: Partial<IterationManagerConfig>
+  overrides?: Partial<IterationManagerConfig>,
 ): IterationManager {
   const config: IterationManagerConfig = {
     sessionId,

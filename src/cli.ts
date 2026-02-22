@@ -73,11 +73,11 @@ cli(
     const createReplacementFilePath = (
       filePath: string,
       fileExtension: string,
-      replacement: string
+      replacement: string,
     ) => {
       return filePath.replace(
         new RegExp('\\.' + fileExtension + '$'),
-        replacement
+        replacement,
       );
     };
 
@@ -87,7 +87,7 @@ cli(
       createReplacementFilePath(
         filePath,
         fileExtension,
-        `.test.${testFileExtension}`
+        `.test.${testFileExtension}`,
       );
     const specFile =
       filePath &&
@@ -95,7 +95,7 @@ cli(
       createReplacementFilePath(
         filePath,
         fileExtension,
-        `.spec.${testFileExtension}`
+        `.spec.${testFileExtension}`,
       );
 
     const testFileExists = async () => {
@@ -140,7 +140,7 @@ cli(
       handleCliError(error);
       process.exit(1);
     }
-  }
+  },
 );
 
 process.on('SIGINT', () => {

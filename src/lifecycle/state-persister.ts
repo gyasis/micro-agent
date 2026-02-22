@@ -47,7 +47,9 @@ export class StatePersister {
    */
   public async initialize(): Promise<void> {
     await fs.mkdir(this.sessionDir, { recursive: true });
-    await fs.mkdir(path.join(this.sessionDir, 'checkpoints'), { recursive: true });
+    await fs.mkdir(path.join(this.sessionDir, 'checkpoints'), {
+      recursive: true,
+    });
 
     // Create session metadata file
     const metadata = {
@@ -57,7 +59,7 @@ export class StatePersister {
     };
     await fs.writeFile(
       path.join(this.sessionDir, 'metadata.json'),
-      JSON.stringify(metadata, null, 2)
+      JSON.stringify(metadata, null, 2),
     );
   }
 
@@ -68,7 +70,7 @@ export class StatePersister {
    */
   public async persistTestResults(
     iteration: number,
-    results: RalphTestResult
+    results: RalphTestResult,
   ): Promise<string> {
     const filename = `test-results-iteration-${iteration}.json`;
     const filepath = path.join(this.sessionDir, filename);
@@ -102,7 +104,7 @@ export class StatePersister {
    * Write code changes to files
    */
   public async persistCodeChanges(
-    changes: Map<string, string>
+    changes: Map<string, string>,
   ): Promise<PersistResult> {
     const filesWritten: string[] = [];
     const errors: string[] = [];
@@ -138,12 +140,12 @@ export class StatePersister {
    */
   public async createCheckpoint(
     iteration: number,
-    description: string
+    description: string,
   ): Promise<string> {
     const checkpointDir = path.join(
       this.sessionDir,
       'checkpoints',
-      `iteration-${iteration}`
+      `iteration-${iteration}`,
     );
     await fs.mkdir(checkpointDir, { recursive: true });
 
@@ -162,7 +164,9 @@ export class StatePersister {
   /**
    * Load test results from previous iteration
    */
-  public async loadTestResults(iteration: number): Promise<RalphTestResult | null> {
+  public async loadTestResults(
+    iteration: number,
+  ): Promise<RalphTestResult | null> {
     const filename = `test-results-iteration-${iteration}.json`;
     const filepath = path.join(this.sessionDir, filename);
 
@@ -177,7 +181,9 @@ export class StatePersister {
   /**
    * Load iteration state
    */
-  public async loadIterationState(iteration: number): Promise<IterationState | null> {
+  public async loadIterationState(
+    iteration: number,
+  ): Promise<IterationState | null> {
     const filename = `iteration-${iteration}-state.json`;
     const filepath = path.join(this.sessionDir, filename);
 
@@ -230,7 +236,7 @@ export class StatePersister {
       sessionDirs.map(async (dir) => {
         const stat = await fs.stat(dir.path);
         return { ...dir, mtime: stat.mtime.getTime() };
-      })
+      }),
     );
     sorted.sort((a, b) => a.mtime - b.mtime);
 

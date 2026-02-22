@@ -51,7 +51,7 @@ export const getOpenAi = async function () {
     await getConfig();
   if (!openaiKey) {
     throw new KnownError(
-      `Missing OpenAI key. Use \`${commandName} config\` to set it.`
+      `Missing OpenAI key. Use \`${commandName} config\` to set it.`,
     );
   }
   if (endpoint.indexOf('.openai.azure.com/openai') > 0) {
@@ -62,7 +62,7 @@ export const getOpenAi = async function () {
         `Invalid Azure OpenAI endpoint. Use \`${commandName} config\` to set ` +
           'your Azure OpenAI deployment endpoint as your OpenAI API endpoint. ' +
           'Use the format: https://<hub>.openai.azure.com/openai/' +
-          'deployments/<deployment_name>/chat/completions?api-version=<api_version>'
+          'deployments/<deployment_name>/chat/completions?api-version=<api_version>',
       );
     }
     return new AzureOpenAI({
@@ -83,7 +83,7 @@ export const getAnthropic = async function () {
   const { ANTHROPIC_KEY: anthropicKey } = await getConfig();
   if (!anthropicKey) {
     throw new KnownError(
-      `Missing Anthropic key. Use \`${commandName} config\` to set it.`
+      `Missing Anthropic key. Use \`${commandName} config\` to set it.`,
     );
   }
   const anthropic = new Anthropic({
@@ -94,7 +94,7 @@ export const getAnthropic = async function () {
 
 export const getFileSuggestion = async function (
   prompt: string,
-  fileString: string
+  fileString: string,
 ) {
   const message = {
     role: 'user' as const,
@@ -134,8 +134,8 @@ export const getFileSuggestion = async function (
             },
             message,
           ],
-        })
-      )
+        }),
+      ),
     );
   }
   const openai = await getOpenAi();
@@ -201,7 +201,7 @@ export const getSimpleCompletion = async function (options: {
     let output = '';
     const anthropic = await getAnthropic();
     const systemMessage = options.messages.find(
-      (message) => message.role === 'system'
+      (message) => message.role === 'system',
     );
     const result = anthropic.messages
       .stream({
@@ -210,7 +210,7 @@ export const getSimpleCompletion = async function (options: {
         max_tokens: 4096,
         system: systemMessage?.content as string,
         messages: options.messages.filter(
-          (message) => message.role !== 'system'
+          (message) => message.role !== 'system',
         ) as any[],
       })
       .on('text', (text) => {
@@ -322,7 +322,7 @@ export const getCompletion = async function (options: {
     const assistant = assistants.data.find(
       (assistant) =>
         (assistant.metadata as any)?.[assistantIdentifierMetadataKey] ===
-        assistantIdentifierMetadataValue
+        assistantIdentifierMetadataValue,
     );
     if (assistant) {
       assistantId = assistant.id;
@@ -353,7 +353,7 @@ export const getCompletion = async function (options: {
           instructions: systemPrompt,
           assistant_id: assistantId,
           additional_messages: options.messages.filter(
-            (message) => message.role !== 'system'
+            (message) => message.role !== 'system',
           ) as RunCreateParams.AdditionalMessage[],
         })
         .on('textDelta', (textDelta) => {

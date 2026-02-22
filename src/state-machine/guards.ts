@@ -44,7 +44,7 @@ export function adversarialTestsPass(context: RalphContext): boolean {
  */
 export function coverageThresholdMet(
   context: RalphContext,
-  threshold: number
+  threshold: number,
 ): boolean {
   if (!context.testResults?.coverage) return false;
   return context.testResults.coverage.linePercentage >= threshold;
@@ -53,7 +53,10 @@ export function coverageThresholdMet(
 /**
  * Check if mutation score meets minimum
  */
-export function mutationScoreMet(context: RalphContext, minimum: number): boolean {
+export function mutationScoreMet(
+  context: RalphContext,
+  minimum: number,
+): boolean {
   if (!context.adversarialResults?.mutationScore) return false;
   return context.adversarialResults.mutationScore >= minimum;
 }
@@ -63,7 +66,7 @@ export function mutationScoreMet(context: RalphContext, minimum: number): boolea
  */
 export function successCriteriaMet(
   context: RalphContext,
-  criteria: SuccessCriteria
+  criteria: SuccessCriteria,
 ): boolean {
   // Required: tests must pass
   if (criteria.testsPass && !testsPass(context)) {
@@ -99,7 +102,7 @@ export function budgetExceeded(
   iteration: number,
   totalCost: number,
   elapsedMinutes: number,
-  constraints: BudgetConstraints
+  constraints: BudgetConstraints,
 ): boolean {
   if (iteration >= constraints.maxIterations) return true;
   if (totalCost >= constraints.maxCostUsd) return true;
@@ -112,7 +115,7 @@ export function budgetExceeded(
  */
 export function shouldResetContext(
   contextUsage: Map<string, number>,
-  contextLimits: Map<string, number>
+  contextLimits: Map<string, number>,
 ): boolean {
   const SMART_ZONE_LIMIT = 0.4; // 40%
 
@@ -145,7 +148,7 @@ export function canContinueIteration(
   iteration: number,
   totalCost: number,
   elapsedMinutes: number,
-  constraints: BudgetConstraints
+  constraints: BudgetConstraints,
 ): boolean {
   // Budget check
   if (budgetExceeded(iteration, totalCost, elapsedMinutes, constraints)) {
@@ -173,9 +176,14 @@ export function determineCompletionStatus(
   totalCost: number,
   elapsedMinutes: number,
   constraints: BudgetConstraints,
-  entropyDetected: boolean
+  entropyDetected: boolean,
 ): {
-  status: 'success' | 'budget_exceeded' | 'entropy_detected' | 'max_iterations' | 'error';
+  status:
+    | 'success'
+    | 'budget_exceeded'
+    | 'entropy_detected'
+    | 'max_iterations'
+    | 'error';
   message: string;
 } {
   // Check success first

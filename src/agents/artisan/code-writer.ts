@@ -42,7 +42,7 @@ export interface ModificationResult {
  */
 export async function applyModifications(
   filePath: string,
-  modifications: CodeModification[]
+  modifications: CodeModification[],
 ): Promise<ModificationResult> {
   try {
     const before = await fs.readFile(filePath, 'utf-8');
@@ -77,7 +77,7 @@ export async function applyModifications(
  */
 async function applyModification(
   content: string,
-  modification: CodeModification
+  modification: CodeModification,
 ): Promise<string> {
   switch (modification.type) {
     case 'replace':
@@ -107,7 +107,9 @@ function replaceCode(content: string, mod: CodeModification): string {
 
   const index = normalizedContent.indexOf(normalizedOld);
   if (index === -1) {
-    throw new Error(`Could not find code to replace: ${mod.oldCode.substring(0, 50)}...`);
+    throw new Error(
+      `Could not find code to replace: ${mod.oldCode.substring(0, 50)}...`,
+    );
   }
 
   // Find actual position in original content
@@ -129,7 +131,9 @@ function insertCode(content: string, mod: CodeModification): string {
   }
 
   const position = findPosition(content, mod.location);
-  return content.substring(0, position) + mod.newCode + content.substring(position);
+  return (
+    content.substring(0, position) + mod.newCode + content.substring(position)
+  );
 }
 
 /**
@@ -142,10 +146,14 @@ function deleteCode(content: string, mod: CodeModification): string {
 
   const index = content.indexOf(mod.oldCode);
   if (index === -1) {
-    throw new Error(`Could not find code to delete: ${mod.oldCode.substring(0, 50)}...`);
+    throw new Error(
+      `Could not find code to delete: ${mod.oldCode.substring(0, 50)}...`,
+    );
   }
 
-  return content.substring(0, index) + content.substring(index + mod.oldCode.length);
+  return (
+    content.substring(0, index) + content.substring(index + mod.oldCode.length)
+  );
 }
 
 /**
@@ -174,7 +182,10 @@ function findPosition(content: string, location: CodeLocation): number {
 
   // By pattern
   if (location.pattern) {
-    const pattern = typeof location.pattern === 'string' ? location.pattern : location.pattern.source;
+    const pattern =
+      typeof location.pattern === 'string'
+        ? location.pattern
+        : location.pattern.source;
     const regex = new RegExp(pattern);
     const match = content.match(regex);
 
@@ -194,7 +205,7 @@ function findPosition(content: string, location: CodeLocation): number {
 function normalizeWhitespace(code: string): string {
   return code
     .split('\n')
-    .map(line => line.trim())
+    .map((line) => line.trim())
     .join('\n')
     .replace(/\s+/g, ' ')
     .trim();
@@ -268,9 +279,10 @@ export function getDiffStats(diffText: string): {
 /**
  * Validate code modifications before applying
  */
-export function validateModifications(
-  modifications: CodeModification[]
-): { valid: boolean; errors: string[] } {
+export function validateModifications(modifications: CodeModification[]): {
+  valid: boolean;
+  errors: string[];
+} {
   const errors: string[] = [];
 
   for (const mod of modifications) {
@@ -327,15 +339,13 @@ export async function smartReplace(
   options?: {
     fuzzyMatch?: boolean;
     preserveIndentation?: boolean;
-  }
+  },
 ): Promise<ModificationResult> {
   const content = await fs.readFile(filePath, 'utf-8');
   const opts = { fuzzyMatch: true, preserveIndentation: true, ...options };
 
   let after = content;
-  const actualOld = opts.fuzzyMatch
-    ? findBestMatch(content, oldCode)
-    : oldCode;
+  const actualOld = opts.fuzzyMatch ? findBestMatch(content, oldCode) : oldCode;
 
   if (!actualOld) {
     return {
@@ -425,7 +435,7 @@ function levenshteinDistance(a: string, b: string): number {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1,
           matrix[i][j - 1] + 1,
-          matrix[i - 1][j] + 1
+          matrix[i - 1][j] + 1,
         );
       }
     }
@@ -462,7 +472,7 @@ function indentCode(code: string, indentation: string): string {
  */
 export async function writeModifications(
   filePath: string,
-  modifications: CodeModification[]
+  modifications: CodeModification[],
 ): Promise<void> {
   const result = await applyModifications(filePath, modifications);
 

@@ -51,7 +51,7 @@ export class HookExecutor {
         entry.plugin,
         entry.config,
         hookName,
-        ...args
+        ...args,
       );
 
       results.push(result);
@@ -59,7 +59,7 @@ export class HookExecutor {
       // If plugin fails and failOnError is true, stop execution
       if (!result.success && entry.config.failOnError) {
         logger.error(
-          `Plugin ${entry.plugin.name} failed with failOnError=true, stopping hook execution`
+          `Plugin ${entry.plugin.name} failed with failOnError=true, stopping hook execution`,
         );
         break;
       }
@@ -109,7 +109,7 @@ export class HookExecutor {
         () => hookFn.apply(plugin, args),
         timeout,
         plugin.name,
-        hookName
+        hookName,
       );
 
       const duration = Date.now() - startTime;
@@ -144,7 +144,7 @@ export class HookExecutor {
     fn: () => Promise<T> | T,
     timeout: number,
     pluginName: string,
-    hookName: string
+    hookName: string,
   ): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       let timeoutId: NodeJS.Timeout;
@@ -156,27 +156,27 @@ export class HookExecutor {
             new PluginError(
               `Hook execution timed out after ${timeout}ms`,
               pluginName,
-              hookName
-            )
+              hookName,
+            ),
           );
         }, timeout);
       });
 
       // Execute function
       Promise.resolve(fn())
-        .then(result => {
+        .then((result) => {
           clearTimeout(timeoutId);
           resolve(result);
         })
-        .catch(error => {
+        .catch((error) => {
           clearTimeout(timeoutId);
           reject(
             new PluginError(
               error.message || 'Hook execution failed',
               pluginName,
               hookName,
-              error
-            )
+              error,
+            ),
           );
         });
 
@@ -222,13 +222,13 @@ export class HookExecutor {
           () => hookFn.apply(plugin, args),
           timeout,
           plugin.name,
-          hookName
+          hookName,
         );
 
         // If any plugin returns false, return false
         if (result === false) {
           logger.info(
-            `Plugin ${plugin.name}.${hookName} returned false - blocking operation`
+            `Plugin ${plugin.name}.${hookName} returned false - blocking operation`,
           );
           return false;
         }
@@ -257,7 +257,7 @@ export class HookExecutor {
     averageDuration: number;
   } {
     const total = results.length;
-    const successful = results.filter(r => r.success).length;
+    const successful = results.filter((r) => r.success).length;
     const failed = total - successful;
     const totalDuration = results.reduce((sum, r) => sum + r.duration, 0);
     const averageDuration = total > 0 ? totalDuration / total : 0;
@@ -280,12 +280,12 @@ export class HookExecutor {
     if (summary.failed > 0) {
       logger.warn(
         `Hook ${hookName}: ${summary.successful}/${summary.total} succeeded, ` +
-          `${summary.failed} failed (avg: ${summary.averageDuration.toFixed(0)}ms)`
+          `${summary.failed} failed (avg: ${summary.averageDuration.toFixed(0)}ms)`,
       );
     } else if (summary.total > 0) {
       logger.debug(
         `Hook ${hookName}: ${summary.total} plugins executed ` +
-          `(avg: ${summary.averageDuration.toFixed(0)}ms)`
+          `(avg: ${summary.averageDuration.toFixed(0)}ms)`,
       );
     }
   }

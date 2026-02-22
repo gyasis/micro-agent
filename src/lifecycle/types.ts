@@ -73,7 +73,12 @@ export interface AgentOutput {
 export interface IterationResult {
   iteration: number;
   state: IterationState;
-  status: 'success' | 'budget_exceeded' | 'entropy_detected' | 'max_iterations' | 'error';
+  status:
+    | 'success'
+    | 'budget_exceeded'
+    | 'entropy_detected'
+    | 'max_iterations'
+    | 'error';
   message: string;
   nextSteps?: string[];
 }
@@ -100,13 +105,13 @@ export interface SessionLogEntry {
  * Accumulated in-memory during the simple loop.
  */
 export interface SimpleIterationRecord {
-  iteration: number;              // 1-based attempt number
-  codeChangeSummary: string;      // What the Artisan changed (from ArtisanOutput.reasoning)
+  iteration: number; // 1-based attempt number
+  codeChangeSummary: string; // What the Artisan changed (from ArtisanOutput.reasoning)
   testStatus: 'passed' | 'failed' | 'error';
-  failedTests: string[];          // Test names that failed
-  errorMessages: string[];        // Unique error messages from this iteration
-  duration: number;               // ms
-  cost: number;                   // USD
+  failedTests: string[]; // Test names that failed
+  errorMessages: string[]; // Unique error messages from this iteration
+  duration: number; // ms
+  cost: number; // USD
 }
 
 /**
@@ -115,15 +120,15 @@ export interface SimpleIterationRecord {
  */
 export interface FailureSummary {
   totalSimpleIterations: number;
-  totalSimpleCost: number;            // USD
+  totalSimpleCost: number; // USD
   records: SimpleIterationRecord[];
-  uniqueErrorSignatures: string[];    // Deduplicated error patterns
+  uniqueErrorSignatures: string[]; // Deduplicated error patterns
   finalTestState: {
     totalTests: number;
     failedTests: string[];
     lastErrorMessages: string[];
   };
-  naturalLanguageSummary: string;     // Plain text block for Librarian prompt injection
+  naturalLanguageSummary: string; // Plain text block for Librarian prompt injection
 }
 
 /**
@@ -215,5 +220,9 @@ export interface TierRunResult {
   iterationsRan: number;
   totalCostUsd: number;
   records: TierAttemptRecord[];
-  exitReason: 'success' | 'iterations_exhausted' | 'budget_exhausted' | 'provider_error';
+  exitReason:
+    | 'success'
+    | 'iterations_exhausted'
+    | 'budget_exhausted'
+    | 'provider_error';
 }

@@ -150,7 +150,8 @@ export class CostTracker extends EventEmitter {
         requests: agentEntries.length,
         totalTokens,
         totalCost,
-        averageCostPerRequest: agentEntries.length > 0 ? totalCost / agentEntries.length : 0,
+        averageCostPerRequest:
+          agentEntries.length > 0 ? totalCost / agentEntries.length : 0,
         models,
       });
     }
@@ -217,7 +218,8 @@ export class CostTracker extends EventEmitter {
    * Export cost data as CSV
    */
   public exportCSV(): string {
-    const header = 'timestamp,agent,model,provider,prompt_tokens,completion_tokens,total_tokens,cost\n';
+    const header =
+      'timestamp,agent,model,provider,prompt_tokens,completion_tokens,total_tokens,cost\n';
     const rows = this.entries.map((e) =>
       [
         new Date(e.timestamp).toISOString(),
@@ -228,7 +230,7 @@ export class CostTracker extends EventEmitter {
         e.completionTokens,
         e.totalTokens,
         e.cost.toFixed(6),
-      ].join(',')
+      ].join(','),
     );
 
     return header + rows.join('\n');

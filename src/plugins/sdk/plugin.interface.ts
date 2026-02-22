@@ -31,25 +31,37 @@ export interface RalphPlugin {
    * Hook: After code generation (artisan)
    * Use to: Validate generated code, run custom checks
    */
-  onAfterGen?(context: PluginContext, code: GeneratedCode): Promise<void> | void;
+  onAfterGen?(
+    context: PluginContext,
+    code: GeneratedCode,
+  ): Promise<void> | void;
 
   /**
    * Hook: After test failure
    * Use to: Custom error handling, notifications, analytics
    */
-  onTestFail?(context: PluginContext, failure: TestFailure): Promise<void> | void;
+  onTestFail?(
+    context: PluginContext,
+    failure: TestFailure,
+  ): Promise<void> | void;
 
   /**
    * Hook: Before iteration success
    * Use to: Final validations, custom success criteria
    */
-  onBeforeSuccess?(context: PluginContext, results: IterationResults): Promise<boolean> | boolean;
+  onBeforeSuccess?(
+    context: PluginContext,
+    results: IterationResults,
+  ): Promise<boolean> | boolean;
 
   /**
    * Hook: On iteration success
    * Use to: Notifications, logging, cleanup
    */
-  onSuccess?(context: PluginContext, results: IterationResults): Promise<void> | void;
+  onSuccess?(
+    context: PluginContext,
+    results: IterationResults,
+  ): Promise<void> | void;
 
   /**
    * Hook: On iteration failure
@@ -67,13 +79,19 @@ export interface RalphPlugin {
    * Hook: On budget exceeded
    * Use to: Emergency cleanup, save state
    */
-  onBudgetExceeded?(context: PluginContext, budget: BudgetStatus): Promise<void> | void;
+  onBudgetExceeded?(
+    context: PluginContext,
+    budget: BudgetStatus,
+  ): Promise<void> | void;
 
   /**
    * Hook: On entropy detected
    * Use to: Custom circuit breaker logic
    */
-  onEntropyDetected?(context: PluginContext, entropy: EntropyStatus): Promise<void> | void;
+  onEntropyDetected?(
+    context: PluginContext,
+    entropy: EntropyStatus,
+  ): Promise<void> | void;
 
   /**
    * Hook: Initialize plugin
@@ -252,7 +270,7 @@ export class PluginError extends Error {
     message: string,
     public pluginName: string,
     public hookName: string,
-    public originalError?: Error
+    public originalError?: Error,
   ) {
     super(`[${pluginName}:${hookName}] ${message}`);
     this.name = 'PluginError';

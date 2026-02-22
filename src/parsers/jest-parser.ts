@@ -87,10 +87,11 @@ export class JestParser extends BaseTestParser {
 
     // Extract duration from JSON
     if (json.testResults?.[0]?.perfStats) {
-      result.summary.duration = json.testResults.reduce(
-        (sum: number, tr: any) => sum + (tr.perfStats?.runtime || 0),
-        0
-      ) / 1000; // Convert to seconds
+      result.summary.duration =
+        json.testResults.reduce(
+          (sum: number, tr: any) => sum + (tr.perfStats?.runtime || 0),
+          0,
+        ) / 1000; // Convert to seconds
     }
 
     return result;
@@ -324,10 +325,10 @@ export class JestParser extends BaseTestParser {
    */
   private processCoverageMap(
     hits: Record<string, number>,
-    map: Record<string, any>
+    map: Record<string, any>,
   ): { total: number; covered: number; percentage: number } {
     const total = Object.keys(hits).length;
-    const covered = Object.values(hits).filter(h => h > 0).length;
+    const covered = Object.values(hits).filter((h) => h > 0).length;
 
     return {
       total,
@@ -341,7 +342,7 @@ export class JestParser extends BaseTestParser {
    */
   private getUncoveredLines(
     hits: Record<string, number>,
-    statementMap: Record<string, any>
+    statementMap: Record<string, any>,
   ): number[] {
     const uncovered: number[] = [];
 

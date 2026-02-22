@@ -13,10 +13,10 @@ export const handleCliError = (error: any) => {
     }
     console.error(`\n${indent}${dim(`${commandName} v${version}`)}`);
     console.error(
-      `\n${indent}Please open a Bug report with the information above:`
+      `\n${indent}Please open a Bug report with the information above:`,
     );
     console.error(
-      `${indent}https://github.com/BuilderIO/micro-agent/issues/new`
+      `${indent}https://github.com/BuilderIO/micro-agent/issues/new`,
     );
   }
 };

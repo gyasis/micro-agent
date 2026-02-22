@@ -89,7 +89,7 @@ export function createCommandString(options: RunOptions) {
   }
   if (options.testCommand) {
     command.push(
-      argPrefix + `-t "${options.testCommand.replace(/"/g, '\\"')}"`
+      argPrefix + `-t "${options.testCommand.replace(/"/g, '\\"')}"`,
     );
   }
   if (options.testFile) {
@@ -134,7 +134,7 @@ export async function* run(options: RunOptions) {
 export async function runAll(
   options: RunOptions & {
     skipIntro?: boolean;
-  }
+  },
 ) {
   if (!options.skipIntro) {
     intro('🦾 Micro Agent');
@@ -202,7 +202,9 @@ async function removeLogsFromCode(options: Options): Promise<string> {
 /**
  * Parse imports from prompt file and include imported files as context (T094)
  */
-async function parseImportsFromPromptFile(promptFilePath: string): Promise<string> {
+async function parseImportsFromPromptFile(
+  promptFilePath: string,
+): Promise<string> {
   try {
     // Read prompt file
     const promptContent = await readFile(promptFilePath, 'utf-8');

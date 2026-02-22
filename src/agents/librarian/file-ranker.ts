@@ -44,13 +44,15 @@ export function rankFiles(
   files: FileContext[],
   graph: DependencyGraph,
   targetFile: string | undefined,
-  criteria: Partial<RankingCriteria> = {}
+  criteria: Partial<RankingCriteria> = {},
 ): FileRanking[] {
   const weights = { ...DEFAULT_CRITERIA, ...criteria };
   const rankings: FileRanking[] = [];
 
   // Calculate distance scores
-  const distances = targetFile ? calculateDistances(graph, targetFile) : new Map();
+  const distances = targetFile
+    ? calculateDistances(graph, targetFile)
+    : new Map();
 
   for (const file of files) {
     const distanceScore = calculateDistanceScore(file.path, distances);
@@ -82,7 +84,7 @@ export function rankFiles(
  */
 function calculateDistanceScore(
   filePath: string,
-  distances: Map<string, number>
+  distances: Map<string, number>,
 ): number {
   const distance = distances.get(filePath);
   if (distance === undefined) return 0;
@@ -119,7 +121,8 @@ function calculateComplexityScore(content: string): number {
   const functionComplexity = Math.min(functions / 20, 1.0); // 20+ functions = max
   const classComplexity = Math.min(classes / 5, 1.0); // 5+ classes = max
 
-  const avgComplexity = (lineComplexity + functionComplexity + classComplexity) / 3;
+  const avgComplexity =
+    (lineComplexity + functionComplexity + classComplexity) / 3;
 
   // Invert: simpler files get higher scores
   return 1.0 - avgComplexity;
@@ -131,12 +134,12 @@ function calculateComplexityScore(content: string): number {
 export function rankByDistance(
   files: FileContext[],
   graph: DependencyGraph,
-  targetFile: string
+  targetFile: string,
 ): FileRanking[] {
   const distances = calculateDistances(graph, targetFile);
 
   return files
-    .map(file => {
+    .map((file) => {
       const distanceScore = calculateDistanceScore(file.path, distances);
       return {
         file,
@@ -152,8 +155,11 @@ export function rankByDistance(
 /**
  * Get top N most relevant files
  */
-export function getTopFiles(rankings: FileRanking[], count: number): FileContext[] {
-  return rankings.slice(0, count).map(r => r.file);
+export function getTopFiles(
+  rankings: FileRanking[],
+  count: number,
+): FileContext[] {
+  return rankings.slice(0, count).map((r) => r.file);
 }
 
 /**
@@ -161,9 +167,9 @@ export function getTopFiles(rankings: FileRanking[], count: number): FileContext
  */
 export function filterByThreshold(
   rankings: FileRanking[],
-  threshold: number
+  threshold: number,
 ): FileRanking[] {
-  return rankings.filter(r => r.totalScore >= threshold);
+  return rankings.filter((r) => r.totalScore >= threshold);
 }
 
 /**
@@ -175,9 +181,9 @@ export function groupByScoreRange(rankings: FileRanking[]): {
   low: FileRanking[]; // 0-0.4
 } {
   return {
-    high: rankings.filter(r => r.totalScore >= 0.7),
-    medium: rankings.filter(r => r.totalScore >= 0.4 && r.totalScore < 0.7),
-    low: rankings.filter(r => r.totalScore < 0.4),
+    high: rankings.filter((r) => r.totalScore >= 0.7),
+    medium: rankings.filter((r) => r.totalScore >= 0.4 && r.totalScore < 0.7),
+    low: rankings.filter((r) => r.totalScore < 0.4),
   };
 }
 
@@ -195,7 +201,7 @@ export function getRankingStats(rankings: FileRanking[]): {
     return { mean: 0, median: 0, min: 0, max: 0, stdDev: 0 };
   }
 
-  const scores = rankings.map(r => r.totalScore);
+  const scores = rankings.map((r) => r.totalScore);
   const sorted = [...scores].sort((a, b) => a - b);
 
   const mean = scores.reduce((a, b) => a + b, 0) / scores.length;
@@ -204,7 +210,8 @@ export function getRankingStats(rankings: FileRanking[]): {
   const max = sorted[sorted.length - 1];
 
   const variance =
-    scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) / scores.length;
+    scores.reduce((sum, score) => sum + Math.pow(score - mean, 2), 0) /
+    scores.length;
   const stdDev = Math.sqrt(variance);
 
   return { mean, median, min, max, stdDev };
@@ -217,9 +224,13 @@ export function explainRanking(ranking: FileRanking): string {
   const parts: string[] = [];
 
   parts.push(`Total score: ${ranking.totalScore.toFixed(2)}`);
-  parts.push(`  Distance: ${ranking.distanceScore.toFixed(2)} (closer is better)`);
+  parts.push(
+    `  Distance: ${ranking.distanceScore.toFixed(2)} (closer is better)`,
+  );
   parts.push(`  Recency: ${ranking.recencyScore.toFixed(2)} (newer is better)`);
-  parts.push(`  Complexity: ${ranking.complexityScore.toFixed(2)} (simpler is better)`);
+  parts.push(
+    `  Complexity: ${ranking.complexityScore.toFixed(2)} (simpler is better)`,
+  );
 
   if (ranking.llmScore !== undefined) {
     parts.push(`  LLM relevance: ${ranking.llmScore.toFixed(2)}`);
@@ -234,11 +245,11 @@ export function explainRanking(ranking: FileRanking): string {
 export function reRankWithLLMScores(
   rankings: FileRanking[],
   llmScores: Map<string, number>,
-  criteria: Partial<RankingCriteria> = {}
+  criteria: Partial<RankingCriteria> = {},
 ): FileRanking[] {
   const weights = { ...DEFAULT_CRITERIA, ...criteria };
 
-  const reRanked = rankings.map(ranking => {
+  const reRanked = rankings.map((ranking) => {
     const llmScore = llmScores.get(ranking.file.path) || 0;
 
     const totalScore =

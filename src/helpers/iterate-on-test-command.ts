@@ -17,7 +17,7 @@ export async function iterateOnTestCommand({
       `Your test script output:\n${(final.stderr || final.message)
         .split('\n')
         .map(gray)
-        .join('\n')}`
+        .join('\n')}`,
     );
 
     const newTestCommand = exitOnCancel(
@@ -25,7 +25,7 @@ export async function iterateOnTestCommand({
         message: 'What command should I run to test the code?',
         defaultValue: testCommand,
         placeholder: testCommand,
-      })
+      }),
     );
 
     return iterateOnTestCommand({ testCommand: newTestCommand });

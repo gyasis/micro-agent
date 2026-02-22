@@ -139,6 +139,10 @@ CLI Entry: src/cli/ralph-loop.ts
 - TypeScript 5.x (Node.js 20+) + commander (CLI), existing ArtisanAgent, TestRunner, AgentContext — all already in place (002-simple-escalation)
 - In-memory only (FailureSummary never written to disk) (002-simple-escalation)
 - SQLite (best-effort append-only audit log at `.micro-agent/audit.db`) (003-tiered-escalation)
+- TypeScript (upgrading from 4.9.5 → 5.9.3), Node.js 18+ + zod ^3.x, chromadb, better-sqlite3, xstate v5, commander (004-fix-outstanding-issues)
+- SQLite (audit log, best-effort), ChromaDB (optional vector store) (004-fix-outstanding-issues)
+- TypeScript 5.9.3 (Node.js 18+) + `glob` v10 (already installed), `fs/promises` (built-in), (005-unified-test-gen)
+- Disk only — generates one `.test.{ext}` file per invocation (005-unified-test-gen)
 
 ## Recent Changes
 - 002-simple-escalation: Added TypeScript 5.x (Node.js 20+) + commander (CLI), existing ArtisanAgent, TestRunner, AgentContext — all already in place

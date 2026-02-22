@@ -6,8 +6,8 @@ import { dim, yellow } from 'kolorist';
 export async function invalidProjectWarningMessage() {
   console.warn(
     yellow(
-      'Warning: The current directory does not appear to be a recognized project folder.'
-    )
+      'Warning: The current directory does not appear to be a recognized project folder.',
+    ),
   );
 
   const choice = await p.select({

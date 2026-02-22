@@ -54,7 +54,7 @@ describe('getOpenAi', () => {
 
     await expect(getOpenAi()).rejects.toThrow(KnownError);
     await expect(getOpenAi()).rejects.toThrow(
-      'Missing OpenAI key. Use `micro-agent config` to set it.'
+      'Missing OpenAI key. Use `micro-agent config` to set it.',
     );
   });
 

@@ -30,7 +30,7 @@ export class PropertyTestGenerator {
    */
   generateTests(
     code: string,
-    framework: 'vitest' | 'jest' | 'mocha' = 'vitest'
+    framework: 'vitest' | 'jest' | 'mocha' = 'vitest',
   ): PropertyTestSuite {
     const tests: PropertyTest[] = [];
 
@@ -61,7 +61,8 @@ export class PropertyTestGenerator {
     }> = [];
 
     // Match function declarations
-    const functionRegex = /(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)(?::\s*(\w+))?/g;
+    const functionRegex =
+      /(?:export\s+)?(?:async\s+)?function\s+(\w+)\s*\(([^)]*)\)(?::\s*(\w+))?/g;
     let match;
 
     while ((match = functionRegex.exec(code)) !== null) {
@@ -71,14 +72,15 @@ export class PropertyTestGenerator {
 
       const params = paramsStr
         .split(',')
-        .map(p => p.trim().split(':')[0].trim())
+        .map((p) => p.trim().split(':')[0].trim())
         .filter(Boolean);
 
       functions.push({ name, params, returnType });
     }
 
     // Match arrow functions
-    const arrowRegex = /(?:export\s+)?const\s+(\w+)\s*=\s*\(([^)]*)\)(?::\s*(\w+))?\s*=>/g;
+    const arrowRegex =
+      /(?:export\s+)?const\s+(\w+)\s*=\s*\(([^)]*)\)(?::\s*(\w+))?\s*=>/g;
 
     while ((match = arrowRegex.exec(code)) !== null) {
       const name = match[1];
@@ -87,7 +89,7 @@ export class PropertyTestGenerator {
 
       const params = paramsStr
         .split(',')
-        .map(p => p.trim().split(':')[0].trim())
+        .map((p) => p.trim().split(':')[0].trim())
         .filter(Boolean);
 
       functions.push({ name, params, returnType });
@@ -112,7 +114,7 @@ export class PropertyTestGenerator {
         name: `${func.name} - output type consistency`,
         description: `${func.name} should always return ${func.returnType}`,
         property: 'type_consistency',
-        generators: func.params.map(p => this.inferGenerator(p)),
+        generators: func.params.map((p) => this.inferGenerator(p)),
         expectedInvariant: `typeof result === '${this.inferJSType(func.returnType)}'`,
         code: this.generateTypeConsistencyTest(func),
       });
@@ -123,7 +125,7 @@ export class PropertyTestGenerator {
       name: `${func.name} - no exceptions`,
       description: `${func.name} should not throw on valid inputs`,
       property: 'no_exceptions',
-      generators: func.params.map(p => this.inferGenerator(p)),
+      generators: func.params.map((p) => this.inferGenerator(p)),
       expectedInvariant: 'No exceptions thrown',
       code: this.generateNoExceptionsTest(func),
     });
@@ -134,7 +136,7 @@ export class PropertyTestGenerator {
         name: `${func.name} - deterministic`,
         description: `${func.name} should return same output for same input`,
         property: 'deterministic',
-        generators: func.params.map(p => this.inferGenerator(p)),
+        generators: func.params.map((p) => this.inferGenerator(p)),
         expectedInvariant: 'result1 === result2',
         code: this.generateDeterministicTest(func),
       });
@@ -150,7 +152,11 @@ export class PropertyTestGenerator {
     const lower = paramName.toLowerCase();
 
     // String generators
-    if (lower.includes('name') || lower.includes('str') || lower.includes('text')) {
+    if (
+      lower.includes('name') ||
+      lower.includes('str') ||
+      lower.includes('text')
+    ) {
       return 'fc.string()';
     }
 
@@ -165,12 +171,20 @@ export class PropertyTestGenerator {
     }
 
     // Array generators
-    if (lower.includes('arr') || lower.includes('list') || lower.includes('items')) {
+    if (
+      lower.includes('arr') ||
+      lower.includes('list') ||
+      lower.includes('items')
+    ) {
       return 'fc.array(fc.anything())';
     }
 
     // Boolean generators
-    if (lower.includes('is') || lower.includes('has') || lower.includes('flag')) {
+    if (
+      lower.includes('is') ||
+      lower.includes('has') ||
+      lower.includes('flag')
+    ) {
       return 'fc.boolean()';
     }
 
@@ -218,7 +232,9 @@ export class PropertyTestGenerator {
     params: string[];
     returnType?: string;
   }): string {
-    const generators = func.params.map((p, i) => this.inferGenerator(p)).join(', ');
+    const generators = func.params
+      .map((p, i) => this.inferGenerator(p))
+      .join(', ');
     const paramsList = func.params.join(', ');
 
     return `import * as fc from 'fast-check';
@@ -241,7 +257,9 @@ test('${func.name} - type consistency', () => {
     name: string;
     params: string[];
   }): string {
-    const generators = func.params.map((p, i) => this.inferGenerator(p)).join(', ');
+    const generators = func.params
+      .map((p, i) => this.inferGenerator(p))
+      .join(', ');
     const paramsList = func.params.join(', ');
 
     return `import * as fc from 'fast-check';
@@ -268,7 +286,9 @@ test('${func.name} - no exceptions', () => {
     name: string;
     params: string[];
   }): string {
-    const generators = func.params.map((p, i) => this.inferGenerator(p)).join(', ');
+    const generators = func.params
+      .map((p, i) => this.inferGenerator(p))
+      .join(', ');
     const paramsList = func.params.join(', ');
 
     return `import * as fc from 'fast-check';
@@ -289,11 +309,12 @@ test('${func.name} - deterministic', () => {
    * Generate complete test file
    */
   generateTestFile(suite: PropertyTestSuite, modulePath: string): string {
-    const imports = suite.framework === 'vitest'
-      ? `import { test } from 'vitest';`
-      : `import { test } from '@jest/globals';`;
+    const imports =
+      suite.framework === 'vitest'
+        ? `import { test } from 'vitest';`
+        : `import { test } from '@jest/globals';`;
 
-    const tests = suite.tests.map(t => t.code).join('\n\n');
+    const tests = suite.tests.map((t) => t.code).join('\n\n');
 
     return `${imports}
 import * as fc from 'fast-check';
@@ -318,17 +339,20 @@ ${tests}`;
       {
         name: 'Commutativity',
         description: 'f(a, b) === f(b, a)',
-        example: 'fc.assert(fc.property(fc.anything(), fc.anything(), (a, b) => f(a, b) === f(b, a)))',
+        example:
+          'fc.assert(fc.property(fc.anything(), fc.anything(), (a, b) => f(a, b) === f(b, a)))',
       },
       {
         name: 'Associativity',
         description: 'f(f(a, b), c) === f(a, f(b, c))',
-        example: 'fc.assert(fc.property(fc.anything(), fc.anything(), fc.anything(), (a, b, c) => f(f(a, b), c) === f(a, f(b, c))))',
+        example:
+          'fc.assert(fc.property(fc.anything(), fc.anything(), fc.anything(), (a, b, c) => f(f(a, b), c) === f(a, f(b, c))))',
       },
       {
         name: 'Identity',
         description: 'f(x, identity) === x',
-        example: 'fc.assert(fc.property(fc.anything(), x => f(x, identity) === x))',
+        example:
+          'fc.assert(fc.property(fc.anything(), x => f(x, identity) === x))',
       },
       {
         name: 'Inverse',

@@ -1,21 +1,25 @@
 # Progress
 
-**Last Updated**: 2026-02-17 (003-tiered-escalation)
+**Last Updated**: 2026-02-20 (004-fix-outstanding-issues complete)
 
 ## Overall Progress
 
 - Branch 001-ralph-loop-2026: COMPLETE, merged to main (commit c527da1)
 - Branch 002-simple-escalation: COMPLETE, merged to main (commit 8d42927)
 - Branch 003-tiered-escalation: COMPLETE, merged to main via no-ff merge
-- Active branch: main
-- All 269 tests passing (was 247, +22 from 003-tiered-escalation)
+- Branch 004-fix-outstanding-issues: COMPLETE, committed (commit 4749480)
+- Active branch: 004-fix-outstanding-issues (ready to merge to main)
+- All 273 tests genuinely passing (269 from prior branches + 4 new ChromaDB fallback tests)
 
 ## Test Status
 
-- :white_check_mark: 269/269 tests passing
-- :white_check_mark: No regressions from 003-tiered-escalation (+22 new tests)
-- :white_check_mark: Duration: approximately 4-5s
-- :white_check_mark: XState v5 API compatibility maintained
+- :white_check_mark: 273/273 tests genuinely passing (verified 2026-02-20, 15 test files)
+- :white_check_mark: 269 original tests still pass -- zero regressions
+- :white_check_mark: 4 new ChromaDB fallback tests added and passing
+  (`tests/unit/memory/memory-vault-fallback.test.ts`)
+- :white_check_mark: `npx tsc --noEmit` exits 0 with zero errors (TypeScript 5.9.3)
+- :white_check_mark: `npx prettier --check "**/*.ts"` exits 0 (all src/ files reformatted)
+- :white_check_mark: Duration: approximately 1.4s
 
 ## Phase Completion (001-ralph-loop-2026)
 
@@ -58,6 +62,28 @@
 - :white_check_mark: Tests: 22 new tests (tier-config, tier-accumulator, tier-db, tier-engine)
 - :white_check_mark: Docs: Notebook Part 13, model-configuration.md N-tier section
 
+## Phase Completion (004-fix-outstanding-issues)
+
+- :white_check_mark: Issue 1: TypeScript 5.9.3 upgrade -- `typescript` 4.9.5 -> 5.9.3,
+  `@typescript-eslint/*` ^5 -> ^8, `eslint-plugin-unused-imports` ^2 -> ^4;
+  `summary-reporter.ts:311` destructuring syntax fixed; all Zod v4 API changes fixed
+  (`.errors` -> `.issues`, `z.record(v)` -> `z.record(k, v)`); BaseAgent AgentContext import
+  fixed; AgentConfig.provider typed union; config field misalignments fixed
+  (`config.limits.*` -> `config.budgets.*`, etc.); `npx tsc --noEmit` exits 0
+- :white_check_mark: Issue 2: Prettier ignore coverage -- `.prettierignore` expanded from 3 to 22
+  patterns; all `src/` files reformatted; `npx prettier --check "**/*.ts"` exits 0
+- :white_check_mark: Issue 3: ChromaDB offline fallback -- `src/memory/memory-vault.ts` now uses
+  3s `Promise.race` timeout on `initialize()`; on fail: logs warn, sets `connected=false`, does
+  NOT throw; all public methods guard with `if (!this.connected) return`; `isConnected()` getter
+  added; stub methods added: `searchSimilarErrors`, `storeErrorPattern`, `recordFix`,
+  `getErrorPatternStats`; 4 new unit tests added and passing
+- :white_check_mark: Issue 4: Error messages with remediation -- `src/llm/provider-router.ts`
+  Anthropic/Google/OpenAI key errors now include `-> Fix: set ENV_VAR=...`;
+  `src/lifecycle/tier-config.ts` file-not-found and JSON parse errors include `-> Fix:` guidance
+- :white_check_mark: Issue 5: API documentation -- `docs/api/README.md` (90 lines),
+  `docs/api/cli.md` (196 lines), `docs/api/config.md` (301 lines), `docs/api/agents.md`
+  (281 lines), `docs/api/lifecycle.md` (800 lines); total 1668 lines
+
 ## What Works (Verified)
 
 - :white_check_mark: Full end-to-end Ralph Loop with real API calls
@@ -70,7 +96,7 @@
 - :white_check_mark: Context monitoring with 40% threshold
 - :white_check_mark: Budget enforcement (cost-based, shared across phases)
 - :white_check_mark: Multi-language test runner (TypeScript, Python, Rust)
-- :white_check_mark: MemoryVault error learning
+- :white_check_mark: MemoryVault error learning (with ChromaDB offline fallback)
 - :white_check_mark: Plugin system
 - :white_check_mark: Chaos/adversarial agent (optional)
 - :white_check_mark: `ralph-loop run`, `config`, `status`, `reset` CLI commands
@@ -87,17 +113,45 @@
 - :white_check_mark: Tier config Zod validation (all errors surfaced, not just first)
 - :white_check_mark: buildAccumulatedSummary() tier failure history (4000-char cap)
 - :white_check_mark: Accumulated tier failure context injected into each subsequent tier
-- :white_check_mark: Per-tier header banner: "━━━━ ▶ Tier N/total: name [mode, model] ━━━━"
+- :white_check_mark: Per-tier header banner: "---- > Tier N/total: name [mode, model] ----"
 - :white_check_mark: SQLite audit DB for tier attempts (best-effort, never throws)
 - :white_check_mark: Conflict warnings when --tier-config used with --simple/--full/--no-escalate
 - :white_check_mark: Backward compatibility: two-phase behavior unchanged without --tier-config
+- :white_check_mark: TypeScript 5.9.3 -- `npx tsc --noEmit` exits 0, zero type errors
+- :white_check_mark: Prettier conformance -- `npx prettier --check "**/*.ts"` exits 0
+- :white_check_mark: ChromaDB offline fallback -- MemoryVault degrades gracefully if server absent
+- :white_check_mark: Actionable error messages with `-> Fix: set ENV_VAR=...` remediation hints
+- :white_check_mark: `docs/api/` directory -- 5 API reference files, 1668 lines total
 
 ## What Is NOT Done
 
-- :white_large_square: `docs/api/` directory - API reference documentation not yet written
-- :white_large_square: 004-next-feature branch - no feature planned yet
+- :white_large_square: Merge 004-fix-outstanding-issues to main (commit 4749480 exists, PR pending)
+- :white_large_square: 005-next-feature branch -- no feature planned yet
 
 ## Critical Bugs Fixed (History)
+
+### 2026-02-20 (004-fix-outstanding-issues)
+
+- :white_check_mark: TypeScript upgrade to 5.9.3 -- `typescript`, `@typescript-eslint/*`,
+  `eslint-plugin-unused-imports` all upgraded; `summary-reporter.ts:311` invalid destructuring
+  fixed (`promises as fs` -> `promises: fs`); Zod v4 API migration (`z.record` signature,
+  `.issues`); BaseAgent import fix; AgentConfig.provider union type; config field misalignment
+  (`config.limits.*` -> `config.budgets.*`)
+- :white_check_mark: ChromaDB offline fallback -- MemoryVault no longer crashes when ChromaDB
+  server is unavailable; `initialize()` uses 3s `Promise.race` timeout, sets `connected=false`
+  on failure, all methods guard on `connected` flag
+- :white_check_mark: Error messages with remediation -- provider-router.ts and tier-config.ts now
+  include `-> Fix: set ENV_VAR=...` hints so users know exactly how to resolve auth/config errors
+
+### 2026-02-20 (main -- T023 LibrarianAgent timeout fix)
+
+- :white_check_mark: T023 LibrarianAgent timeout -- `makeContext()` in
+  `tests/integration/escalation-flow.test.ts` used `workingDirectory: process.cwd()`, which
+  caused `LibrarianAgent.discoverFiles()` + `analyzeFiles()` to scan 104 TypeScript source files,
+  blowing the 5000ms timeout. Fixed by switching to `workingDirectory: path.join(process.cwd(),
+  'test-example')` (fixture dir with only 2 TS files). Also added missing `targetFile: 'simple.ts'`
+  input (key LibrarianAgent input per spec FR-007: files ranked by distance from targetFile in
+  dependency graph). Tests now run in under 600ms. 269 tests are now genuinely all passing.
 
 ### 2026-02-16 (001-ralph-loop-2026)
 
@@ -110,6 +164,16 @@
 - :white_check_mark: Test framework detection bypassed when custom command provided
 
 ## Recent Milestones
+
+- **2026-02-20**: 004-fix-outstanding-issues complete. All 5 outstanding issues resolved in
+  commit 4749480. Test count rises to 273/273 (4 new ChromaDB fallback tests). TypeScript 5.9.3
+  compiles clean, Prettier passes, ChromaDB fallback gracefully handles offline server, error
+  messages include remediation hints, and `docs/api/` now has 1668 lines of API reference.
+
+- **2026-02-20**: T023 tests genuinely passing. 269/269 verified clean in 1.4s. LibrarianAgent
+  test contract aligned with spec FR-006--FR-008: `workingDirectory` now points to the
+  `test-example/` fixture dir (2 TS files, not 104), `targetFile: 'simple.ts'` added as a
+  required input, and a contract comment block documents LibrarianAgent I/O in the test file.
 
 - **2026-02-17**: 003-tiered-escalation complete and merged to main. 269/269 tests passing.
   N-Tier Model Escalation implemented across 31 tasks. New lifecycle modules (tier-config,
@@ -137,4 +201,18 @@
 ## Known Remaining Issues
 
 - `package-lock.json` has minor drift (cosmetic, not functional)
-- `docs/api/` is still unwritten (low priority)
+- Merge 004-fix-outstanding-issues to main is still pending (PR not yet created)
+
+## Wave 1 Complete - 2026-02-22 12:24:12
+
+- ✅ T001: T001 Confirm active branch is `005-unified-test-gen` and `npm test` reports 273/273 passing before any changes (baseline validation)
+- ✅ T002: T002 Create `src/helpers/test-generator.ts` with module docblock, imports (`path`, `fs/promises`, `glob`, `ProviderRouter`, `Message`), and export the two interface stubs (`TestGeneratorOptions`, `TestGeneratorResult`) — no function bodies yet
+- ✅ T008: T008 Verify foundational checkpoint: run `npx tsc --noEmit` (0 errors) and `npm test` (273/273 pass) — do NOT proceed to user story phases until both pass
+- ✅ T009: T009 [US1] Write unit test group `describe('generateTestFile')` in `tests/unit/helpers/test-generator.test.ts` — 9 cases: router.complete() called with `provider: 'anthropic'`; default model is `claude-sonnet-4-20250514`; model override honored when `options.model` set; `fs.writeFile` called with resolved path and extracted code; returns correct `testCommand` for vitest; returns correct `testCommand` for pytest; throws when `.rs` target resolved (null path); includes up to 2 example contents in messages when available; falls back to package.json block when no examples
+- ✅ T012: T012 [US1] Add `generate?: boolean` field to `RunOptions` interface in `src/cli/commands/run.ts` (after `tierConfig?: string` field, line ~79)
+- ✅ T014: T014 [US1] Verify US1 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors), smoke test `quickstart.md Test 1` (test file created and loop runs)
+- ✅ T016: T016 [US2] Confirm `findExistingTests()` (implemented in T010) correctly handles all passthrough patterns — no new code needed; verify via unit tests from T015 that all 5 patterns pass
+- ✅ T018: T018 [US3] Add `--no-generate` option to the `run` command in `src/cli/ralph-loop.ts` after the existing `--tier-config` option (~line 84): `.option('--no-generate', 'Skip automatic test file generation when no test file exists')`
+- ✅ T024: T024 [US5] Confirm `resolveTestFilePath()` (implemented in T003) handles all 6 cases — no new code needed; verify via unit tests from T023 that all cases pass
+- ✅ T027: T027 Run full combined acceptance gate: `npm test` (all 273 original + all new unit tests pass), `npx tsc --noEmit` (0 errors) — MUST pass before proceeding
+- ✅ T028: T028 Commit all changes: `feat: add unified test generation for ma-loop — auto-generates tests when none exist`

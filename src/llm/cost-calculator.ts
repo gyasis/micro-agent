@@ -121,7 +121,7 @@ const MODEL_PRICING: Record<string, ModelPricing> = {
 export function calculateCost(
   model: string,
   inputTokens: number,
-  outputTokens: number
+  outputTokens: number,
 ): number {
   const pricing = MODEL_PRICING[model];
 
@@ -154,7 +154,8 @@ export function calculateTotalCost(model: string, totalTokens: number): number {
   }
 
   // Use average of input and output rates as approximation
-  const avgRate = (pricing.inputCostPer1kTokens + pricing.outputCostPer1kTokens) / 2;
+  const avgRate =
+    (pricing.inputCostPer1kTokens + pricing.outputCostPer1kTokens) / 2;
   return (totalTokens / 1000) * avgRate;
 }
 

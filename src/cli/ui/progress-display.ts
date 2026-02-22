@@ -80,13 +80,17 @@ export class ProgressDisplay {
     // Budget
     const budgetUsed = (state.cost / state.maxCost) * 100;
     const budgetBar = this.createProgressBar(state.cost / state.maxCost, 20);
-    lines.push(`Budget:   ${budgetBar} $${state.cost.toFixed(2)}/$${state.maxCost.toFixed(2)} (${budgetUsed.toFixed(0)}%)`);
+    lines.push(
+      `Budget:   ${budgetBar} $${state.cost.toFixed(2)}/$${state.maxCost.toFixed(2)} (${budgetUsed.toFixed(0)}%)`,
+    );
 
     // Time
     const elapsedMin = state.elapsed / 60;
     const timeUsed = (elapsedMin / state.maxDuration) * 100;
     const timeBar = this.createProgressBar(elapsedMin / state.maxDuration, 20);
-    lines.push(`Time:     ${timeBar} ${elapsedMin.toFixed(1)}/${state.maxDuration} min (${timeUsed.toFixed(0)}%)`);
+    lines.push(
+      `Time:     ${timeBar} ${elapsedMin.toFixed(1)}/${state.maxDuration} min (${timeUsed.toFixed(0)}%)`,
+    );
 
     // Tokens
     if (state.tokensUsed > 0) {
@@ -247,7 +251,7 @@ export function createProgressState(
   context: AgentContext,
   elapsed: number,
   tokensUsed: number = 0,
-  message?: string
+  message?: string,
 ): ProgressState {
   return {
     iteration: context.iteration.iteration,

@@ -4,11 +4,11 @@ import { formatMessage } from './test';
 import OpenAI from 'openai';
 
 const readMockLlmRecordFile = async (
-  mockLlmRecordFile: string
+  mockLlmRecordFile: string,
 ): Promise<{ completions: any[] }> => {
   const mockLlmRecordFileContents = await readFile(
     mockLlmRecordFile,
-    'utf-8'
+    'utf-8',
   ).catch(() => '');
   let jsonLlmRecording;
   try {
@@ -22,7 +22,7 @@ const readMockLlmRecordFile = async (
 export const captureLlmRecord = async (
   messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
   output: string,
-  mockLlmRecordFile?: string
+  mockLlmRecordFile?: string,
 ) => {
   if (mockLlmRecordFile) {
     const jsonLlmRecording = await readMockLlmRecordFile(mockLlmRecordFile);
@@ -34,17 +34,17 @@ export const captureLlmRecord = async (
 
     await writeFile(
       mockLlmRecordFile,
-      JSON.stringify(jsonLlmRecording, null, 2)
+      JSON.stringify(jsonLlmRecording, null, 2),
     );
   }
 };
 export const mockedLlmCompletion = async (
   mockLlmRecordFile: string | undefined,
-  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[]
+  messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[],
 ) => {
   if (!mockLlmRecordFile) {
     throw new KnownError(
-      'You need to set the MOCK_LLM_RECORD_FILE environment variable to use the mock LLM'
+      'You need to set the MOCK_LLM_RECORD_FILE environment variable to use the mock LLM',
     );
   }
   const jsonLlmRecording = await readMockLlmRecordFile(mockLlmRecordFile);
@@ -59,13 +59,13 @@ export const mockedLlmCompletion = async (
         JSON.stringify(completion.inputs[0]) ===
         JSON.stringify(messages[0].content)
       );
-    }
+    },
   );
   if (!completion) {
     throw new KnownError(
       `No completion found for the given system input in the MOCK_LLM_RECORD_FILE: ${JSON.stringify(
-        messages[0]
-      )}`
+        messages[0],
+      )}`,
     );
   }
   process.stdout.write(formatMessage('\n'));

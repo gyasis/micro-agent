@@ -46,7 +46,7 @@ export default command(
 
       if (mode === 'set') {
         await setConfigs(
-          keyValues.map((keyValue) => keyValue.split('=') as [string, string])
+          keyValues.map((keyValue) => keyValue.split('=') as [string, string]),
         );
 
         outro('Config updated ✅');
@@ -59,5 +59,5 @@ export default command(
       handleCliError(error);
       process.exit(1);
     });
-  }
+  },
 );

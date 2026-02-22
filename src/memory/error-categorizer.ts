@@ -52,7 +52,7 @@ export class ErrorCategorizer {
   categorize(
     message: string,
     stackTrace?: string,
-    context?: string[]
+    context?: string[],
   ): CategorizedError {
     const combined = `${message}\n${stackTrace || ''}`;
     const scores = this.calculateScores(combined);
@@ -109,7 +109,7 @@ export class ErrorCategorizer {
    * Get category with highest score
    */
   private getHighestScoringCategory(
-    scores: Record<ErrorCategory, number>
+    scores: Record<ErrorCategory, number>,
   ): ErrorCategory {
     let maxCategory: ErrorCategory = 'LOGIC';
     let maxScore = scores.LOGIC;
@@ -154,7 +154,7 @@ export class ErrorCategorizer {
       { pattern: /unterminated/i, category: 'SYNTAX', weight: 0.8 },
       { pattern: /expected.*got/i, category: 'SYNTAX', weight: 0.7 },
       { pattern: /compilation error/i, category: 'SYNTAX', weight: 1.0 },
-      { pattern: /type.*mismatch/i, category: 'SYNTAX', weight: 0.8 }
+      { pattern: /type.*mismatch/i, category: 'SYNTAX', weight: 0.8 },
     );
 
     // LOGIC patterns
@@ -166,7 +166,7 @@ export class ErrorCategorizer {
       { pattern: /not equal/i, category: 'LOGIC', weight: 0.8 },
       { pattern: /incorrect/i, category: 'LOGIC', weight: 0.6 },
       { pattern: /wrong/i, category: 'LOGIC', weight: 0.5 },
-      { pattern: /unexpected result/i, category: 'LOGIC', weight: 0.7 }
+      { pattern: /unexpected result/i, category: 'LOGIC', weight: 0.7 },
     );
 
     // ENVIRONMENT patterns
@@ -180,7 +180,7 @@ export class ErrorCategorizer {
       { pattern: /permission denied/i, category: 'ENVIRONMENT', weight: 0.9 },
       { pattern: /connection refused/i, category: 'ENVIRONMENT', weight: 0.8 },
       { pattern: /ECONNREFUSED/i, category: 'ENVIRONMENT', weight: 0.9 },
-      { pattern: /network.*error/i, category: 'ENVIRONMENT', weight: 0.7 }
+      { pattern: /network.*error/i, category: 'ENVIRONMENT', weight: 0.7 },
     );
 
     // FLAKY patterns
@@ -191,7 +191,7 @@ export class ErrorCategorizer {
       { pattern: /sometimes passes/i, category: 'FLAKY', weight: 0.9 },
       { pattern: /non-deterministic/i, category: 'FLAKY', weight: 1.0 },
       { pattern: /timing.*issue/i, category: 'FLAKY', weight: 0.8 },
-      { pattern: /async.*timeout/i, category: 'FLAKY', weight: 0.7 }
+      { pattern: /async.*timeout/i, category: 'FLAKY', weight: 0.7 },
     );
 
     // PERFORMANCE patterns
@@ -204,25 +204,33 @@ export class ErrorCategorizer {
       { pattern: /OOM/i, category: 'PERFORMANCE', weight: 0.9 },
       { pattern: /memory limit/i, category: 'PERFORMANCE', weight: 0.9 },
       { pattern: /heap.*overflow/i, category: 'PERFORMANCE', weight: 0.8 },
-      { pattern: /stack overflow/i, category: 'PERFORMANCE', weight: 0.9 }
+      { pattern: /stack overflow/i, category: 'PERFORMANCE', weight: 0.9 },
     );
 
     // ADVERSARIAL patterns (chaos testing failures)
     this.patterns.push(
       { pattern: /mutation.*survived/i, category: 'ADVERSARIAL', weight: 1.0 },
       { pattern: /property.*violated/i, category: 'ADVERSARIAL', weight: 1.0 },
-      { pattern: /boundary.*test.*failed/i, category: 'ADVERSARIAL', weight: 1.0 },
+      {
+        pattern: /boundary.*test.*failed/i,
+        category: 'ADVERSARIAL',
+        weight: 1.0,
+      },
       { pattern: /adversarial/i, category: 'ADVERSARIAL', weight: 1.0 },
       { pattern: /chaos.*test/i, category: 'ADVERSARIAL', weight: 0.9 },
       { pattern: /mutation.*score/i, category: 'ADVERSARIAL', weight: 0.8 },
-      { pattern: /edge.*case.*failed/i, category: 'ADVERSARIAL', weight: 0.7 }
+      { pattern: /edge.*case.*failed/i, category: 'ADVERSARIAL', weight: 0.7 },
     );
   }
 
   /**
    * Add custom pattern
    */
-  addPattern(pattern: RegExp, category: ErrorCategory, weight: number = 1.0): void {
+  addPattern(
+    pattern: RegExp,
+    category: ErrorCategory,
+    weight: number = 1.0,
+  ): void {
     this.patterns.push({ pattern, category, weight });
   }
 
@@ -232,7 +240,8 @@ export class ErrorCategorizer {
   static getCategoryDescription(category: ErrorCategory): string {
     const descriptions: Record<ErrorCategory, string> = {
       SYNTAX: 'Syntax or compilation errors (parse failures, type mismatches)',
-      LOGIC: 'Assertion failures or incorrect behavior (test expectations not met)',
+      LOGIC:
+        'Assertion failures or incorrect behavior (test expectations not met)',
       ENVIRONMENT:
         'Environment issues (missing dependencies, file not found, network errors)',
       FLAKY: 'Non-deterministic failures (race conditions, timing issues)',

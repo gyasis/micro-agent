@@ -44,13 +44,13 @@ const testFail = (message: string, options: RunOptions) => {
     } else {
       outro(
         red(
-          'Your test command is failing with the same error several times. Please make sure your test command is correct. Aborting...'
-        )
+          'Your test command is failing with the same error several times. Please make sure your test command is correct. Aborting...',
+        ),
       );
       console.log(
         `${green('To continue, run:')}\n${gray(
-          `${createCommandString(options)}`
-        )}\n`
+          `${createCommandString(options)}`,
+        )}\n`,
       );
       process.exit(1);
     }
@@ -96,8 +96,8 @@ export async function test(options: RunOptions): Promise<Result> {
       console.log('\n');
       outro(
         red(
-          `No test output for ${timeoutSeconds} seconds. Is your test command running in watch mode? If so, make sure to use a test command that exits after running the tests.`
-        )
+          `No test output for ${timeoutSeconds} seconds. Is your test command running in watch mode? If so, make sure to use a test command that exits after running the tests.`,
+        ),
       );
 
       process.exit(0);

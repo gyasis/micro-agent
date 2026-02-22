@@ -36,7 +36,7 @@ This is a test.`;
     const originalFileContent = 'Original content.';
 
     expect(() => applyUnifiedDiff(diff, originalFileContent)).toThrow(
-      'Failed to apply patch'
+      'Failed to apply patch',
     );
   });
 

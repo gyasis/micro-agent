@@ -128,7 +128,7 @@ export class SessionResetter extends EventEmitter {
     };
 
     this.log(
-      `Context reset complete (${duration}ms, ${this.formatBytes(memoryFreed)} freed)`
+      `Context reset complete (${duration}ms, ${this.formatBytes(memoryFreed)} freed)`,
     );
     this.emit('reset-complete', stats);
 
@@ -215,7 +215,7 @@ export function createSessionResetter(options: ResetOptions): SessionResetter {
  */
 export function createLLMCleanup(
   client: any,
-  connectionName?: string
+  connectionName?: string,
 ): LLMConnectionCleanup {
   return async () => {
     if (client && typeof client.close === 'function') {

@@ -80,7 +80,7 @@ export class FixRecorder {
       const existing = await this.vault.searchFixPatterns(
         attempt.error.signature,
         attempt.error.context,
-        1
+        1,
       );
 
       if (existing.length > 0 && existing[0].similarity > 0.95) {
@@ -124,26 +124,26 @@ export class FixRecorder {
   async getSuggestions(
     errorMessage: string,
     stackTrace?: string,
-    context?: string[]
+    context?: string[],
   ): Promise<FixPattern[]> {
     // Categorize error
     const categorized = this.categorizer.categorize(
       errorMessage,
       stackTrace,
-      context
+      context,
     );
 
     // Search for similar fixes
     const results = await this.vault.searchFixPatterns(
       categorized.signature,
       categorized.context,
-      5
+      5,
     );
 
     // Filter by confidence and success rate
     return results
-      .filter(r => r.pattern.successRate >= this.config.minSuccessRateToStore)
-      .map(r => r.pattern)
+      .filter((r) => r.pattern.successRate >= this.config.minSuccessRateToStore)
+      .map((r) => r.pattern)
       .sort((a, b) => b.successRate - a.successRate);
   }
 
@@ -162,7 +162,7 @@ export class FixRecorder {
 
     if (attempts.length === 0) return 0;
 
-    const successful = attempts.filter(a => a.testsPassed).length;
+    const successful = attempts.filter((a) => a.testsPassed).length;
     return successful / attempts.length;
   }
 
@@ -171,13 +171,13 @@ export class FixRecorder {
    */
   getMostEffectiveSolution(signature: string): FixAttempt | null {
     const attempts = this.getAttemptHistory(signature);
-    const successful = attempts.filter(a => a.testsPassed);
+    const successful = attempts.filter((a) => a.testsPassed);
 
     if (successful.length === 0) return null;
 
     // Return fastest successful solution
     return successful.reduce((best, current) =>
-      current.duration < best.duration ? current : best
+      current.duration < best.duration ? current : best,
     );
   }
 
@@ -202,7 +202,7 @@ export class FixRecorder {
 
     for (const attempts of this.pendingAttempts.values()) {
       totalAttempts += attempts.length;
-      successfulAttempts += attempts.filter(a => a.testsPassed).length;
+      successfulAttempts += attempts.filter((a) => a.testsPassed).length;
     }
 
     const uniqueErrors = this.pendingAttempts.size;
@@ -224,7 +224,7 @@ export class FixRecorder {
     const patterns: FixPattern[] = [];
 
     for (const [signature, attempts] of this.pendingAttempts.entries()) {
-      const successful = attempts.filter(a => a.testsPassed);
+      const successful = attempts.filter((a) => a.testsPassed);
 
       if (successful.length === 0) continue;
 

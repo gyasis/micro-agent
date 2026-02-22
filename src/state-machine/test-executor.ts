@@ -12,7 +12,11 @@
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
-import { detectFramework, getDefaultTestCommand, type TestFramework } from '../parsers/framework-detector';
+import {
+  detectFramework,
+  getDefaultTestCommand,
+  type TestFramework,
+} from '../parsers/framework-detector';
 import type { RalphTestResult } from '../parsers/base-parser';
 import { JestParser } from '../parsers/jest-parser';
 import { PytestParser } from '../parsers/pytest-parser';
@@ -49,9 +53,16 @@ export interface TestExecutionResult {
  *
  * T048 & T049: Integrates framework detector and test parsers
  */
-export async function executeTests(options: TestExecutionOptions): Promise<TestExecutionResult> {
+export async function executeTests(
+  options: TestExecutionOptions,
+): Promise<TestExecutionResult> {
   const startTime = Date.now();
-  const { projectDir, targetFile, timeout = 120000, environment = {} } = options;
+  const {
+    projectDir,
+    targetFile,
+    timeout = 120000,
+    environment = {},
+  } = options;
 
   logger.info('Detecting test framework...', { projectDir });
 
@@ -70,7 +81,11 @@ export async function executeTests(options: TestExecutionOptions): Promise<TestE
   const testCommand = detection.command || getDefaultTestCommand(framework);
 
   // Add framework-specific flags for JSON output and non-watch mode
-  const enhancedCommand = enhanceTestCommand(testCommand, framework, targetFile);
+  const enhancedCommand = enhanceTestCommand(
+    testCommand,
+    framework,
+    targetFile,
+  );
 
   logger.info('Executing tests', { command: enhancedCommand });
 
@@ -141,7 +156,10 @@ export async function executeTests(options: TestExecutionOptions): Promise<TestE
           command: enhancedCommand,
         };
       } catch (parseError) {
-        logger.error('Failed to parse test output after test failure', parseError);
+        logger.error(
+          'Failed to parse test output after test failure',
+          parseError,
+        );
       }
     }
 
@@ -190,7 +208,7 @@ export async function executeTests(options: TestExecutionOptions): Promise<TestE
 function enhanceTestCommand(
   baseCommand: string,
   framework: TestFramework,
-  targetFile?: string
+  targetFile?: string,
 ): string {
   let enhanced = baseCommand;
 
@@ -251,8 +269,14 @@ function enhanceTestCommand(
 /**
  * T049: Parse test output using appropriate parser
  */
-async function parseTestOutput(framework: TestFramework, output: string): Promise<RalphTestResult> {
-  logger.debug('Parsing test output', { framework, outputLength: output.length });
+async function parseTestOutput(
+  framework: TestFramework,
+  output: string,
+): Promise<RalphTestResult> {
+  logger.debug('Parsing test output', {
+    framework,
+    outputLength: output.length,
+  });
 
   switch (framework) {
     case 'vitest':
@@ -292,12 +316,13 @@ export function validateTestResult(result: RalphTestResult): boolean {
 
   // Summary counts must match test array
   const actualCounts = {
-    passed: result.tests.filter(t => t.status === 'passed').length,
-    failed: result.tests.filter(t => t.status === 'failed').length,
-    skipped: result.tests.filter(t => t.status === 'skipped').length,
+    passed: result.tests.filter((t) => t.status === 'passed').length,
+    failed: result.tests.filter((t) => t.status === 'failed').length,
+    skipped: result.tests.filter((t) => t.status === 'skipped').length,
   };
 
-  const total = actualCounts.passed + actualCounts.failed + actualCounts.skipped;
+  const total =
+    actualCounts.passed + actualCounts.failed + actualCounts.skipped;
 
   if (total !== result.summary.total) {
     logger.warn('Test count mismatch', {

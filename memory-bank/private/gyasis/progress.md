@@ -229,3 +229,9 @@
 - ✅ T004: T004 Implement `extractCodeBlock(raw: string): string` (NOT exported) in `src/helpers/test-generator.ts` — finds first ` ``` ` fence, skips optional language specifier line, reads until closing ` ``` `, returns trimmed content; returns `raw.trim()` if no fence found
 - ✅ T015: T015 [US2] Add unit test group `describe('findExistingTests')` in `tests/unit/helpers/test-generator.test.ts` — 5 cases: returns null when no `.test.ts` file exists; returns path when `foo.test.ts` exists adjacent; returns path when `foo.spec.ts` exists adjacent; always returns null for `.rs` files; returns path for `test_foo.py` prefix convention (Python)
 - ✅ T020: T020 [US3] Verify US3 acceptance gate: run `npx ralph-loop run --help` and confirm `--no-generate` appears; run `npm test` (273+ pass); smoke test `quickstart.md Test 3` (no file generated with `--no-generate`)
+
+## Wave 4 Complete - 2026-02-22 12:24:12
+
+- ✅ T005: T005 Implement `buildTestCommand(testFilePath: string, framework: string): string` (NOT exported) in `src/helpers/test-generator.ts` — vitest→`npx vitest run {basename-no-ext}`, jest→`npx jest {basename-no-ext} --no-watch`, pytest→`pytest {relativeTestFilePath}`, mocha→`npx mocha {testFilePath}`, rspec→`bundle exec rspec {testFilePath}`, cargo/custom→`npm test` fallback
+- ✅ T021: T021 [US4] Confirm the `!options.test` guard in the generation block (inserted in T013) correctly skips generation when `--test` is provided — no new code needed; verify by reading the block and smoke-testing `quickstart.md Test 4`
+- ✅ T023: T023 [US5] Add unit test group `describe('resolveTestFilePath')` in `tests/unit/helpers/test-generator.test.ts` — 6 cases: `.ts`→`.test.ts` in same dir; `.js`→`.test.js` in same dir; `.py`→`test_{name}.py` in same dir; `.rs`→`null`; `.rb`→`{name}_spec.rb` in same dir; nested path `src/util/math.ts`→`src/util/math.test.ts`

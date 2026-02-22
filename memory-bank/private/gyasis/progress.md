@@ -216,3 +216,10 @@
 - ✅ T024: T024 [US5] Confirm `resolveTestFilePath()` (implemented in T003) handles all 6 cases — no new code needed; verify via unit tests from T023 that all cases pass
 - ✅ T027: T027 Run full combined acceptance gate: `npm test` (all 273 original + all new unit tests pass), `npx tsc --noEmit` (0 errors) — MUST pass before proceeding
 - ✅ T028: T028 Commit all changes: `feat: add unified test generation for ma-loop — auto-generates tests when none exist`
+
+## Wave 2 Complete - 2026-02-22 12:24:12
+
+- ✅ T003: T003 Implement `resolveTestFilePath(targetFile: string, framework: string): string | null` (NOT exported) in `src/helpers/test-generator.ts` — maps `.ts`→`.test.ts`, `.js`→`.test.js`, `.py`→`test_{name}.py`, `.rs`→`null`, `.rb`→`{name}_spec.rb`, other→`.test.{ext}`, all in same directory as target
+- ✅ T013: T013 [US1] Insert generation block in `src/cli/commands/run.ts` after `prepareRunParameters()` call (~line 111) and BEFORE `initializeInfrastructure()` call (~line 113) — dynamic import `test-generator`, call `findExistingTests`, branch on result: if null and not `.rs` call `generateTestFile` and update `params.testCommand`, else log "Using existing tests:", wrap generate call in try/catch to warn-and-continue on LLM failure
+- ✅ T017: T017 [US2] Verify US2 acceptance gate: run `npm test` (273+ pass), smoke test `quickstart.md Test 2` (logs "Using existing tests:", NO new file written)
+- ✅ T019: T019 [US3] Update `run` command description in `src/cli/ralph-loop.ts` line 35 from `'Run Ralph Loop iterations for a file or objective'` to `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`

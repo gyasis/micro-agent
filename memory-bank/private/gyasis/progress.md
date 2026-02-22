@@ -223,3 +223,9 @@
 - ✅ T013: T013 [US1] Insert generation block in `src/cli/commands/run.ts` after `prepareRunParameters()` call (~line 111) and BEFORE `initializeInfrastructure()` call (~line 113) — dynamic import `test-generator`, call `findExistingTests`, branch on result: if null and not `.rs` call `generateTestFile` and update `params.testCommand`, else log "Using existing tests:", wrap generate call in try/catch to warn-and-continue on LLM failure
 - ✅ T017: T017 [US2] Verify US2 acceptance gate: run `npm test` (273+ pass), smoke test `quickstart.md Test 2` (logs "Using existing tests:", NO new file written)
 - ✅ T019: T019 [US3] Update `run` command description in `src/cli/ralph-loop.ts` line 35 from `'Run Ralph Loop iterations for a file or objective'` to `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`
+
+## Wave 3 Complete - 2026-02-22 12:24:12
+
+- ✅ T004: T004 Implement `extractCodeBlock(raw: string): string` (NOT exported) in `src/helpers/test-generator.ts` — finds first ` ``` ` fence, skips optional language specifier line, reads until closing ` ``` `, returns trimmed content; returns `raw.trim()` if no fence found
+- ✅ T015: T015 [US2] Add unit test group `describe('findExistingTests')` in `tests/unit/helpers/test-generator.test.ts` — 5 cases: returns null when no `.test.ts` file exists; returns path when `foo.test.ts` exists adjacent; returns path when `foo.spec.ts` exists adjacent; always returns null for `.rs` files; returns path for `test_foo.py` prefix convention (Python)
+- ✅ T020: T020 [US3] Verify US3 acceptance gate: run `npx ralph-loop run --help` and confirm `--no-generate` appears; run `npm test` (273+ pass); smoke test `quickstart.md Test 3` (no file generated with `--no-generate`)

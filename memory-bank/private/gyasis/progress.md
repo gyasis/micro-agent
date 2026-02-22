@@ -241,3 +241,8 @@
 - ✅ T006: T006 Implement `gatherExampleTests(workingDir: string): Promise<string[]>` (NOT exported) in `src/helpers/test-generator.ts` — globs `**/*.{test,spec}.{ts,js,py,rb}` ignoring `node_modules`, `dist`, `.git`; reads up to 2 files; returns array of content strings
 - ✅ T022: T022 [US4] Verify US4 acceptance gate: smoke test `quickstart.md Test 4` (generation skipped when `--test` provided); run `npm test` (273+ pass)
 - ✅ T026: T026 [P] Add unit test group `describe('extractCodeBlock')` in `tests/unit/helpers/test-generator.test.ts` — 4 cases: extracts from ` ```typescript ``` ` fence; extracts from ` ```python ``` ` fence; returns raw string when no fence present; handles ` ``` ` without language specifier
+
+## Wave 6 Complete - 2026-02-22 12:24:12
+
+- ✅ T007: T007 Implement `buildGenerationMessages(targetFile, targetContent, objective, testFilePath, exampleTests, packageJson): Message[]` (NOT exported) in `src/helpers/test-generator.ts` — returns `[systemMsg, userMsg]` per the prompt design in `contracts/test-generator-api.md`; includes `<examples>` block if examples exist, else `<package-json>` block if packageJson non-empty
+- ✅ T025: T025 [US5] Verify US5 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors); smoke tests `quickstart.md Test 5` (Rust skipped) and `quickstart.md Test 6` (Python `test_math.py` naming)

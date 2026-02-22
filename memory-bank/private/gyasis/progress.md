@@ -250,3 +250,7 @@
 ## Wave 7 Complete - 2026-02-22 12:24:12
 
 - ✅ T010: T010 [US1] Implement `findExistingTests(targetFile: string, workingDir: string): Promise<string | null>` (EXPORTED) in `src/helpers/test-generator.ts` — resolves absolute path, checks for `.test.{ext}`, `.spec.{ext}`, `test_{name}.{ext}`, `{name}_spec.{ext}` patterns in same directory; returns found path or null; `.rs` files always return null
+
+## Wave 8 Complete - 2026-02-22 12:24:12
+
+- ✅ T011: T011 [US1] Implement `generateTestFile(options: TestGeneratorOptions): Promise<TestGeneratorResult>` (EXPORTED) in `src/helpers/test-generator.ts` — calls `resolveTestFilePath` (throws if null), reads source file, calls `gatherExampleTests`, reads `package.json`, calls `buildGenerationMessages`, calls `new ProviderRouter().complete({provider:'anthropic', model, messages, temperature:0.7, maxTokens:4096})`, extracts code block, writes file, returns result with `buildTestCommand` output

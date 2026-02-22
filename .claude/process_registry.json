@@ -1,11 +1,17 @@
 {
   "tasks": {
-    "T031": {
+    "T014": {
       "mode": "native",
-      "command": "T031 Run full vitest test suite and confirm ≥ 290 tests pass (247 existing + ~43 new); confirm zero regressions — `npx vitest run`",
-      "status": "failed",
-      "started_at": "2026-02-17T12:09:10.674215201Z",
-      "completed_at": "2026-02-17T12:13:47.558807240Z",
+      "command": "T014 [US1] Verify US1 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors), smoke test `quickstart.md Test 1` (test file created and loop runs)",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.123287780Z",
+      "constitution_rules": []
+    },
+    "T026": {
+      "mode": "native",
+      "command": "T026 [P] Add unit test group `describe('extractCodeBlock')` in `tests/unit/helpers/test-generator.test.ts` — 4 cases: extracts from ` ```typescript ``` ` fence; extracts from ` ```python ``` ` fence; returns raw string when no fence present; handles ` ``` ` without language specifier",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.455407513Z",
       "constitution_rules": []
     },
     "T021": {
@@ -15,74 +21,11 @@
       "started_at": "2026-02-22T17:24:12.408759536Z",
       "constitution_rules": []
     },
-    "T009": {
+    "T006": {
       "mode": "native",
-      "command": "T009 [US1] Write unit test group `describe('generateTestFile')` in `tests/unit/helpers/test-generator.test.ts` — 9 cases: router.complete() called with `provider: 'anthropic'`; default model is `claude-sonnet-4-20250514`; model override honored when `options.model` set; `fs.writeFile` called with resolved path and extracted code; returns correct `testCommand` for vitest; returns correct `testCommand` for pytest; throws when `.rs` target resolved (null path); includes up to 2 example contents in messages when available; falls back to package.json block when no examples",
+      "command": "T006 Implement `gatherExampleTests(workingDir: string): Promise<string[]>` (NOT exported) in `src/helpers/test-generator.ts` — globs `**/*.{test,spec}.{ts,js,py,rb}` ignoring `node_modules`, `dist`, `.git`; reads up to 2 files; returns array of content strings",
       "status": "running",
-      "started_at": "2026-02-22T17:24:12.116401548Z",
-      "constitution_rules": []
-    },
-    "T019": {
-      "mode": "native",
-      "command": "T019 [US3] Update `run` command description in `src/cli/ralph-loop.ts` line 35 from `'Run Ralph Loop iterations for a file or objective'` to `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.357827721Z",
-      "constitution_rules": []
-    },
-    "T022": {
-      "mode": "native",
-      "command": "T022 [US4] Verify US4 acceptance gate: smoke test `quickstart.md Test 4` (generation skipped when `--test` provided); run `npm test` (273+ pass)",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.452228107Z",
-      "constitution_rules": []
-    },
-    "T003": {
-      "mode": "native",
-      "command": "T003 Implement `resolveTestFilePath(targetFile: string, framework: string): string | null` (NOT exported) in `src/helpers/test-generator.ts` — maps `.ts`→`.test.ts`, `.js`→`.test.js`, `.py`→`test_{name}.py`, `.rs`→`null`, `.rb`→`{name}_spec.rb`, other→`.test.{ext}`, all in same directory as target",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.321322347Z",
-      "constitution_rules": []
-    },
-    "T013": {
-      "mode": "native",
-      "command": "T013 [US1] Insert generation block in `src/cli/commands/run.ts` after `prepareRunParameters()` call (~line 111) and BEFORE `initializeInfrastructure()` call (~line 113) — dynamic import `test-generator`, call `findExistingTests`, branch on result: if null and not `.rs` call `generateTestFile` and update `params.testCommand`, else log \"Using existing tests:\", wrap generate call in try/catch to warn-and-continue on LLM failure",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.336579301Z",
-      "constitution_rules": []
-    },
-    "T024": {
-      "mode": "native",
-      "command": "T024 [US5] Confirm `resolveTestFilePath()` (implemented in T003) handles all 6 cases — no new code needed; verify via unit tests from T023 that all cases pass",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.130977854Z",
-      "constitution_rules": []
-    },
-    "T007": {
-      "mode": "native",
-      "command": "T007 Implement `buildGenerationMessages(targetFile, targetContent, objective, testFilePath, exampleTests, packageJson): Message[]` (NOT exported) in `src/helpers/test-generator.ts` — returns `[systemMsg, userMsg]` per the prompt design in `contracts/test-generator-api.md`; includes `<examples>` block if examples exist, else `<package-json>` block if packageJson non-empty",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.477587129Z",
-      "constitution_rules": []
-    },
-    "T018": {
-      "mode": "native",
-      "command": "T018 [US3] Add `--no-generate` option to the `run` command in `src/cli/ralph-loop.ts` after the existing `--tier-config` option (~line 84): `.option('--no-generate', 'Skip automatic test file generation when no test file exists')`",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.128587421Z",
-      "constitution_rules": []
-    },
-    "T017": {
-      "mode": "native",
-      "command": "T017 [US2] Verify US2 acceptance gate: run `npm test` (273+ pass), smoke test `quickstart.md Test 2` (logs \"Using existing tests:\", NO new file written)",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.339589610Z",
-      "constitution_rules": []
-    },
-    "T005": {
-      "mode": "native",
-      "command": "T005 Implement `buildTestCommand(testFilePath: string, framework: string): string` (NOT exported) in `src/helpers/test-generator.ts` — vitest→`npx vitest run {basename-no-ext}`, jest→`npx jest {basename-no-ext} --no-watch`, pytest→`pytest {relativeTestFilePath}`, mocha→`npx mocha {testFilePath}`, rspec→`bundle exec rspec {testFilePath}`, cargo/custom→`npm test` fallback",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.405430071Z",
+      "started_at": "2026-02-22T17:24:12.449508208Z",
       "constitution_rules": []
     },
     "T016": {
@@ -92,11 +35,152 @@
       "started_at": "2026-02-22T17:24:12.125904690Z",
       "constitution_rules": []
     },
+    "T015": {
+      "mode": "native",
+      "command": "T015 [US2] Add unit test group `describe('findExistingTests')` in `tests/unit/helpers/test-generator.test.ts` — 5 cases: returns null when no `.test.ts` file exists; returns path when `foo.test.ts` exists adjacent; returns path when `foo.spec.ts` exists adjacent; always returns null for `.rs` files; returns path for `test_foo.py` prefix convention (Python)",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.382527191Z",
+      "constitution_rules": []
+    },
+    "T001": {
+      "mode": "native",
+      "command": "T001 Confirm active branch is `005-unified-test-gen` and `npm test` reports 273/273 passing before any changes (baseline validation)",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.108153555Z",
+      "constitution_rules": []
+    },
+    "T018": {
+      "mode": "native",
+      "command": "T018 [US3] Add `--no-generate` option to the `run` command in `src/cli/ralph-loop.ts` after the existing `--tier-config` option (~line 84): `.option('--no-generate', 'Skip automatic test file generation when no test file exists')`",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.128587421Z",
+      "constitution_rules": []
+    },
+    "T003": {
+      "mode": "native",
+      "command": "T003 Implement `resolveTestFilePath(targetFile: string, framework: string): string | null` (NOT exported) in `src/helpers/test-generator.ts` — maps `.ts`→`.test.ts`, `.js`→`.test.js`, `.py`→`test_{name}.py`, `.rs`→`null`, `.rb`→`{name}_spec.rb`, other→`.test.{ext}`, all in same directory as target",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.321322347Z",
+      "constitution_rules": []
+    },
+    "T031": {
+      "mode": "native",
+      "command": "T031 Run full vitest test suite and confirm ≥ 290 tests pass (247 existing + ~43 new); confirm zero regressions — `npx vitest run`",
+      "status": "failed",
+      "started_at": "2026-02-17T12:09:10.674215201Z",
+      "completed_at": "2026-02-17T12:13:47.558807240Z",
+      "constitution_rules": []
+    },
+    "T024": {
+      "mode": "native",
+      "command": "T024 [US5] Confirm `resolveTestFilePath()` (implemented in T003) handles all 6 cases — no new code needed; verify via unit tests from T023 that all cases pass",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.130977854Z",
+      "constitution_rules": []
+    },
+    "T017": {
+      "mode": "native",
+      "command": "T017 [US2] Verify US2 acceptance gate: run `npm test` (273+ pass), smoke test `quickstart.md Test 2` (logs \"Using existing tests:\", NO new file written)",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.339589610Z",
+      "constitution_rules": []
+    },
+    "T013": {
+      "mode": "native",
+      "command": "T013 [US1] Insert generation block in `src/cli/commands/run.ts` after `prepareRunParameters()` call (~line 111) and BEFORE `initializeInfrastructure()` call (~line 113) — dynamic import `test-generator`, call `findExistingTests`, branch on result: if null and not `.rs` call `generateTestFile` and update `params.testCommand`, else log \"Using existing tests:\", wrap generate call in try/catch to warn-and-continue on LLM failure",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.336579301Z",
+      "constitution_rules": []
+    },
+    "T007": {
+      "mode": "native",
+      "command": "T007 Implement `buildGenerationMessages(targetFile, targetContent, objective, testFilePath, exampleTests, packageJson): Message[]` (NOT exported) in `src/helpers/test-generator.ts` — returns `[systemMsg, userMsg]` per the prompt design in `contracts/test-generator-api.md`; includes `<examples>` block if examples exist, else `<package-json>` block if packageJson non-empty",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.477587129Z",
+      "constitution_rules": []
+    },
+    "T002": {
+      "mode": "native",
+      "command": "T002 Create `src/helpers/test-generator.ts` with module docblock, imports (`path`, `fs/promises`, `glob`, `ProviderRouter`, `Message`), and export the two interface stubs (`TestGeneratorOptions`, `TestGeneratorResult`) — no function bodies yet",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.110773142Z",
+      "constitution_rules": []
+    },
+    "T025": {
+      "mode": "native",
+      "command": "T025 [US5] Verify US5 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors); smoke tests `quickstart.md Test 5` (Rust skipped) and `quickstart.md Test 6` (Python `test_math.py` naming)",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.480968966Z",
+      "constitution_rules": []
+    },
+    "T027": {
+      "mode": "native",
+      "command": "T027 Run full combined acceptance gate: `npm test` (all 273 original + all new unit tests pass), `npx tsc --noEmit` (0 errors) — MUST pass before proceeding",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.133025899Z",
+      "constitution_rules": []
+    },
+    "T010": {
+      "mode": "native",
+      "command": "T010 [US1] Implement `findExistingTests(targetFile: string, workingDir: string): Promise<string | null>` (EXPORTED) in `src/helpers/test-generator.ts` — resolves absolute path, checks for `.test.{ext}`, `.spec.{ext}`, `test_{name}.{ext}`, `{name}_spec.{ext}` patterns in same directory; returns found path or null; `.rs` files always return null",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.502407417Z",
+      "constitution_rules": []
+    },
+    "T020": {
+      "mode": "native",
+      "command": "T020 [US3] Verify US3 acceptance gate: run `npx ralph-loop run --help` and confirm `--no-generate` appears; run `npm test` (273+ pass); smoke test `quickstart.md Test 3` (no file generated with `--no-generate`)",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.385952812Z",
+      "constitution_rules": []
+    },
+    "T022": {
+      "mode": "native",
+      "command": "T022 [US4] Verify US4 acceptance gate: smoke test `quickstart.md Test 4` (generation skipped when `--test` provided); run `npm test` (273+ pass)",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.452228107Z",
+      "constitution_rules": []
+    },
+    "T019": {
+      "mode": "native",
+      "command": "T019 [US3] Update `run` command description in `src/cli/ralph-loop.ts` line 35 from `'Run Ralph Loop iterations for a file or objective'` to `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.357827721Z",
+      "constitution_rules": []
+    },
+    "T023": {
+      "mode": "native",
+      "command": "T023 [US5] Add unit test group `describe('resolveTestFilePath')` in `tests/unit/helpers/test-generator.test.ts` — 6 cases: `.ts`→`.test.ts` in same dir; `.js`→`.test.js` in same dir; `.py`→`test_{name}.py` in same dir; `.rs`→`null`; `.rb`→`{name}_spec.rb` in same dir; nested path `src/util/math.ts`→`src/util/math.test.ts`",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.423780734Z",
+      "constitution_rules": []
+    },
     "T028": {
       "mode": "native",
       "command": "T028 Commit all changes: `feat: add unified test generation for ma-loop — auto-generates tests when none exist`",
       "status": "running",
       "started_at": "2026-02-22T17:24:12.135861700Z",
+      "constitution_rules": []
+    },
+    "T009": {
+      "mode": "native",
+      "command": "T009 [US1] Write unit test group `describe('generateTestFile')` in `tests/unit/helpers/test-generator.test.ts` — 9 cases: router.complete() called with `provider: 'anthropic'`; default model is `claude-sonnet-4-20250514`; model override honored when `options.model` set; `fs.writeFile` called with resolved path and extracted code; returns correct `testCommand` for vitest; returns correct `testCommand` for pytest; throws when `.rs` target resolved (null path); includes up to 2 example contents in messages when available; falls back to package.json block when no examples",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.116401548Z",
+      "constitution_rules": []
+    },
+    "T005": {
+      "mode": "native",
+      "command": "T005 Implement `buildTestCommand(testFilePath: string, framework: string): string` (NOT exported) in `src/helpers/test-generator.ts` — vitest→`npx vitest run {basename-no-ext}`, jest→`npx jest {basename-no-ext} --no-watch`, pytest→`pytest {relativeTestFilePath}`, mocha→`npx mocha {testFilePath}`, rspec→`bundle exec rspec {testFilePath}`, cargo/custom→`npm test` fallback",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.405430071Z",
+      "constitution_rules": []
+    },
+    "T008": {
+      "mode": "native",
+      "command": "T008 Verify foundational checkpoint: run `npx tsc --noEmit` (0 errors) and `npm test` (273/273 pass) — do NOT proceed to user story phases until both pass",
+      "status": "running",
+      "started_at": "2026-02-22T17:24:12.113816047Z",
       "constitution_rules": []
     },
     "T012": {
@@ -111,83 +195,6 @@
       "command": "T004 Implement `extractCodeBlock(raw: string): string` (NOT exported) in `src/helpers/test-generator.ts` — finds first ` ``` ` fence, skips optional language specifier line, reads until closing ` ``` `, returns trimmed content; returns `raw.trim()` if no fence found",
       "status": "running",
       "started_at": "2026-02-22T17:24:12.377981049Z",
-      "constitution_rules": []
-    },
-    "T008": {
-      "mode": "native",
-      "command": "T008 Verify foundational checkpoint: run `npx tsc --noEmit` (0 errors) and `npm test` (273/273 pass) — do NOT proceed to user story phases until both pass",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.113816047Z",
-      "constitution_rules": []
-    },
-    "T002": {
-      "mode": "native",
-      "command": "T002 Create `src/helpers/test-generator.ts` with module docblock, imports (`path`, `fs/promises`, `glob`, `ProviderRouter`, `Message`), and export the two interface stubs (`TestGeneratorOptions`, `TestGeneratorResult`) — no function bodies yet",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.110773142Z",
-      "constitution_rules": []
-    },
-    "T001": {
-      "mode": "native",
-      "command": "T001 Confirm active branch is `005-unified-test-gen` and `npm test` reports 273/273 passing before any changes (baseline validation)",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.108153555Z",
-      "constitution_rules": []
-    },
-    "T025": {
-      "mode": "native",
-      "command": "T025 [US5] Verify US5 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors); smoke tests `quickstart.md Test 5` (Rust skipped) and `quickstart.md Test 6` (Python `test_math.py` naming)",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.480968966Z",
-      "constitution_rules": []
-    },
-    "T014": {
-      "mode": "native",
-      "command": "T014 [US1] Verify US1 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors), smoke test `quickstart.md Test 1` (test file created and loop runs)",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.123287780Z",
-      "constitution_rules": []
-    },
-    "T015": {
-      "mode": "native",
-      "command": "T015 [US2] Add unit test group `describe('findExistingTests')` in `tests/unit/helpers/test-generator.test.ts` — 5 cases: returns null when no `.test.ts` file exists; returns path when `foo.test.ts` exists adjacent; returns path when `foo.spec.ts` exists adjacent; always returns null for `.rs` files; returns path for `test_foo.py` prefix convention (Python)",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.382527191Z",
-      "constitution_rules": []
-    },
-    "T023": {
-      "mode": "native",
-      "command": "T023 [US5] Add unit test group `describe('resolveTestFilePath')` in `tests/unit/helpers/test-generator.test.ts` — 6 cases: `.ts`→`.test.ts` in same dir; `.js`→`.test.js` in same dir; `.py`→`test_{name}.py` in same dir; `.rs`→`null`; `.rb`→`{name}_spec.rb` in same dir; nested path `src/util/math.ts`→`src/util/math.test.ts`",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.423780734Z",
-      "constitution_rules": []
-    },
-    "T020": {
-      "mode": "native",
-      "command": "T020 [US3] Verify US3 acceptance gate: run `npx ralph-loop run --help` and confirm `--no-generate` appears; run `npm test` (273+ pass); smoke test `quickstart.md Test 3` (no file generated with `--no-generate`)",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.385952812Z",
-      "constitution_rules": []
-    },
-    "T026": {
-      "mode": "native",
-      "command": "T026 [P] Add unit test group `describe('extractCodeBlock')` in `tests/unit/helpers/test-generator.test.ts` — 4 cases: extracts from ` ```typescript ``` ` fence; extracts from ` ```python ``` ` fence; returns raw string when no fence present; handles ` ``` ` without language specifier",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.455407513Z",
-      "constitution_rules": []
-    },
-    "T006": {
-      "mode": "native",
-      "command": "T006 Implement `gatherExampleTests(workingDir: string): Promise<string[]>` (NOT exported) in `src/helpers/test-generator.ts` — globs `**/*.{test,spec}.{ts,js,py,rb}` ignoring `node_modules`, `dist`, `.git`; reads up to 2 files; returns array of content strings",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.449508208Z",
-      "constitution_rules": []
-    },
-    "T027": {
-      "mode": "native",
-      "command": "T027 Run full combined acceptance gate: `npm test` (all 273 original + all new unit tests pass), `npx tsc --noEmit` (0 errors) — MUST pass before proceeding",
-      "status": "running",
-      "started_at": "2026-02-22T17:24:12.133025899Z",
       "constitution_rules": []
     }
   }

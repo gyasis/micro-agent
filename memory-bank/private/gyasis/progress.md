@@ -246,3 +246,7 @@
 
 - ✅ T007: T007 Implement `buildGenerationMessages(targetFile, targetContent, objective, testFilePath, exampleTests, packageJson): Message[]` (NOT exported) in `src/helpers/test-generator.ts` — returns `[systemMsg, userMsg]` per the prompt design in `contracts/test-generator-api.md`; includes `<examples>` block if examples exist, else `<package-json>` block if packageJson non-empty
 - ✅ T025: T025 [US5] Verify US5 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors); smoke tests `quickstart.md Test 5` (Rust skipped) and `quickstart.md Test 6` (Python `test_math.py` naming)
+
+## Wave 7 Complete - 2026-02-22 12:24:12
+
+- ✅ T010: T010 [US1] Implement `findExistingTests(targetFile: string, workingDir: string): Promise<string | null>` (EXPORTED) in `src/helpers/test-generator.ts` — resolves absolute path, checks for `.test.{ext}`, `.spec.{ext}`, `test_{name}.{ext}`, `{name}_spec.{ext}` patterns in same directory; returns found path or null; `.rs` files always return null

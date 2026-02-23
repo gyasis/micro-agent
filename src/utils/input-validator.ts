@@ -36,7 +36,16 @@ export class FilePathValidator {
     }
 
     // Prevent access to sensitive directories
-    const dangerous = ['/etc', '/root', '/home', '/usr/bin', '/bin', '/sbin', '/sys', '/proc'];
+    const dangerous = [
+      '/etc',
+      '/root',
+      '/home',
+      '/usr/bin',
+      '/bin',
+      '/sbin',
+      '/sys',
+      '/proc',
+    ];
 
     for (const dir of dangerous) {
       if (sanitized.startsWith(dir) || sanitized.startsWith('.' + dir)) {
@@ -58,10 +67,10 @@ export class FilePathValidator {
    */
   static validateExtension(
     filePath: string,
-    allowedExtensions: string[]
+    allowedExtensions: string[],
   ): boolean {
     const ext = path.extname(filePath).toLowerCase();
-    return allowedExtensions.map(e => e.toLowerCase()).includes(ext);
+    return allowedExtensions.map((e) => e.toLowerCase()).includes(ext);
   }
 
   /**
@@ -94,7 +103,8 @@ export class CLIArgumentValidator {
    * Validate iteration number
    */
   static validateIteration(iteration: number | string): number {
-    const num = typeof iteration === 'string' ? parseInt(iteration, 10) : iteration;
+    const num =
+      typeof iteration === 'string' ? parseInt(iteration, 10) : iteration;
 
     if (isNaN(num) || num < 1 || num > 1000) {
       throw new Error('Iteration must be a number between 1 and 1000');
@@ -123,7 +133,9 @@ export class CLIArgumentValidator {
     const num = typeof minutes === 'string' ? parseInt(minutes, 10) : minutes;
 
     if (isNaN(num) || num < 1 || num > 1440) {
-      throw new Error('Time limit must be between 1 and 1440 minutes (24 hours)');
+      throw new Error(
+        'Time limit must be between 1 and 1440 minutes (24 hours)',
+      );
     }
 
     return num;
@@ -156,7 +168,7 @@ export class CLIArgumentValidator {
 
     if (!allowedModels.includes(sanitized)) {
       throw new Error(
-        `Invalid model name. Allowed: ${allowedModels.join(', ')}`
+        `Invalid model name. Allowed: ${allowedModels.join(', ')}`,
       );
     }
 
@@ -170,7 +182,13 @@ export class CLIArgumentValidator {
     const sanitized = FilePathValidator.validate(configPath, true);
 
     // Must be JSON or YAML
-    if (!FilePathValidator.validateExtension(sanitized, ['.json', '.yaml', '.yml'])) {
+    if (
+      !FilePathValidator.validateExtension(sanitized, [
+        '.json',
+        '.yaml',
+        '.yml',
+      ])
+    ) {
       throw new Error('Config file must be .json, .yaml, or .yml');
     }
 
@@ -253,7 +271,7 @@ export class ConfigValidator {
       .object({
         timeout: z.number().int().min(100).max(60000).optional(),
         failOnError: z.boolean().default(false),
-        hooks: z.record(z.boolean()).optional(),
+        hooks: z.record(z.string(), z.boolean()).optional(),
       })
       .passthrough() // Allow additional properties
       .default({ failOnError: false }),
@@ -262,14 +280,17 @@ export class ConfigValidator {
   /**
    * Validate Ralph configuration
    */
-  static validateRalphConfig(config: unknown): z.infer<
-    typeof ConfigValidator.ralphConfigSchema
-  > {
+  static validateRalphConfig(
+    config: unknown,
+  ): z.infer<typeof ConfigValidator.ralphConfigSchema> {
     try {
       return this.ralphConfigSchema.parse(config);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const messages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
+        const messages = error.issues.map(
+          (e: { path: PropertyKey[]; message: string }) =>
+            `${(e.path as (string | number)[]).join('.')}: ${e.message}`,
+        );
         throw new Error(`Config validation failed:\n${messages.join('\n')}`);
       }
       throw error;
@@ -279,15 +300,20 @@ export class ConfigValidator {
   /**
    * Validate plugin configuration
    */
-  static validatePluginConfig(config: unknown): z.infer<
-    typeof ConfigValidator.pluginConfigSchema
-  > {
+  static validatePluginConfig(
+    config: unknown,
+  ): z.infer<typeof ConfigValidator.pluginConfigSchema> {
     try {
       return this.pluginConfigSchema.parse(config);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        const messages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`);
-        throw new Error(`Plugin config validation failed:\n${messages.join('\n')}`);
+        const messages = error.issues.map(
+          (e: { path: PropertyKey[]; message: string }) =>
+            `${(e.path as (string | number)[]).join('.')}: ${e.message}`,
+        );
+        throw new Error(
+          `Plugin config validation failed:\n${messages.join('\n')}`,
+        );
       }
       throw error;
     }
@@ -296,9 +322,9 @@ export class ConfigValidator {
   /**
    * Validate plugins array
    */
-  static validatePlugins(plugins: unknown): z.infer<
-    typeof ConfigValidator.pluginConfigSchema
-  >[] {
+  static validatePlugins(
+    plugins: unknown,
+  ): z.infer<typeof ConfigValidator.pluginConfigSchema>[] {
     if (!Array.isArray(plugins)) {
       throw new Error('Plugins must be an array');
     }
@@ -307,7 +333,9 @@ export class ConfigValidator {
       try {
         return this.validatePluginConfig(plugin);
       } catch (error) {
-        throw new Error(`Plugin at index ${index}: ${(error as Error).message}`);
+        throw new Error(
+          `Plugin at index ${index}: ${(error as Error).message}`,
+        );
       }
     });
   }
@@ -360,7 +388,7 @@ export class InputSanitizer {
       '/': '&#x2F;',
     };
 
-    return input.replace(/[&<>"'/]/g, char => map[char]);
+    return input.replace(/[&<>"'/]/g, (char) => map[char]);
   }
 }
 
@@ -404,7 +432,7 @@ export class EnvironmentValidator {
 
     if (missing.length > 0) {
       throw new Error(
-        `Missing required environment variables: ${missing.join(', ')}`
+        `Missing required environment variables: ${missing.join(', ')}`,
       );
     }
   }

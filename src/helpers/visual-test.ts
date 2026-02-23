@@ -72,14 +72,14 @@ export async function visualTest(options: RunOptions) {
   const screenshotUrl = bufferToBase64Url(await getScreenshot(options));
 
   const composite = bufferToBase64Url(
-    await combineTwoImages(designUrl, screenshotUrl)
+    await combineTwoImages(designUrl, screenshotUrl),
   );
 
   const debugImageOutputFolder = 'debug/images';
 
   await outputFile(
     `${debugImageOutputFolder}/composite-image-url.txt`,
-    composite
+    composite,
   );
 
   const output = await new Promise<string>((resolve, reject) => {

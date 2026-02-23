@@ -3,7 +3,7 @@ import { dirname } from 'path';
 
 export async function outputFile(
   filePath: string,
-  content: string
+  content: string,
 ): Promise<void> {
   const dir = dirname(filePath);
 

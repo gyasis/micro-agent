@@ -21,5 +21,5 @@ export default command(
       // No need to handle, will go to stderr
     });
     console.log('');
-  }
+  },
 );

@@ -17,8 +17,14 @@
  * @module lifecycle/ralph-loop
  */
 
-import { createIterationManager, type IterationManager } from './iteration-manager';
-import { createRalphOrchestrator, type RalphOrchestrator } from '../state-machine/ralph-orchestrator';
+import {
+  createIterationManager,
+  type IterationManager,
+} from './iteration-manager';
+import {
+  createRalphOrchestrator,
+  type RalphOrchestrator,
+} from '../state-machine/ralph-orchestrator';
 import type { RalphConfig } from '../config/schema-validator';
 import type { PluginRegistryEntry } from '../plugins/sdk/plugin.interface';
 import { StatePersister } from './state-persister';
@@ -67,10 +73,10 @@ export class RalphLoop {
 
     // Create iteration manager with budget constraints (T054 integration)
     this.iterationManager = createIterationManager(config.sessionId, {
-      maxIterations: config.config.maxIterations,
-      maxCostUsd: config.config.costLimit,
-      maxDurationMinutes: config.config.timeLimit / 60000, // Convert ms to minutes
-      entropyThreshold: config.config.entropy?.threshold || 3,
+      maxIterations: config.config.budgets?.maxIterations ?? 30,
+      maxCostUsd: config.config.budgets?.maxCostUsd ?? 2.0,
+      maxDurationMinutes: config.config.budgets?.maxDurationMinutes ?? 15,
+      entropyThreshold: 3,
     });
 
     // Create state machine orchestrator
@@ -89,15 +95,18 @@ export class RalphLoop {
     logger.info('Micro Agent initialized (Ralph Loop engine)', {
       sessionId: config.sessionId,
       targetFile: config.targetFile,
-      maxIterations: config.config.maxIterations,
-      maxCost: config.config.costLimit,
+      maxIterations: config.config.budgets?.maxIterations ?? 30,
+      maxCost: config.config.budgets?.maxCostUsd ?? 2.0,
     });
   }
 
   /**
    * Wire agent to orchestrator
    */
-  public wireAgent(agentType: 'librarian' | 'artisan' | 'critic' | 'chaos', agent: any): void {
+  public wireAgent(
+    agentType: 'librarian' | 'artisan' | 'critic' | 'chaos',
+    agent: any,
+  ): void {
     switch (agentType) {
       case 'librarian':
         this.orchestrator.wireLibrarianAgent(agent);
@@ -157,7 +166,9 @@ export class RalphLoop {
       const iteration = this.iterationManager.incrementIteration();
 
       logger.info(`\n${'='.repeat(60)}`);
-      logger.info(`🔄 Iteration ${iteration} / ${this.config.config.maxIterations}`);
+      logger.info(
+        `🔄 Iteration ${iteration} / ${this.config.config.budgets?.maxIterations ?? 30}`,
+      );
       logger.info(`${'='.repeat(60)}\n`);
 
       // Fresh context reset check (GOLD STANDARD)
@@ -177,19 +188,23 @@ export class RalphLoop {
         }
 
         // Persist iteration state to disk
-        await this.statePersister.persistIterationState(iteration, {
+        await this.statePersister.persistIterationState({
           iteration,
+          timestamp: Date.now(),
+          codebasHash: '',
+          testResults: null,
+          contextUsage: {},
+          agentOutputs: [],
           state: result.finalState,
           context: result.context,
           duration: result.duration,
-          timestamp: new Date().toISOString(),
-        });
+        } as any);
 
         // T050: Persist test results to dedicated file
         if (result.context.testResults) {
           const testResultsPath = await this.statePersister.persistTestResults(
             iteration,
-            result.context.testResults
+            result.context.testResults,
           );
           logger.debug('Test results persisted', { path: testResultsPath });
         }
@@ -208,7 +223,7 @@ export class RalphLoop {
               await this.recordSuccessfulFix(
                 this.previousErrors,
                 result.context.artisanOutput,
-                iteration
+                iteration,
               );
             }
 
@@ -219,7 +234,9 @@ export class RalphLoop {
               if (adversarialPassed) {
                 logger.info('✅ Adversarial tests passed!');
               } else {
-                logger.warn('⚠️  Adversarial tests failed (informational only)');
+                logger.warn(
+                  '⚠️  Adversarial tests failed (informational only)',
+                );
               }
             }
 
@@ -236,10 +253,13 @@ export class RalphLoop {
             // Store error for fix recording (T064)
             this.previousErrors.push(errorSignature);
 
-            const entropyDetected = this.iterationManager.trackError(errorSignature);
+            const entropyDetected =
+              this.iterationManager.trackError(errorSignature);
 
             if (entropyDetected) {
-              logger.error('🛑 Circuit breaker triggered - identical errors repeating');
+              logger.error(
+                '🛑 Circuit breaker triggered - identical errors repeating',
+              );
               reason = 'Entropy detected (circuit breaker)';
               finalState = 'entropy_detected';
               break;
@@ -250,10 +270,13 @@ export class RalphLoop {
 
           // Track error for entropy detection
           const errorSignature = result.context.errors.join(' | ');
-          const entropyDetected = this.iterationManager.trackError(errorSignature);
+          const entropyDetected =
+            this.iterationManager.trackError(errorSignature);
 
           if (entropyDetected) {
-            logger.error('🛑 Circuit breaker triggered - identical errors repeating');
+            logger.error(
+              '🛑 Circuit breaker triggered - identical errors repeating',
+            );
             reason = 'Entropy detected (circuit breaker)';
             finalState = 'entropy_detected';
             break;
@@ -269,8 +292,10 @@ export class RalphLoop {
         logger.error(`Iteration ${iteration} failed with exception:`, error);
 
         // Track error for entropy detection
-        const errorSignature = error instanceof Error ? error.message : String(error);
-        const entropyDetected = this.iterationManager.trackError(errorSignature);
+        const errorSignature =
+          error instanceof Error ? error.message : String(error);
+        const entropyDetected =
+          this.iterationManager.trackError(errorSignature);
 
         if (entropyDetected) {
           logger.error('🛑 Circuit breaker triggered');
@@ -333,7 +358,7 @@ export class RalphLoop {
       this.config.targetFile,
       this.config.objective,
       this.config.config,
-      this.config.plugins || []
+      this.config.plugins || [],
     );
 
     // Calculate cost (placeholder - will be implemented with cost tracker)
@@ -356,7 +381,9 @@ export class RalphLoop {
     }
 
     // Combine error messages from all failures
-    const errors = testResults.failures.map((f: any) => f.message || f.error || 'unknown');
+    const errors = testResults.failures.map(
+      (f: any) => f.message || f.error || 'unknown',
+    );
     return errors.join(' | ');
   }
 
@@ -377,7 +404,7 @@ export class RalphLoop {
   private async recordSuccessfulFix(
     errorSignatures: string[],
     artisanOutput: any,
-    iteration: number
+    iteration: number,
   ): Promise<void> {
     if (!this.memoryVault) {
       return;
@@ -390,7 +417,8 @@ export class RalphLoop {
 
     try {
       // Extract solution from artisan output
-      const solution = artisanOutput?.reasoning || artisanOutput?.code || 'Code fix applied';
+      const solution =
+        artisanOutput?.reasoning || artisanOutput?.code || 'Code fix applied';
 
       // Record fix for each error that was resolved
       for (const errorSignature of errorSignatures) {

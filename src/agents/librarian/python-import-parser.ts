@@ -11,7 +11,11 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
 import { promises as fs } from 'fs';
-import type { DependencyInfo, ImportInfo, ExportInfo } from './dependency-graph';
+import type {
+  DependencyInfo,
+  ImportInfo,
+  ExportInfo,
+} from './dependency-graph';
 
 const execAsync = promisify(exec);
 
@@ -36,7 +40,7 @@ export interface PythonImportInfo extends ImportInfo {
  */
 export async function parsePythonDependencies(
   filePath: string,
-  rootDir: string
+  rootDir: string,
 ): Promise<DependencyInfo> {
   const content = await fs.readFile(filePath, 'utf-8');
 
@@ -93,9 +97,12 @@ print(json.dumps(imports, indent=2))
 
   try {
     // Execute Python AST parser
-    const { stdout, stderr } = await execAsync('python3 -c ' + JSON.stringify(astScript), {
-      maxBuffer: 10 * 1024 * 1024, // 10MB buffer
-    });
+    const { stdout, stderr } = await execAsync(
+      'python3 -c ' + JSON.stringify(astScript),
+      {
+        maxBuffer: 10 * 1024 * 1024, // 10MB buffer
+      },
+    );
 
     // Send source code via stdin
     const pythonProcess = exec('python3', {
@@ -110,15 +117,15 @@ print(json.dumps(imports, indent=2))
       let stdout = '';
       let stderr = '';
 
-      pythonProcess.stdout?.on('data', data => {
+      pythonProcess.stdout?.on('data', (data) => {
         stdout += data;
       });
 
-      pythonProcess.stderr?.on('data', data => {
+      pythonProcess.stderr?.on('data', (data) => {
         stderr += data;
       });
 
-      pythonProcess.on('close', code => {
+      pythonProcess.on('close', (code) => {
         if (code !== 0) {
           reject(new Error(`Python parser failed: ${stderr}`));
         } else {
@@ -155,12 +162,16 @@ print(json.dumps(imports, indent=2))
     });
 
     // Resolve Python module paths
-    const resolvedImports = await resolvePythonImports(imports, filePath, rootDir);
+    const resolvedImports = await resolvePythonImports(
+      imports,
+      filePath,
+      rootDir,
+    );
 
     // Extract dependencies (resolved module paths)
     const dependencies = resolvedImports
-      .filter(imp => imp.resolved)
-      .map(imp => imp.resolved!);
+      .filter((imp) => imp.resolved)
+      .map((imp) => imp.resolved!);
 
     // Python doesn't have explicit exports in the same way TypeScript does
     // All top-level definitions are implicitly exported
@@ -187,7 +198,7 @@ print(json.dumps(imports, indent=2))
 async function resolvePythonImports(
   imports: PythonImportInfo[],
   currentFile: string,
-  rootDir: string
+  rootDir: string,
 ): Promise<PythonImportInfo[]> {
   const resolved: PythonImportInfo[] = [];
 
@@ -196,7 +207,7 @@ async function resolvePythonImports(
       imp.module,
       imp.level || 0,
       currentFile,
-      rootDir
+      rootDir,
     );
 
     resolved.push({
@@ -221,7 +232,7 @@ async function resolvePythonModule(
   modulePath: string,
   level: number,
   currentFile: string,
-  rootDir: string
+  rootDir: string,
 ): Promise<string | null> {
   const currentDir = path.dirname(currentFile);
 
@@ -241,7 +252,7 @@ async function resolvePythonModule(
     candidates.push(
       relPath + '.py',
       path.join(relPath, '__init__.py'),
-      relPath + '.pyi' // Type stub
+      relPath + '.pyi', // Type stub
     );
   } else {
     // Absolute import
@@ -249,7 +260,7 @@ async function resolvePythonModule(
     candidates.push(
       absPath + '.py',
       path.join(absPath, '__init__.py'),
-      absPath + '.pyi'
+      absPath + '.pyi',
     );
   }
 
@@ -329,7 +340,7 @@ function extractPythonExports(content: string): ExportInfo[] {
 async function parsePythonDependenciesFallback(
   filePath: string,
   rootDir: string,
-  content: string
+  content: string,
 ): Promise<DependencyInfo> {
   const imports: ImportInfo[] = [];
   const lines = content.split('\n');
@@ -353,11 +364,11 @@ async function parsePythonDependenciesFallback(
     const fromMatch = trimmed.match(/^from\s+([\w.]+)\s+import\s+([\w\s,*]+)/);
     if (fromMatch) {
       const module = fromMatch[1];
-      const names = fromMatch[2].split(',').map(n => n.trim());
+      const names = fromMatch[2].split(',').map((n) => n.trim());
 
       imports.push({
         module,
-        namedImports: names.filter(n => n !== '*'),
+        namedImports: names.filter((n) => n !== '*'),
         namespaceImport: names.includes('*') ? '*' : undefined,
         isTypeOnly: false,
       });
@@ -368,7 +379,7 @@ async function parsePythonDependenciesFallback(
     file: path.relative(rootDir, filePath),
     imports,
     exports: extractPythonExports(content),
-    dependencies: imports.map(imp => imp.module),
+    dependencies: imports.map((imp) => imp.module),
     dependents: [],
   };
 }

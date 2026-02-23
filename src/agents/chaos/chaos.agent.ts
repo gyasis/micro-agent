@@ -13,7 +13,11 @@
  */
 
 import { BaseAgent, AgentResult, TokenUsage } from '../base-agent';
-import type { AgentContext, ChaosOutput, AdversarialTest } from '../base/agent-context';
+import type {
+  AgentContext,
+  ChaosOutput,
+  AdversarialTest,
+} from '../base/agent-context';
 import { calculateCost } from '../../llm/cost-calculator';
 
 export interface ChaosTestRequest {
@@ -41,7 +45,9 @@ export class ChaosAgent extends BaseAgent {
    * 4. Test boundary values
    * 5. Identify edge cases and vulnerabilities
    */
-  protected async onExecute(context: AgentContext): Promise<AgentResult<ChaosOutput>> {
+  protected async onExecute(
+    context: AgentContext,
+  ): Promise<AgentResult<ChaosOutput>> {
     this.emitProgress('Starting adversarial testing', {
       file: context.artisanCode?.filePath,
     });
@@ -81,11 +87,15 @@ export class ChaosAgent extends BaseAgent {
       ];
 
       // Step 4: Determine if tests passed
-      const passed = allTests.every(t => t.passed);
+      const passed = allTests.every((t) => t.passed);
       this.emitProgress(`Chaos testing ${passed ? 'PASSED' : 'FAILED'}`);
 
       // Calculate cost from token usage
-      const cost = calculateCost(this.config.model, totalInputTokens, totalOutputTokens);
+      const cost = calculateCost(
+        this.config.model,
+        totalInputTokens,
+        totalOutputTokens,
+      );
 
       return {
         success: true,
@@ -116,14 +126,18 @@ export class ChaosAgent extends BaseAgent {
       filePath: context.artisanCode!.filePath,
       objective: context.objective,
       framework: context.test.framework,
-      existingTests: context.test.lastResult?.failures.map(f => f.testName).join(', '),
+      existingTests: context.test.lastResult?.failures
+        .map((f) => f.testName)
+        .join(', '),
     };
   }
 
   /**
    * Generate complete adversarial test suite
    */
-  private async generateTestSuite(request: ChaosTestRequest): Promise<{ testSuite: ChaosTestSuite; usage: TokenUsage }> {
+  private async generateTestSuite(
+    request: ChaosTestRequest,
+  ): Promise<{ testSuite: ChaosTestSuite; usage: TokenUsage }> {
     const prompt = this.buildChaosPrompt(request);
 
     try {
@@ -188,7 +202,9 @@ Output JSON format:
   private parseTestSuite(response: string): ChaosTestSuite {
     try {
       // Extract JSON from response
-      const jsonMatch = response.match(/```json\s*([\s\S]*?)```/) || response.match(/{[\s\S]*}/);
+      const jsonMatch =
+        response.match(/```json\s*([\s\S]*?)```/) ||
+        response.match(/{[\s\S]*}/);
 
       if (!jsonMatch) {
         throw new Error('No JSON found in response');
@@ -290,17 +306,17 @@ Output JSON format:
 
     if (output.vulnerabilities.length > 0) {
       recommendations.push(
-        `Fix ${output.vulnerabilities.length} security vulnerability(ies)`
+        `Fix ${output.vulnerabilities.length} security vulnerability(ies)`,
       );
     }
 
     if (output.edgeCases.length > 5) {
       recommendations.push(
-        `Add handling for ${output.edgeCases.length} identified edge cases`
+        `Add handling for ${output.edgeCases.length} identified edge cases`,
       );
     }
 
-    const failedTests = output.tests.filter(t => !t.passed);
+    const failedTests = output.tests.filter((t) => !t.passed);
     if (failedTests.length > 0) {
       recommendations.push(`${failedTests.length} adversarial test(s) failed`);
     }

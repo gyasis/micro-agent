@@ -17,7 +17,13 @@ import ollama from 'ollama';
 import { calculateCost } from './cost-calculator';
 
 export interface ProviderConfig {
-  provider: 'anthropic' | 'google' | 'openai' | 'ollama' | 'azure' | 'huggingface';
+  provider:
+    | 'anthropic'
+    | 'google'
+    | 'openai'
+    | 'ollama'
+    | 'azure'
+    | 'huggingface';
   model: string;
   apiKey?: string;
   baseUrl?: string; // For Ollama or custom endpoints
@@ -96,7 +102,13 @@ export class ProviderRouter extends EventEmitter {
    * Send completion request (simplified API - no pre-registration required)
    */
   public async complete(params: {
-    provider: 'anthropic' | 'google' | 'openai' | 'ollama' | 'azure' | 'huggingface';
+    provider:
+      | 'anthropic'
+      | 'google'
+      | 'openai'
+      | 'ollama'
+      | 'azure'
+      | 'huggingface';
     model: string;
     messages: Message[];
     temperature?: number;
@@ -190,7 +202,7 @@ export class ProviderRouter extends EventEmitter {
    */
   private async routeRequest(
     config: ProviderConfig,
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     switch (config.provider) {
       case 'anthropic':
@@ -215,32 +227,34 @@ export class ProviderRouter extends EventEmitter {
    */
   private async callAnthropic(
     config: ProviderConfig,
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     if (!config.apiKey) {
-      throw new Error('Anthropic API key required');
+      throw new Error(
+        'Anthropic API key required\n→ Fix: Set ANTHROPIC_API_KEY=sk-... in your .env file (copy from https://console.anthropic.com)',
+      );
     }
 
     const client = new Anthropic({ apiKey: config.apiKey });
 
     // Extract system message if present
-    const systemMessage = request.messages.find(m => m.role === 'system');
-    const userMessages = request.messages.filter(m => m.role !== 'system');
+    const systemMessage = request.messages.find((m) => m.role === 'system');
+    const userMessages = request.messages.filter((m) => m.role !== 'system');
 
     const response = await client.messages.create({
       model: config.model,
       max_tokens: request.maxTokens ?? config.maxTokens ?? 4096,
       temperature: request.temperature ?? config.temperature ?? 0.7,
       system: systemMessage?.content,
-      messages: userMessages.map(m => ({
+      messages: userMessages.map((m) => ({
         role: m.role as 'user' | 'assistant',
         content: m.content,
       })),
     });
 
     const content = response.content
-      .filter(block => block.type === 'text')
-      .map(block => (block as any).text)
+      .filter((block) => block.type === 'text')
+      .map((block) => (block as any).text)
       .join('');
 
     const promptTokens = response.usage.input_tokens;
@@ -263,21 +277,25 @@ export class ProviderRouter extends EventEmitter {
    */
   private async callGemini(
     config: ProviderConfig,
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     if (!config.apiKey) {
-      throw new Error('Google API key required');
+      throw new Error(
+        'Google API key required\n→ Fix: Set GOOGLE_API_KEY=... or GEMINI_API_KEY=... in your .env file (copy from https://aistudio.google.com/app/apikey)',
+      );
     }
 
     const genAI = new GoogleGenerativeAI(config.apiKey);
     const model = genAI.getGenerativeModel({ model: config.model });
 
     // Build conversation history for Gemini
-    const systemMessage = request.messages.find(m => m.role === 'system');
-    const conversationMessages = request.messages.filter(m => m.role !== 'system');
+    const systemMessage = request.messages.find((m) => m.role === 'system');
+    const conversationMessages = request.messages.filter(
+      (m) => m.role !== 'system',
+    );
 
     // Gemini uses 'user' and 'model' roles
-    const geminiMessages = conversationMessages.map(m => ({
+    const geminiMessages = conversationMessages.map((m) => ({
       role: m.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: m.content }],
     }));
@@ -312,7 +330,8 @@ export class ProviderRouter extends EventEmitter {
 
     const promptTokens = usageMetadata.promptTokenCount || 0;
     const completionTokens = usageMetadata.candidatesTokenCount || 0;
-    const totalTokens = usageMetadata.totalTokenCount || promptTokens + completionTokens;
+    const totalTokens =
+      usageMetadata.totalTokenCount || promptTokens + completionTokens;
 
     return {
       id: `gemini-${Date.now()}`,
@@ -330,10 +349,12 @@ export class ProviderRouter extends EventEmitter {
    */
   private async callOpenAI(
     config: ProviderConfig,
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     if (!config.apiKey) {
-      throw new Error('OpenAI API key required');
+      throw new Error(
+        'OpenAI API key required\n→ Fix: Set OPENAI_API_KEY=sk-... in your .env file (copy from https://platform.openai.com/api-keys)',
+      );
     }
 
     const client = new OpenAI({
@@ -354,7 +375,8 @@ export class ProviderRouter extends EventEmitter {
 
     const promptTokens = response.usage?.prompt_tokens || 0;
     const completionTokens = response.usage?.completion_tokens || 0;
-    const totalTokens = response.usage?.total_tokens || promptTokens + completionTokens;
+    const totalTokens =
+      response.usage?.total_tokens || promptTokens + completionTokens;
 
     return {
       id: response.id,
@@ -372,7 +394,7 @@ export class ProviderRouter extends EventEmitter {
    */
   private async callAzureOpenAI(
     config: ProviderConfig,
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     if (!config.apiKey || !config.endpoint) {
       throw new Error('Azure OpenAI API key and endpoint required');
@@ -398,7 +420,8 @@ export class ProviderRouter extends EventEmitter {
 
     const promptTokens = response.usage?.prompt_tokens || 0;
     const completionTokens = response.usage?.completion_tokens || 0;
-    const totalTokens = response.usage?.total_tokens || promptTokens + completionTokens;
+    const totalTokens =
+      response.usage?.total_tokens || promptTokens + completionTokens;
 
     return {
       id: response.id,
@@ -406,7 +429,11 @@ export class ProviderRouter extends EventEmitter {
       provider: 'azure',
       content,
       usage: { promptTokens, completionTokens, totalTokens },
-      cost: calculateCost(`azure/${config.model}`, promptTokens, completionTokens),
+      cost: calculateCost(
+        `azure/${config.model}`,
+        promptTokens,
+        completionTokens,
+      ),
       finishReason: choice.finish_reason || 'stop',
     };
   }
@@ -416,7 +443,7 @@ export class ProviderRouter extends EventEmitter {
    */
   private async callOllama(
     config: ProviderConfig,
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     const response = await ollama.chat({
       model: config.model,
@@ -432,7 +459,7 @@ export class ProviderRouter extends EventEmitter {
 
     // Ollama doesn't provide token counts - estimate based on content length
     const estimatedPromptTokens = Math.ceil(
-      request.messages.reduce((sum, m) => sum + m.content.length, 0) / 4
+      request.messages.reduce((sum, m) => sum + m.content.length, 0) / 4,
     );
     const estimatedCompletionTokens = Math.ceil(content.length / 4);
     const totalTokens = estimatedPromptTokens + estimatedCompletionTokens;
@@ -457,7 +484,7 @@ export class ProviderRouter extends EventEmitter {
    */
   private async callHuggingFace(
     config: ProviderConfig,
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     if (!config.apiKey) {
       throw new Error('Hugging Face API key required');
@@ -467,7 +494,10 @@ export class ProviderRouter extends EventEmitter {
 
     // Combine all messages into a single prompt
     const prompt = request.messages
-      .map(m => `${m.role === 'system' ? 'System' : m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+      .map(
+        (m) =>
+          `${m.role === 'system' ? 'System' : m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`,
+      )
       .join('\n\n');
 
     const response = await hf.textGeneration({
@@ -503,14 +533,13 @@ export class ProviderRouter extends EventEmitter {
     };
   }
 
-
   /**
    * Update provider stats
    */
   private updateStats(
     providerName: string,
     response: CompletionResponse,
-    latency: number
+    latency: number,
   ): void {
     const stats = this.stats.get(providerName);
     if (!stats) return;

@@ -8,7 +8,7 @@ import { fileExists } from './file-exists';
  */
 export async function getDependencyFile(
   directory = process.cwd(),
-  language?: string
+  language?: string,
 ): Promise<string | null> {
   let currentDirectory = directory;
   const rootDirectory = path.parse(directory).root;
@@ -61,7 +61,7 @@ function getDependenciesFilePath(directory: string, language?: string): string {
 
 async function getDependenciesFileContent(
   directory = process.cwd(),
-  language?: string
+  language?: string,
 ): Promise<string> {
   const filePath = getDependenciesFilePath(directory, language);
   const fileContent = await readFile(filePath, 'utf8');

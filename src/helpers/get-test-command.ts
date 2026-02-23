@@ -16,7 +16,7 @@ export async function getTestCommand({
   const dependencyFileName = getDependencyFileName(testFileExtension);
   const dependencyFileContent = await getDependencyFile(
     process.cwd(),
-    testFileExtension
+    testFileExtension,
   );
   if (!dependencyFileContent) {
     return defaultTestCommand;
@@ -36,8 +36,8 @@ export async function getTestCommand({
             Here is my ${dependencyFileName}. I want to run a single command to execute the tests. The tests should not run in watch mode.
             If there is a test script in the ${dependencyFileName}, use that script. For example, \`npm test\`.
             The command should filter and run the specific test file at \`${testFilePath}\`. For example, \`npm test -- ${
-            testFilePath.split('/').pop()!.split('.')[0]
-          }\`.
+              testFilePath.split('/').pop()!.split('.')[0]
+            }\`.
 
             Here are sample test commands without watch mode that work for some popular testing libraries:
             - Jest: \`npm test -- ${
@@ -65,7 +65,7 @@ export async function getTestCommand({
           `,
         },
       ],
-    })
+    }),
   );
 
   return suggestion || defaultTestCommand;

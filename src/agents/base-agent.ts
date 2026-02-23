@@ -11,26 +11,28 @@ import { EventEmitter } from 'events';
 import type { Logger } from '../utils/logger';
 import type { ProviderRouter } from '../llm/provider-router';
 import type { CostTracker } from '../llm/cost-tracker';
+import type { AgentContext } from './base/agent-context';
 
 export type AgentType = 'librarian' | 'artisan' | 'critic' | 'chaos';
 
+export type AgentProvider =
+  | 'anthropic'
+  | 'google'
+  | 'openai'
+  | 'ollama'
+  | 'azure'
+  | 'huggingface';
+
 export interface AgentConfig {
   type: AgentType;
-  provider: string;
+  provider: AgentProvider;
   model: string;
   temperature: number;
   maxTokens?: number;
   timeout?: number;
 }
 
-export interface AgentContext {
-  sessionId: string;
-  iteration: number;
-  objective: string;
-  workingDirectory: string;
-  testCommand?: string;
-  additionalContext?: Record<string, any>;
-}
+export type { AgentContext };
 
 export interface AgentResult<T = any> {
   success: boolean;
@@ -68,7 +70,7 @@ export abstract class BaseAgent extends EventEmitter {
     config: AgentConfig,
     logger: Logger,
     providerRouter: ProviderRouter,
-    costTracker: CostTracker
+    costTracker: CostTracker,
   ) {
     super();
     this.config = config;
@@ -111,8 +113,14 @@ export abstract class BaseAgent extends EventEmitter {
 
       // Track cost (extract token breakdown from result metadata if available)
       const tokenData = (result.data as any)?.tokenUsage || result.tokensUsed;
-      const promptTokens = typeof tokenData === 'object' ? tokenData.input || 0 : Math.floor(tokenData * 0.4);
-      const completionTokens = typeof tokenData === 'object' ? tokenData.output || 0 : Math.floor(tokenData * 0.6);
+      const promptTokens =
+        typeof tokenData === 'object'
+          ? tokenData.input || 0
+          : Math.floor(tokenData * 0.4);
+      const completionTokens =
+        typeof tokenData === 'object'
+          ? tokenData.output || 0
+          : Math.floor(tokenData * 0.6);
 
       this.costTracker.record({
         agent: this.config.type,
@@ -206,7 +214,7 @@ export abstract class BaseAgent extends EventEmitter {
       systemPrompt?: string;
       maxTokens?: number;
       temperature?: number;
-    }
+    },
   ): Promise<{ content: string; usage: TokenUsage }> {
     const response = await this.providerRouter.complete({
       provider: this.config.provider,
@@ -288,7 +296,7 @@ export interface AgentFactory {
     config: AgentConfig,
     logger: Logger,
     providerRouter: ProviderRouter,
-    costTracker: CostTracker
+    costTracker: CostTracker,
   ): BaseAgent;
 }
 
@@ -316,6 +324,9 @@ export interface AgentEvents {
  * Type-safe event emitter for agents
  */
 export interface TypedAgentEmitter {
-  on<K extends keyof AgentEvents>(event: K, listener: (data: AgentEvents[K]) => void): this;
+  on<K extends keyof AgentEvents>(
+    event: K,
+    listener: (data: AgentEvents[K]) => void,
+  ): this;
   emit<K extends keyof AgentEvents>(event: K, data: AgentEvents[K]): boolean;
 }

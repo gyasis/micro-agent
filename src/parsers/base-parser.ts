@@ -225,9 +225,11 @@ export abstract class BaseTestParser implements TestParser {
    * Calculate summary from test cases
    */
   protected calculateSummary(tests: TestCase[]): TestSummary {
-    const passed = tests.filter(t => t.status === 'passed').length;
-    const failed = tests.filter(t => t.status === 'failed' || t.status === 'error').length;
-    const skipped = tests.filter(t => t.status === 'skipped').length;
+    const passed = tests.filter((t) => t.status === 'passed').length;
+    const failed = tests.filter(
+      (t) => t.status === 'failed' || t.status === 'error',
+    ).length;
+    const skipped = tests.filter((t) => t.status === 'skipped').length;
     const duration = tests.reduce((sum, t) => sum + t.duration, 0);
 
     return {

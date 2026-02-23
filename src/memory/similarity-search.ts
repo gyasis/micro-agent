@@ -61,7 +61,7 @@ export class SimilaritySearch {
    */
   async search(
     query: SearchQuery,
-    options: SearchOptions = {}
+    options: SearchOptions = {},
   ): Promise<RankedFix[]> {
     const opts = { ...DEFAULT_OPTIONS, ...options };
 
@@ -69,7 +69,7 @@ export class SimilaritySearch {
     const categorized = this.categorizer.categorize(
       query.errorMessage,
       query.stackTrace,
-      query.context
+      query.context,
     );
 
     logger.debug('Searching for similar fixes', {
@@ -81,20 +81,20 @@ export class SimilaritySearch {
     const results = await this.vault.searchFixPatterns(
       categorized.signature,
       categorized.context,
-      opts.maxResults * 2 // Get more candidates for re-ranking
+      opts.maxResults * 2, // Get more candidates for re-ranking
     );
 
     // Re-rank results
     const ranked = this.rankResults(
-      results.map(r => r.pattern),
+      results.map((r) => r.pattern),
       categorized,
       query,
-      opts
+      opts,
     );
 
     // Filter by minimum score and limit
     return ranked
-      .filter(r => r.relevanceScore >= opts.minRelevanceScore)
+      .filter((r) => r.relevanceScore >= opts.minRelevanceScore)
       .slice(0, opts.maxResults);
   }
 
@@ -105,7 +105,7 @@ export class SimilaritySearch {
     patterns: FixPattern[],
     categorized: CategorizedError,
     query: SearchQuery,
-    options: Required<SearchOptions>
+    options: Required<SearchOptions>,
   ): RankedFix[] {
     const ranked: RankedFix[] = [];
 
@@ -123,12 +123,14 @@ export class SimilaritySearch {
       // Context overlap (50% weight)
       const contextScore = this.calculateContextOverlap(
         query.context || [],
-        pattern.context
+        pattern.context,
       );
       score += contextScore * options.contextWeight;
 
       if (contextScore > 0.5) {
-        matchReasons.push(`High context overlap: ${(contextScore * 100).toFixed(0)}%`);
+        matchReasons.push(
+          `High context overlap: ${(contextScore * 100).toFixed(0)}%`,
+        );
       }
 
       // Recency (20% weight)
@@ -142,7 +144,9 @@ export class SimilaritySearch {
       // Success rate bonus
       if (pattern.successRate > 0.8) {
         score *= 1.1; // 10% bonus
-        matchReasons.push(`High success rate: ${(pattern.successRate * 100).toFixed(0)}%`);
+        matchReasons.push(
+          `High success rate: ${(pattern.successRate * 100).toFixed(0)}%`,
+        );
       }
 
       // Popularity bonus
@@ -167,19 +171,21 @@ export class SimilaritySearch {
    */
   private calculateContextOverlap(
     queryContext: string[],
-    patternContext: string[]
+    patternContext: string[],
   ): number {
     if (queryContext.length === 0 || patternContext.length === 0) {
       return 0;
     }
 
     // Normalize context items
-    const querySet = new Set(queryContext.map(c => this.normalizeContext(c)));
-    const patternSet = new Set(patternContext.map(c => this.normalizeContext(c)));
+    const querySet = new Set(queryContext.map((c) => this.normalizeContext(c)));
+    const patternSet = new Set(
+      patternContext.map((c) => this.normalizeContext(c)),
+    );
 
     // Calculate Jaccard similarity
     const intersection = new Set(
-      [...querySet].filter(c => patternSet.has(c))
+      [...querySet].filter((c) => patternSet.has(c)),
     );
 
     const union = new Set([...querySet, ...patternSet]);
@@ -213,7 +219,7 @@ export class SimilaritySearch {
     const categorized = this.categorizer.categorize(
       pattern.errorSignature,
       undefined,
-      pattern.context
+      pattern.context,
     );
 
     return categorized.category;
@@ -234,8 +240,12 @@ export class SimilaritySearch {
       const result = results[i];
       const rank = i + 1;
 
-      lines.push(`${rank}. Relevance: ${(result.relevanceScore * 100).toFixed(0)}%`);
-      lines.push(`   Success Rate: ${(result.pattern.successRate * 100).toFixed(0)}%`);
+      lines.push(
+        `${rank}. Relevance: ${(result.relevanceScore * 100).toFixed(0)}%`,
+      );
+      lines.push(
+        `   Success Rate: ${(result.pattern.successRate * 100).toFixed(0)}%`,
+      );
       lines.push(`   Times Applied: ${result.pattern.timesApplied}`);
       lines.push(`   Match Reasons:`);
 
@@ -254,7 +264,7 @@ export class SimilaritySearch {
    */
   async searchDiverse(
     query: SearchQuery,
-    options: SearchOptions = {}
+    options: SearchOptions = {},
   ): Promise<RankedFix[]> {
     const opts = { ...DEFAULT_OPTIONS, ...options };
 
@@ -301,17 +311,17 @@ export class SimilaritySearch {
    */
   async searchByCategory(
     category: string,
-    limit: number = 5
+    limit: number = 5,
   ): Promise<FixPattern[]> {
     // Use optimized vault-level category filtering (T092)
     const results = await this.vault.searchFixPatterns(
       '', // Empty signature matches all
       [], // Empty context
       limit,
-      category // Category filter at vault level
+      category, // Category filter at vault level
     );
 
-    return results.map(r => r.pattern);
+    return results.map((r) => r.pattern);
   }
 
   /**
@@ -323,7 +333,7 @@ export class SimilaritySearch {
 
     // Sort by recent usage and popularity
     return results
-      .map(r => r.pattern)
+      .map((r) => r.pattern)
       .sort((a, b) => {
         const scoreA = a.timesApplied * this.calculateRecencyScore(a.lastUsed);
         const scoreB = b.timesApplied * this.calculateRecencyScore(b.lastUsed);
@@ -339,8 +349,8 @@ export class SimilaritySearch {
     const results = await this.vault.searchFixPatterns('', [], limit * 2);
 
     return results
-      .map(r => r.pattern)
-      .filter(p => p.timesApplied >= 3) // Minimum sample size
+      .map((r) => r.pattern)
+      .filter((p) => p.timesApplied >= 3) // Minimum sample size
       .sort((a, b) => b.successRate - a.successRate)
       .slice(0, limit);
   }

@@ -60,58 +60,94 @@ export function openAuditDatabase(dbPath: string): AuditDatabase {
   return db;
 }
 
-export function writeAttemptRecord(db: AuditDatabase, record: TierAttemptRecord): void {
+export function writeAttemptRecord(
+  db: AuditDatabase,
+  record: TierAttemptRecord,
+): void {
   try {
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO tier_attempts (
         run_id, tier_index, tier_name, tier_mode,
         model_artisan, model_librarian, model_critic,
         iteration, code_change_summary, test_status,
         failed_tests, error_messages, cost_usd, duration_ms, timestamp
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      record.runId, record.tierIndex, record.tierName, record.tierMode,
-      record.modelArtisan, record.modelLibrarian ?? null, record.modelCritic ?? null,
-      record.iteration, record.codeChangeSummary, record.testStatus,
+    `,
+    ).run(
+      record.runId,
+      record.tierIndex,
+      record.tierName,
+      record.tierMode,
+      record.modelArtisan,
+      record.modelLibrarian ?? null,
+      record.modelCritic ?? null,
+      record.iteration,
+      record.codeChangeSummary,
+      record.testStatus,
       JSON.stringify(record.failedTests),
       JSON.stringify(record.errorMessages),
-      record.costUsd, record.durationMs, record.timestamp,
+      record.costUsd,
+      record.durationMs,
+      record.timestamp,
     );
   } catch (err: any) {
-    logger.warn(`[audit] DB write failed (tier_attempts): ${err.message} — continuing`);
+    logger.warn(
+      `[audit] DB write failed (tier_attempts): ${err.message} — continuing`,
+    );
   }
 }
 
-export function writeRunMetadata(db: AuditDatabase, metadata: RunMetadataRow): void {
+export function writeRunMetadata(
+  db: AuditDatabase,
+  metadata: RunMetadataRow,
+): void {
   try {
-    db.prepare(`
+    db.prepare(
+      `
       INSERT INTO run_metadata (
         run_id, objective, working_directory, test_command,
         tier_config_path, started_at, completed_at, outcome,
         resolved_tier_name, resolved_iteration
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `).run(
-      metadata.runId, metadata.objective, metadata.workingDirectory,
-      metadata.testCommand, metadata.tierConfigPath, metadata.startedAt,
-      metadata.completedAt ?? null, metadata.outcome ?? 'in_progress',
-      metadata.resolvedTierName ?? null, metadata.resolvedIteration ?? null,
+    `,
+    ).run(
+      metadata.runId,
+      metadata.objective,
+      metadata.workingDirectory,
+      metadata.testCommand,
+      metadata.tierConfigPath,
+      metadata.startedAt,
+      metadata.completedAt ?? null,
+      metadata.outcome ?? 'in_progress',
+      metadata.resolvedTierName ?? null,
+      metadata.resolvedIteration ?? null,
     );
   } catch (err: any) {
-    logger.warn(`[audit] DB write failed (run_metadata insert): ${err.message} — continuing`);
+    logger.warn(
+      `[audit] DB write failed (run_metadata insert): ${err.message} — continuing`,
+    );
   }
 }
 
 export function updateRunMetadata(
   db: AuditDatabase,
   runId: string,
-  updates: Partial<Pick<RunMetadataRow, 'completedAt' | 'outcome' | 'resolvedTierName' | 'resolvedIteration'>>,
+  updates: Partial<
+    Pick<
+      RunMetadataRow,
+      'completedAt' | 'outcome' | 'resolvedTierName' | 'resolvedIteration'
+    >
+  >,
 ): void {
   try {
-    db.prepare(`
+    db.prepare(
+      `
       UPDATE run_metadata
       SET completed_at = ?, outcome = ?, resolved_tier_name = ?, resolved_iteration = ?
       WHERE run_id = ?
-    `).run(
+    `,
+    ).run(
       updates.completedAt ?? null,
       updates.outcome ?? null,
       updates.resolvedTierName ?? null,
@@ -119,7 +155,9 @@ export function updateRunMetadata(
       runId,
     );
   } catch (err: any) {
-    logger.warn(`[audit] DB write failed (run_metadata update): ${err.message} — continuing`);
+    logger.warn(
+      `[audit] DB write failed (run_metadata update): ${err.message} — continuing`,
+    );
   }
 }
 

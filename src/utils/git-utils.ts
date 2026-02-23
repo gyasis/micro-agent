@@ -134,7 +134,9 @@ export async function getUntrackedFiles(cwd?: string): Promise<string[]> {
 /**
  * Get all changed files (modified + staged + untracked)
  */
-export async function getAllChangedFiles(cwd?: string): Promise<GitFileStatus[]> {
+export async function getAllChangedFiles(
+  cwd?: string,
+): Promise<GitFileStatus[]> {
   const status = await getStatus(cwd);
   if (!status) return [];
 
@@ -159,13 +161,17 @@ export async function getAllChangedFiles(cwd?: string): Promise<GitFileStatus[]>
  * Create checksum of working tree state
  * Uses git ls-tree for committed files and status for uncommitted
  */
-export async function getWorkingTreeChecksum(cwd?: string): Promise<string | null> {
+export async function getWorkingTreeChecksum(
+  cwd?: string,
+): Promise<string | null> {
   try {
     // Get tree hash of committed state
     const { stdout: treeHash } = await execAsync('git write-tree', { cwd });
 
     // Get status of uncommitted changes
-    const { stdout: statusOutput } = await execAsync('git status --porcelain', { cwd });
+    const { stdout: statusOutput } = await execAsync('git status --porcelain', {
+      cwd,
+    });
 
     // Combine for comprehensive checksum
     const combined = `${treeHash.trim()}\n${statusOutput}`;
@@ -203,7 +209,9 @@ export async function getShortHeadCommit(cwd?: string): Promise<string | null> {
 /**
  * Get commit message of HEAD
  */
-export async function getHeadCommitMessage(cwd?: string): Promise<string | null> {
+export async function getHeadCommitMessage(
+  cwd?: string,
+): Promise<string | null> {
   try {
     const { stdout } = await execAsync('git log -1 --pretty=%B', { cwd });
     return stdout.trim();
@@ -217,7 +225,9 @@ export async function getHeadCommitMessage(cwd?: string): Promise<string | null>
  */
 export async function getRepoRoot(cwd?: string): Promise<string | null> {
   try {
-    const { stdout } = await execAsync('git rev-parse --show-toplevel', { cwd });
+    const { stdout } = await execAsync('git rev-parse --show-toplevel', {
+      cwd,
+    });
     return stdout.trim();
   } catch {
     return null;
@@ -261,7 +271,9 @@ export async function getDiffStats(cwd?: string): Promise<{
     const { stdout } = await execAsync('git diff --stat', { cwd });
 
     // Parse output like: " 2 files changed, 45 insertions(+), 12 deletions(-)"
-    const match = stdout.match(/(\d+) files? changed(?:, (\d+) insertions?\(\+\))?(?:, (\d+) deletions?\(-\))?/);
+    const match = stdout.match(
+      /(\d+) files? changed(?:, (\d+) insertions?\(\+\))?(?:, (\d+) deletions?\(-\))?/,
+    );
 
     if (!match) return null;
 

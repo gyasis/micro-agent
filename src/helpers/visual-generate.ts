@@ -28,7 +28,7 @@ export async function visualGenerate(options: RunOptions) {
       
       ./editing-file.ts
       ./editing-file.png # <- image file we'll use
-      `
+      `,
     );
   }
 
@@ -111,7 +111,7 @@ export async function visualGenerate(options: RunOptions) {
   const screenshotUrl = bufferToBase64Url(await getScreenshot(options));
   await outputFile(
     `${debugImageOutputFolder}/screenshot-image-url.txt`,
-    screenshotUrl
+    screenshotUrl,
   );
 
   let output: string;

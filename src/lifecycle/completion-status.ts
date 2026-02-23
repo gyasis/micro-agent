@@ -58,7 +58,7 @@ export function determineCompletionStatus(
   testResults: RalphTestResult | null,
   budgetStatus: BudgetStatus,
   entropyDetected: boolean,
-  error?: Error
+  error?: Error,
 ): CompletionStatusResult {
   const result: CompletionStatusResult = {
     status: 'error',
@@ -80,7 +80,11 @@ export function determineCompletionStatus(
   }
 
   // 2. Check for success (tests passed)
-  if (testResults && testResults.summary.status === 'passed' && testResults.summary.failed === 0) {
+  if (
+    testResults &&
+    testResults.summary.status === 'passed' &&
+    testResults.summary.failed === 0
+  ) {
     result.status = 'success';
     result.reason = 'All tests passed successfully';
     result.details.testsPassed = true;
@@ -95,7 +99,8 @@ export function determineCompletionStatus(
   // 3. Check for entropy detection (circuit breaker)
   if (entropyDetected) {
     result.status = 'entropy_detected';
-    result.reason = 'Identical errors detected 3+ times (circuit breaker triggered)';
+    result.reason =
+      'Identical errors detected 3+ times (circuit breaker triggered)';
     result.details.entropyDetected = true;
     logger.warn('⚠️  Completion status: Entropy detected', {
       iterations: budgetStatus.currentIteration,
@@ -221,7 +226,9 @@ export function isEntropyStatus(status: CompletionStatus): boolean {
 /**
  * Get recommended next steps based on status
  */
-export function getRecommendedNextSteps(result: CompletionStatusResult): string[] {
+export function getRecommendedNextSteps(
+  result: CompletionStatusResult,
+): string[] {
   const steps: string[] = [];
 
   switch (result.status) {
@@ -277,7 +284,7 @@ export function getRecommendedNextSteps(result: CompletionStatusResult): string[
 export function createCompletionSummary(
   result: CompletionStatusResult,
   budgetStatus: BudgetStatus,
-  testResults: RalphTestResult | null
+  testResults: RalphTestResult | null,
 ): {
   status: CompletionStatus;
   success: boolean;

@@ -2,7 +2,7 @@
 
 **Purpose**: North Star document - why this project exists
 
-**Last Updated**: 2026-02-17
+**Last Updated**: 2026-02-22 (005-unified-test-gen complete)
 
 ## Vision
 
@@ -25,16 +25,27 @@ system avoids the "Dumb Zone" degradation that plagues long conversations.
 
 ## Success Criteria
 
-- All 269 tests pass (currently: YES as of 2026-02-17, +22 from 003-tiered-escalation)
+- All 303 tests genuinely pass (currently: YES as of 2026-02-22; 273 from 004 + 30 new test-
+  generator unit tests added in 005-unified-test-gen)
 - End-to-end Ralph Loop workflow verified with real APIs (Gemini + Claude + GPT) -- VERIFIED
 - Cost per iteration is tracked and stays within configurable budget (~$0.02 typical)
 - Three agents collaborate to fix a real code bug (verified with `math.ts` example)
 - Branch `001-ralph-loop-2026` merged to `main` (commit c527da1) -- DONE
 - Branch `002-simple-escalation` merged to `main` (commit 8d42927) -- DONE
 - Branch `003-tiered-escalation` merged to `main` (no-ff merge) -- DONE
+- Branch `004-fix-outstanding-issues` committed (commit 4749480), merged to main -- DONE
+- Branch `005-unified-test-gen` fully implemented (8 wave commits, 303/303 tests) -- READY FOR PR
 - Simple Mode + Auto-Escalation pipeline operational with `--simple`, `--full`, `--no-escalate` flags
 - N-Tier Model Escalation pipeline operational with `--tier-config <path>` flag and JSON/YAML
   tier config files
+- TypeScript 5.9.3 upgrade complete -- `npx tsc --noEmit` exits 0 with zero errors
+- Prettier conformance enforced -- `npx prettier --check "**/*.ts"` exits 0
+- ChromaDB offline fallback operational -- MemoryVault degrades gracefully if server absent
+- Actionable error messages with `-> Fix:` remediation hints for all auth/config failures
+- API documentation written -- `docs/api/` has 5 files totaling 1668 lines
+- Unified test generation operational -- `ralph-loop run` auto-generates test files when none
+  exist, using `--no-generate` to opt out; language-aware naming for TS/JS/Python/Ruby; Rust
+  always skipped; scoped test command targets generated file only
 
 ## Constraints
 
@@ -42,6 +53,9 @@ system avoids the "Dumb Zone" degradation that plagues long conversations.
 - **Technical**: XState v5 API must be used (createActor pattern, not v4 machine.context)
 - **Technical**: Model names must be 2026-current: `gemini-2.5-flash`, `claude-sonnet-4-20250514`,
   `gpt-4o-mini`
-- **Technical**: Zod v3 API uses `.issues` not `.errors` on SafeParseError results
+- **Technical**: Zod v4 API: `.issues` not `.errors` on SafeParseError; `z.record(k, v)` not
+  `z.record(v)` (two arguments required)
+- **Technical**: TypeScript 5.9.3 with `moduleResolution: "node"` (NOT bundler/node16 -- those
+  would require .js extensions on all relative imports)
 - **Business**: Package published as `@builder.io/micro-agent` v0.1.5
 - **Process**: Only the `memory-bank-keeper` agent may modify the memory-bank folder

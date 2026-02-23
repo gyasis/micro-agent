@@ -8,7 +8,12 @@
  */
 
 import { BaseAgent, AgentResult, TokenUsage } from '../base-agent';
-import type { AgentContext, LibrarianOutput, FileContext, DependencyNode } from '../base/agent-context';
+import type {
+  AgentContext,
+  LibrarianOutput,
+  FileContext,
+  DependencyNode,
+} from '../base/agent-context';
 import { promises as fs } from 'fs';
 import path from 'path';
 import { glob } from 'glob';
@@ -22,7 +27,9 @@ export class LibrarianAgent extends BaseAgent {
    * 3. Rank files by relevance
    * 4. Summarize context for Artisan
    */
-  protected async onExecute(context: AgentContext): Promise<AgentResult<LibrarianOutput>> {
+  protected async onExecute(
+    context: AgentContext,
+  ): Promise<AgentResult<LibrarianOutput>> {
     this.emitProgress('Starting context analysis', {
       workingDir: context.workingDirectory,
       targetFile: context.targetFile,
@@ -37,12 +44,17 @@ export class LibrarianAgent extends BaseAgent {
       // Step 1: Discover files
       const files = await this.discoverFiles(
         context.workingDirectory,
-        context.targetFile
+        context.targetFile,
       );
-      this.emitProgress(`Discovered ${files.length} files`, { count: files.length });
+      this.emitProgress(`Discovered ${files.length} files`, {
+        count: files.length,
+      });
 
       // Step 2: Read and analyze files
-      const fileContexts = await this.analyzeFiles(files, context.workingDirectory);
+      const fileContexts = await this.analyzeFiles(
+        files,
+        context.workingDirectory,
+      );
       this.emitProgress('Files analyzed', { count: fileContexts.length });
 
       // Step 3: Build dependency graph
@@ -56,22 +68,25 @@ export class LibrarianAgent extends BaseAgent {
         fileContexts,
         dependencyGraph,
         context.targetFile,
-        context.objective
+        context.objective,
       );
       if (rankingUsage) {
         totalTokensUsed += rankingUsage.total;
         totalInputTokens += rankingUsage.input;
         totalOutputTokens += rankingUsage.output;
       }
-      this.emitProgress('Files ranked', { topFiles: rankedFiles.slice(0, 5).map(f => f.path) });
+      this.emitProgress('Files ranked', {
+        topFiles: rankedFiles.slice(0, 5).map((f) => f.path),
+      });
 
       // Step 5: Generate context summary (pass escalationContext so prior attempts are included)
-      const { summary: contextSummary, usage: summaryUsage } = await this.generateContextSummary(
-        rankedFiles,
-        dependencyGraph,
-        context.objective,
-        context.escalationContext
-      );
+      const { summary: contextSummary, usage: summaryUsage } =
+        await this.generateContextSummary(
+          rankedFiles,
+          dependencyGraph,
+          context.objective,
+          context.escalationContext,
+        );
       if (summaryUsage) {
         totalTokensUsed += summaryUsage.total;
         totalInputTokens += summaryUsage.input;
@@ -81,7 +96,11 @@ export class LibrarianAgent extends BaseAgent {
       this.emitProgress('Context summary generated');
 
       // Calculate cost from token usage
-      const cost = calculateCost(this.config.model, totalInputTokens, totalOutputTokens);
+      const cost = calculateCost(
+        this.config.model,
+        totalInputTokens,
+        totalOutputTokens,
+      );
 
       return {
         success: true,
@@ -107,7 +126,7 @@ export class LibrarianAgent extends BaseAgent {
    */
   private async discoverFiles(
     workingDir: string,
-    targetFile?: string
+    targetFile?: string,
   ): Promise<string[]> {
     const patterns = [
       '**/*.ts',
@@ -146,7 +165,7 @@ export class LibrarianAgent extends BaseAgent {
    */
   private async analyzeFiles(
     files: string[],
-    workingDir: string
+    workingDir: string,
   ): Promise<FileContext[]> {
     const contexts: FileContext[] = [];
 
@@ -195,7 +214,7 @@ export class LibrarianAgent extends BaseAgent {
    * Build dependency graph from file contexts
    */
   private async buildDependencyGraph(
-    fileContexts: FileContext[]
+    fileContexts: FileContext[],
   ): Promise<DependencyNode[]> {
     const nodes: DependencyNode[] = [];
     const fileMap = new Map<string, FileContext>();
@@ -238,7 +257,7 @@ export class LibrarianAgent extends BaseAgent {
     // Fill dependedBy relationships
     for (const node of nodes) {
       for (const dep of node.dependsOn) {
-        const depNode = nodes.find(n => n.file === dep);
+        const depNode = nodes.find((n) => n.file === dep);
         if (depNode) {
           depNode.dependedBy.push(node.file);
         }
@@ -254,20 +273,20 @@ export class LibrarianAgent extends BaseAgent {
   private resolveImport(
     importPath: string,
     fromFile: string,
-    fileContexts: FileContext[]
+    fileContexts: FileContext[],
   ): string | null {
     const fromDir = path.dirname(fromFile);
     const resolved = path.normalize(path.join(fromDir, importPath));
 
     // Try exact match
-    const exactMatch = fileContexts.find(f => f.path === resolved);
+    const exactMatch = fileContexts.find((f) => f.path === resolved);
     if (exactMatch) return exactMatch.path;
 
     // Try with extensions
     const extensions = ['.ts', '.tsx', '.js', '.jsx', '/index.ts', '/index.js'];
     for (const ext of extensions) {
       const withExt = resolved + ext;
-      const match = fileContexts.find(f => f.path === withExt);
+      const match = fileContexts.find((f) => f.path === withExt);
       if (match) return match.path;
     }
 
@@ -281,7 +300,8 @@ export class LibrarianAgent extends BaseAgent {
     const exports: string[] = [];
 
     // Named exports
-    const namedRegex = /export\s+(?:const|let|var|function|class|interface|type|enum)\s+(\w+)/g;
+    const namedRegex =
+      /export\s+(?:const|let|var|function|class|interface|type|enum)\s+(\w+)/g;
     let match;
     while ((match = namedRegex.exec(content)) !== null) {
       exports.push(match[1]);
@@ -302,7 +322,7 @@ export class LibrarianAgent extends BaseAgent {
     fileContexts: FileContext[],
     dependencyGraph: DependencyNode[],
     targetFile: string | undefined,
-    objective: string
+    objective: string,
   ): Promise<{ rankedFiles: FileContext[]; usage: TokenUsage | null }> {
     // Calculate distance from target file
     if (targetFile) {
@@ -328,7 +348,9 @@ export class LibrarianAgent extends BaseAgent {
       return { rankedFiles, usage: response.usage };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Failed to rank files with LLM: ${errorMsg}. Using distance-based ranking fallback.`);
+      this.logger.warn(
+        `Failed to rank files with LLM: ${errorMsg}. Using distance-based ranking fallback.`,
+      );
       const rankedFiles = this.fallbackRanking(fileContexts, dependencyGraph);
       return { rankedFiles, usage: null }; // No LLM usage on fallback
     }
@@ -337,8 +359,11 @@ export class LibrarianAgent extends BaseAgent {
   /**
    * Calculate distances from target file in dependency graph
    */
-  private calculateDistances(nodes: DependencyNode[], targetFile: string): void {
-    const targetNode = nodes.find(n => n.file === targetFile);
+  private calculateDistances(
+    nodes: DependencyNode[],
+    targetFile: string,
+  ): void {
+    const targetNode = nodes.find((n) => n.file === targetFile);
     if (!targetNode) return;
 
     // BFS to calculate distances
@@ -356,7 +381,7 @@ export class LibrarianAgent extends BaseAgent {
 
       // Add neighbors
       for (const dep of [...node.dependsOn, ...node.dependedBy]) {
-        const depNode = nodes.find(n => n.file === dep);
+        const depNode = nodes.find((n) => n.file === dep);
         if (depNode && !visited.has(depNode.file)) {
           queue.push({ node: depNode, distance: distance + 1 });
         }
@@ -370,9 +395,9 @@ export class LibrarianAgent extends BaseAgent {
   private buildRankingPrompt(
     files: FileContext[],
     objective: string,
-    targetFile?: string
+    targetFile?: string,
   ): string {
-    const fileList = files.map(f => `- ${f.path}`).join('\n');
+    const fileList = files.map((f) => `- ${f.path}`).join('\n');
 
     return `Objective: ${objective}
 
@@ -397,7 +422,7 @@ Return ONLY a JSON array of file paths in order: ["most-relevant.ts", "second.ts
       const ranked: FileContext[] = [];
 
       for (const path of rankedPaths) {
-        const file = files.find(f => f.path === path);
+        const file = files.find((f) => f.path === path);
         if (file) {
           ranked.push(file);
         }
@@ -415,7 +440,7 @@ Return ONLY a JSON array of file paths in order: ["most-relevant.ts", "second.ts
    */
   private mergeRankings(
     llmRanked: FileContext[],
-    dependencyGraph: DependencyNode[]
+    dependencyGraph: DependencyNode[],
   ): FileContext[] {
     // Calculate relevance scores
     const scores = new Map<string, number>();
@@ -424,7 +449,7 @@ Return ONLY a JSON array of file paths in order: ["most-relevant.ts", "second.ts
       const file = llmRanked[i];
       const llmScore = 1.0 - i / llmRanked.length;
 
-      const node = dependencyGraph.find(n => n.file === file.path);
+      const node = dependencyGraph.find((n) => n.file === file.path);
       const distanceScore = node ? 1.0 / (node.distance + 1) : 0;
 
       const finalScore = llmScore * 0.7 + distanceScore * 0.3;
@@ -445,11 +470,11 @@ Return ONLY a JSON array of file paths in order: ["most-relevant.ts", "second.ts
    */
   private fallbackRanking(
     files: FileContext[],
-    dependencyGraph: DependencyNode[]
+    dependencyGraph: DependencyNode[],
   ): FileContext[] {
     return files.sort((a, b) => {
-      const nodeA = dependencyGraph.find(n => n.file === a.path);
-      const nodeB = dependencyGraph.find(n => n.file === b.path);
+      const nodeA = dependencyGraph.find((n) => n.file === a.path);
+      const nodeB = dependencyGraph.find((n) => n.file === b.path);
 
       const distA = nodeA?.distance ?? Infinity;
       const distB = nodeB?.distance ?? Infinity;
@@ -468,10 +493,12 @@ Return ONLY a JSON array of file paths in order: ["most-relevant.ts", "second.ts
     files: FileContext[],
     dependencyGraph: DependencyNode[],
     objective: string,
-    escalationContext?: string
+    escalationContext?: string,
   ): Promise<{ summary: string; usage: TokenUsage | null }> {
     const topFiles = files.slice(0, 10);
-    const fileDescriptions = topFiles.map(f => `${f.path}: ${f.content.split('\n').slice(0, 3).join(' ')}`).join('\n');
+    const fileDescriptions = topFiles
+      .map((f) => `${f.path}: ${f.content.split('\n').slice(0, 3).join(' ')}`)
+      .join('\n');
 
     const priorAttemptsBlock = escalationContext
       ? `PRIOR ATTEMPTS:\n${escalationContext}\n\n`
@@ -494,7 +521,9 @@ Provide a concise summary (2-3 paragraphs) of the codebase context relevant to t
       return { summary: response.content, usage: response.usage };
     } catch (error) {
       const errorMsg = error instanceof Error ? error.message : String(error);
-      this.logger.warn(`Failed to generate context summary: ${errorMsg}. Using fallback summary.`);
+      this.logger.warn(
+        `Failed to generate context summary: ${errorMsg}. Using fallback summary.`,
+      );
       return {
         summary: `Codebase analysis: ${topFiles.length} relevant files identified.`,
         usage: null, // No LLM usage on fallback

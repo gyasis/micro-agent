@@ -25,9 +25,9 @@ export async function interactiveMode(options: Partial<RunOptions>) {
     const openaiKey = exitOnCancel(
       await text({
         message: `Welcome newcomer! What is your OpenAI key? ${gray(
-          '(this is kept private)'
+          '(this is kept private)',
         )}`,
-      })
+      }),
     );
 
     await setConfigs([['OPENAI_KEY', openaiKey as string]]);
@@ -42,7 +42,7 @@ export async function interactiveMode(options: Partial<RunOptions>) {
           return 'Please provide a complete prompt';
         }
       },
-    })
+    }),
   );
 
   let filePath = options.outputFile;
@@ -60,7 +60,7 @@ export async function interactiveMode(options: Partial<RunOptions>) {
         message: 'What file would you like to create or edit?',
         defaultValue: recommendedFilePath!,
         placeholder: recommendedFilePath!,
-      })
+      }),
     );
   }
 
@@ -78,11 +78,11 @@ export async function interactiveMode(options: Partial<RunOptions>) {
       twoTests.map(async (test) => {
         const content = await readFile(test, 'utf8');
         return content;
-      })
+      }),
     );
 
     const packageJsonContents = await readFile('package.json', 'utf8').catch(
-      () => ''
+      () => '',
     );
 
     testFilePath = filePath.replace(/.(\w+)$/, '.test.$1');
@@ -126,20 +126,20 @@ export async function interactiveMode(options: Partial<RunOptions>) {
               ${twoTestFiles.join('\n') || 'No tests found'}
               </tests>`
                 : packageJsonContents
-                ? dedent`
+                  ? dedent`
                   Here is the package.json file to help you know what testing library to use (if any, otherwise vitest is a good option):
                   <package-json>
                   ${packageJsonContents}
                   </package-json>
                 `
-                : ''
+                  : ''
             }
 
             Only output the test code. No other words, just the code.
             `,
           },
         ],
-      }))!
+      }))!,
     );
 
     const result = exitOnCancel(
@@ -148,7 +148,7 @@ export async function interactiveMode(options: Partial<RunOptions>) {
           'How does the generated test look? Reply "good", or provide feedback',
         defaultValue: 'good',
         placeholder: 'good',
-      })
+      }),
     );
 
     if (result.toLowerCase().trim() !== 'good') {
@@ -177,7 +177,7 @@ export async function interactiveMode(options: Partial<RunOptions>) {
       message: 'What command should I run to test the code?',
       defaultValue: defaultTestCommand,
       placeholder: defaultTestCommand,
-    })
+    }),
   );
 
   testCommand = await iterateOnTestCommand({ testCommand });

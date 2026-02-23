@@ -11,7 +11,11 @@
  * @module cli/ui/summary-reporter
  */
 
-import type { AgentContext, CriticOutput, ReviewIssue } from '../../agents/base/agent-context';
+import type {
+  AgentContext,
+  CriticOutput,
+  ReviewIssue,
+} from '../../agents/base/agent-context';
 import { getDiffStats } from '../../agents/artisan/code-writer';
 
 export interface SessionSummary {
@@ -108,7 +112,9 @@ export class SummaryReporter {
       budget_exceeded: 'BUDGET EXCEEDED',
     };
 
-    console.log(`\n${resultEmoji[summary.result]} Result: ${resultText[summary.result]}`);
+    console.log(
+      `\n${resultEmoji[summary.result]} Result: ${resultText[summary.result]}`,
+    );
     console.log(`📋 Objective: ${summary.objective}`);
     console.log(`🆔 Session: ${summary.sessionId.substring(0, 8)}`);
   }
@@ -119,10 +125,14 @@ export class SummaryReporter {
   private static printStatistics(summary: SessionSummary): void {
     console.log('\n📊 Statistics:');
     console.log(`  Iterations: ${summary.iterations.length}`);
-    console.log(`  Duration: ${(summary.totalDuration / 60).toFixed(1)} minutes`);
+    console.log(
+      `  Duration: ${(summary.totalDuration / 60).toFixed(1)} minutes`,
+    );
     console.log(`  Total Cost: $${summary.totalCost.toFixed(4)}`);
     console.log(`  Total Tokens: ${summary.totalTokens.toLocaleString()}`);
-    console.log(`  Avg Cost/Iteration: $${(summary.totalCost / summary.iterations.length).toFixed(4)}`);
+    console.log(
+      `  Avg Cost/Iteration: $${(summary.totalCost / summary.iterations.length).toFixed(4)}`,
+    );
   }
 
   /**
@@ -142,7 +152,7 @@ export class SummaryReporter {
     const header = '  Iter  |  Duration  |  Cost   |  Tokens  |  Result';
     const separator = '  ' + '-'.repeat(70);
 
-    const rows = iterations.map(iter => {
+    const rows = iterations.map((iter) => {
       const duration = `${iter.duration.toFixed(1)}s`.padEnd(10);
       const cost = `$${iter.cost.toFixed(4)}`.padEnd(7);
       const tokens = iter.tokensUsed.toLocaleString().padEnd(8);
@@ -181,16 +191,19 @@ export class SummaryReporter {
       }
     }
 
-    const totalChanges = summary.iterations.reduce((acc, iter) => {
-      const changes = iter.codeChanges;
-      if (!changes) return acc;
+    const totalChanges = summary.iterations.reduce(
+      (acc, iter) => {
+        const changes = iter.codeChanges;
+        if (!changes) return acc;
 
-      return {
-        added: acc.added + changes.linesAdded,
-        deleted: acc.deleted + changes.linesDeleted,
-        modified: acc.modified + changes.linesModified,
-      };
-    }, { added: 0, deleted: 0, modified: 0 });
+        return {
+          added: acc.added + changes.linesAdded,
+          deleted: acc.deleted + changes.linesDeleted,
+          modified: acc.modified + changes.linesModified,
+        };
+      },
+      { added: 0, deleted: 0, modified: 0 },
+    );
 
     console.log(`  Lines Added: ${totalChanges.added}`);
     console.log(`  Lines Deleted: ${totalChanges.deleted}`);
@@ -234,14 +247,19 @@ export class SummaryReporter {
     console.log('\n💰 Cost Breakdown:');
 
     // Cost by agent (estimated from iterations)
-    const byPhase = summary.iterations.reduce((acc, iter) => {
-      acc[iter.phase] = (acc[iter.phase] || 0) + iter.cost;
-      return acc;
-    }, {} as Record<string, number>);
+    const byPhase = summary.iterations.reduce(
+      (acc, iter) => {
+        acc[iter.phase] = (acc[iter.phase] || 0) + iter.cost;
+        return acc;
+      },
+      {} as Record<string, number>,
+    );
 
     for (const [phase, cost] of Object.entries(byPhase)) {
       const percentage = (cost / summary.totalCost) * 100;
-      console.log(`  ${phase}: $${cost.toFixed(4)} (${percentage.toFixed(1)}%)`);
+      console.log(
+        `  ${phase}: $${cost.toFixed(4)} (${percentage.toFixed(1)}%)`,
+      );
     }
   }
 
@@ -266,7 +284,9 @@ export class SummaryReporter {
     lines.push(`- **Session ID**: \`${summary.sessionId}\``);
     lines.push(`- **Objective**: ${summary.objective}`);
     lines.push(`- **Result**: ${summary.result.toUpperCase()}`);
-    lines.push(`- **Duration**: ${(summary.totalDuration / 60).toFixed(1)} minutes`);
+    lines.push(
+      `- **Duration**: ${(summary.totalDuration / 60).toFixed(1)} minutes`,
+    );
     lines.push(`- **Total Cost**: $${summary.totalCost.toFixed(4)}\n`);
 
     // Statistics
@@ -283,7 +303,7 @@ export class SummaryReporter {
     for (const iter of summary.iterations) {
       const result = this.getIterationResult(iter);
       lines.push(
-        `| ${iter.iteration} | ${iter.duration.toFixed(1)}s | $${iter.cost.toFixed(4)} | ${iter.tokensUsed.toLocaleString()} | ${result} |`
+        `| ${iter.iteration} | ${iter.duration.toFixed(1)}s | $${iter.cost.toFixed(4)} | ${iter.tokensUsed.toLocaleString()} | ${result} |`,
       );
     }
 
@@ -306,9 +326,9 @@ export class SummaryReporter {
    */
   public static async saveReport(
     summary: SessionSummary,
-    filePath: string
+    filePath: string,
   ): Promise<void> {
-    const { promises as fs } = await import('fs');
+    const { promises: fs } = await import('fs');
     const markdown = this.generateMarkdownReport(summary);
     await fs.writeFile(filePath, markdown, 'utf-8');
   }

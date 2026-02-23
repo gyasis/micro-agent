@@ -15,7 +15,11 @@
 
 import path from 'path';
 import { promises as fs } from 'fs';
-import type { DependencyInfo, ImportInfo, ExportInfo } from './dependency-graph';
+import type {
+  DependencyInfo,
+  ImportInfo,
+  ExportInfo,
+} from './dependency-graph';
 
 /**
  * Rust-specific import information
@@ -37,7 +41,7 @@ export interface RustImportInfo extends ImportInfo {
  */
 export async function parseRustDependencies(
   filePath: string,
-  rootDir: string
+  rootDir: string,
 ): Promise<DependencyInfo> {
   const content = await fs.readFile(filePath, 'utf-8');
 
@@ -53,13 +57,13 @@ export async function parseRustDependencies(
     imports,
     modules,
     filePath,
-    rootDir
+    rootDir,
   );
 
   // Extract dependencies
   const dependencies = resolvedImports
-    .filter(imp => imp.resolved)
-    .map(imp => imp.resolved!);
+    .filter((imp) => imp.resolved)
+    .map((imp) => imp.resolved!);
 
   const info: DependencyInfo = {
     file: path.relative(rootDir, filePath),
@@ -123,7 +127,7 @@ function parseRustUseStatements(content: string): RustImportInfo[] {
  */
 function parseRustUsePath(
   usePath: string,
-  isPublic: boolean
+  isPublic: boolean,
 ): RustImportInfo[] {
   const imports: RustImportInfo[] = [];
 
@@ -137,8 +141,8 @@ function parseRustUsePath(
     const names = group
       .slice(1, -1) // Remove { }
       .split(',')
-      .map(n => n.trim())
-      .filter(n => n);
+      .map((n) => n.trim())
+      .filter((n) => n);
 
     for (const name of names) {
       const fullPath = name === 'self' ? basePath : `${basePath}::${name}`;
@@ -160,13 +164,14 @@ function parseRustUsePath(
 function createRustImport(
   fullPath: string,
   name: string,
-  isPublic: boolean
+  isPublic: boolean,
 ): RustImportInfo {
   const parts = fullPath.split('::');
   const firstPart = parts[0];
 
   // Determine import type
-  const isStd = firstPart === 'std' || firstPart === 'core' || firstPart === 'alloc';
+  const isStd =
+    firstPart === 'std' || firstPart === 'core' || firstPart === 'alloc';
   const isCrate = firstPart === 'crate';
   const isSuper = firstPart === 'super';
   const isSelf = firstPart === 'self';
@@ -317,7 +322,7 @@ async function resolveRustModules(
   imports: RustImportInfo[],
   modDeclarations: string[],
   currentFile: string,
-  rootDir: string
+  rootDir: string,
 ): Promise<RustImportInfo[]> {
   const resolved: RustImportInfo[] = [];
 
@@ -332,7 +337,7 @@ async function resolveRustModules(
       imp.module,
       currentFile,
       rootDir,
-      modDeclarations
+      modDeclarations,
     );
 
     resolved.push({
@@ -357,7 +362,7 @@ async function resolveRustModule(
   modulePath: string,
   currentFile: string,
   rootDir: string,
-  modDeclarations: string[]
+  modDeclarations: string[],
 ): Promise<string | null> {
   const currentDir = path.dirname(currentFile);
 
@@ -395,7 +400,10 @@ async function resolveRustModule(
  * 1. module.rs
  * 2. module/mod.rs
  */
-async function findRustFile(baseDir: string, modulePath: string): Promise<string | null> {
+async function findRustFile(
+  baseDir: string,
+  modulePath: string,
+): Promise<string | null> {
   const candidates = [
     path.join(baseDir, modulePath + '.rs'),
     path.join(baseDir, modulePath, 'mod.rs'),

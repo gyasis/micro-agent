@@ -12,10 +12,10 @@ export async function findVisualFile(options: RunOptions) {
   const fileExtension = filename.split('.').pop()!;
   const fileNameWithoutExtension = filename.replace(
     new RegExp('\\.' + fileExtension + '$'),
-    ''
+    '',
   );
   const imageFiles = await glob(
-    `${fileNameWithoutExtension}.{png,jpg,jpeg,svg,webp}`
+    `${fileNameWithoutExtension}.{png,jpg,jpeg,svg,webp}`,
   );
 
   const imageFile = imageFiles[0];

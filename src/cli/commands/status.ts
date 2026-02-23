@@ -36,7 +36,9 @@ interface SessionLogEntry {
   data: any;
 }
 
-export async function statusCommand(options: StatusCommandOptions = {}): Promise<void> {
+export async function statusCommand(
+  options: StatusCommandOptions = {},
+): Promise<void> {
   try {
     console.log('📊 Ralph Loop Status\n');
 
@@ -44,7 +46,10 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
     const ralphDir = path.join(projectRoot, '.ralph');
 
     // Check if .ralph directory exists
-    const exists = await fs.access(ralphDir).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(ralphDir)
+      .then(() => true)
+      .catch(() => false);
 
     if (!exists) {
       console.log('⚠️  No Ralph Loop sessions found');
@@ -68,7 +73,9 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
       if (!sessionDirs.includes(`session-${options.session}`)) {
         console.error(`❌ Session ${options.session} not found\n`);
         console.log('Available sessions:');
-        sessionDirs.forEach((dir) => console.log(`   - ${dir.replace('session-', '')}`));
+        sessionDirs.forEach((dir) =>
+          console.log(`   - ${dir.replace('session-', '')}`),
+        );
         process.exit(1);
       }
       targetSession = `session-${options.session}`;
@@ -78,7 +85,7 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
         sessionDirs.map(async (dir) => {
           const stat = await fs.stat(path.join(ralphDir, dir));
           return { dir, mtime: stat.mtime.getTime() };
-        })
+        }),
       );
       sessionStats.sort((a, b) => b.mtime - a.mtime);
       targetSession = sessionStats[0].dir;
@@ -89,7 +96,7 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
     // Read session metadata
     const metadataPath = path.join(sessionPath, 'metadata.json');
     const metadata: SessionMetadata = JSON.parse(
-      await fs.readFile(metadataPath, 'utf-8')
+      await fs.readFile(metadataPath, 'utf-8'),
     );
 
     console.log('📁 Session Information');
@@ -113,12 +120,14 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
     }
 
     const latestState: IterationState = JSON.parse(
-      await fs.readFile(path.join(sessionPath, stateFiles[0].name), 'utf-8')
+      await fs.readFile(path.join(sessionPath, stateFiles[0].name), 'utf-8'),
     );
 
     console.log('\n📈 Progress');
     console.log(`   Current Iteration: ${latestState.iteration}`);
-    console.log(`   Last Update: ${new Date(latestState.timestamp).toLocaleString()}`);
+    console.log(
+      `   Last Update: ${new Date(latestState.timestamp).toLocaleString()}`,
+    );
 
     // Test results
     if (latestState.testResults) {
@@ -126,7 +135,9 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
       const results = latestState.testResults;
       console.log(`   Status: ${results.status?.toUpperCase() || 'UNKNOWN'}`);
       if (results.totalTests !== undefined) {
-        console.log(`   Tests: ${results.passedTests}/${results.totalTests} passed`);
+        console.log(
+          `   Tests: ${results.passedTests}/${results.totalTests} passed`,
+        );
         if (results.failedTests > 0) {
           console.log(`   Failures: ${results.failedTests}`);
         }
@@ -138,7 +149,9 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
         console.log(`   Duration: ${results.duration}ms`);
       }
       if (results.coverage) {
-        console.log(`   Coverage: ${results.coverage.linePercentage?.toFixed(1)}% lines`);
+        console.log(
+          `   Coverage: ${results.coverage.linePercentage?.toFixed(1)}% lines`,
+        );
       }
     }
 
@@ -171,7 +184,9 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
       const usage = latestState.contextUsage;
       console.log(`   Agent: ${usage.agent}`);
       console.log(`   Model: ${usage.model}`);
-      console.log(`   Tokens: ${usage.totalTokens.toLocaleString()}/${usage.contextWindowSize.toLocaleString()}`);
+      console.log(
+        `   Tokens: ${usage.totalTokens.toLocaleString()}/${usage.contextWindowSize.toLocaleString()}`,
+      );
       console.log(`   Usage: ${usage.usagePercentage.toFixed(1)}%`);
     }
 
@@ -189,7 +204,9 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
         const recentEntries = logEntries.slice(-5).reverse();
         recentEntries.forEach((entry) => {
           const time = new Date(entry.timestamp).toLocaleTimeString();
-          console.log(`   [${time}] Iteration ${entry.iteration}: ${entry.event}`);
+          console.log(
+            `   [${time}] Iteration ${entry.iteration}: ${entry.event}`,
+          );
         });
       }
     } catch (error) {
@@ -210,7 +227,6 @@ export async function statusCommand(options: StatusCommandOptions = {}): Promise
     }
 
     console.log('');
-
   } catch (error: any) {
     console.error('❌ Status check failed:', error.message);
     process.exit(1);

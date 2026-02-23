@@ -96,7 +96,9 @@ export class PytestParser extends BaseTestParser {
   private parseTestCase(test: any): TestCase {
     const status = this.mapStatus(test.outcome || test.call?.outcome);
     const testCase: TestCase = {
-      id: test.nodeid || this.generateTestId(test.file || 'unknown', test.name || 'unknown'),
+      id:
+        test.nodeid ||
+        this.generateTestId(test.file || 'unknown', test.name || 'unknown'),
       name: test.name || test.nodeid || 'unknown',
       file: test.file || test.location?.[0] || 'unknown',
       status,
@@ -172,7 +174,9 @@ export class PytestParser extends BaseTestParser {
       }
 
       // Detect test results from short test summary
-      const passMatch = line.match(/^([\w/._-]+\.py)::([\w_]+(?:::\w+)*)\s+PASSED/);
+      const passMatch = line.match(
+        /^([\w/._-]+\.py)::([\w_]+(?:::\w+)*)\s+PASSED/,
+      );
       if (passMatch) {
         tests.push({
           id: this.generateTestId(passMatch[1], passMatch[2]),
@@ -184,7 +188,9 @@ export class PytestParser extends BaseTestParser {
         continue;
       }
 
-      const failMatch = line.match(/^([\w/._-]+\.py)::([\w_]+(?:::\w+)*)\s+FAILED/);
+      const failMatch = line.match(
+        /^([\w/._-]+\.py)::([\w_]+(?:::\w+)*)\s+FAILED/,
+      );
       if (failMatch) {
         tests.push({
           id: this.generateTestId(failMatch[1], failMatch[2]),
@@ -197,7 +203,9 @@ export class PytestParser extends BaseTestParser {
         continue;
       }
 
-      const skipMatch = line.match(/^([\w/._-]+\.py)::([\w_]+(?:::\w+)*)\s+SKIPPED/);
+      const skipMatch = line.match(
+        /^([\w/._-]+\.py)::([\w_]+(?:::\w+)*)\s+SKIPPED/,
+      );
       if (skipMatch) {
         tests.push({
           id: this.generateTestId(skipMatch[1], skipMatch[2]),
@@ -210,7 +218,9 @@ export class PytestParser extends BaseTestParser {
       }
 
       // Parse verbose output format
-      const verboseMatch = line.match(/^([\w/._-]+\.py)::([\w_]+(?:::\w+)*)\s+(PASSED|FAILED|SKIPPED)\s+\[.*?\](?:\s+(\d+)%)?/);
+      const verboseMatch = line.match(
+        /^([\w/._-]+\.py)::([\w_]+(?:::\w+)*)\s+(PASSED|FAILED|SKIPPED)\s+\[.*?\](?:\s+(\d+)%)?/,
+      );
       if (verboseMatch) {
         const status = verboseMatch[3].toLowerCase();
         tests.push({
@@ -280,9 +290,11 @@ export class PytestParser extends BaseTestParser {
    */
   private attachFailureToTest(
     tests: TestCase[],
-    failure: { name: string; lines: string[] }
+    failure: { name: string; lines: string[] },
   ): void {
-    const test = tests.find(t => t.name === failure.name || failure.name.includes(t.name));
+    const test = tests.find(
+      (t) => t.name === failure.name || failure.name.includes(t.name),
+    );
 
     if (test && test.error) {
       test.error.message = failure.lines[0] || test.error.message;
@@ -365,12 +377,16 @@ export class PytestParser extends BaseTestParser {
       lines: {
         total: totalLines,
         covered: coveredLines,
-        percentage: totals.percent_covered || this.calculateCoverage(coveredLines, totalLines),
+        percentage:
+          totals.percent_covered ||
+          this.calculateCoverage(coveredLines, totalLines),
       },
       statements: {
         total: totalStatements,
         covered: coveredStatements,
-        percentage: totals.percent_covered || this.calculateCoverage(coveredStatements, totalStatements),
+        percentage:
+          totals.percent_covered ||
+          this.calculateCoverage(coveredStatements, totalStatements),
       },
       functions: {
         total: 0,

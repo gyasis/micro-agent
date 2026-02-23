@@ -55,11 +55,13 @@ export function validateReview(review: CriticOutput): ReviewQuality {
 export function checkCoverage(review: CriticOutput): ReviewCoverage {
   const issues = review.issues;
 
-  const hasLogicCheck = issues.some(i => i.category === 'logic');
-  const hasEdgeCaseCheck = issues.some(i => i.category === 'edge-case');
-  const hasSecurityCheck = issues.some(i => i.category === 'security');
-  const hasPerformanceCheck = issues.some(i => i.category === 'performance');
-  const hasMaintainabilityCheck = issues.some(i => i.category === 'maintainability');
+  const hasLogicCheck = issues.some((i) => i.category === 'logic');
+  const hasEdgeCaseCheck = issues.some((i) => i.category === 'edge-case');
+  const hasSecurityCheck = issues.some((i) => i.category === 'security');
+  const hasPerformanceCheck = issues.some((i) => i.category === 'performance');
+  const hasMaintainabilityCheck = issues.some(
+    (i) => i.category === 'maintainability',
+  );
 
   const checks = [
     hasLogicCheck,
@@ -85,7 +87,9 @@ export function checkCoverage(review: CriticOutput): ReviewCoverage {
  * Check if review is actionable (provides specific suggestions)
  */
 function checkActionability(review: CriticOutput): number {
-  const issuesWithSuggestions = review.issues.filter(i => i.suggestion).length;
+  const issuesWithSuggestions = review.issues.filter(
+    (i) => i.suggestion,
+  ).length;
   const totalIssues = review.issues.length;
 
   if (totalIssues === 0) return 1.0; // No issues = fully actionable
@@ -100,9 +104,9 @@ function checkBalance(review: CriticOutput): boolean {
   const issues = review.issues;
 
   // Count by severity
-  const critical = issues.filter(i => i.severity === 'critical').length;
-  const warning = issues.filter(i => i.severity === 'warning').length;
-  const info = issues.filter(i => i.severity === 'info').length;
+  const critical = issues.filter((i) => i.severity === 'critical').length;
+  const warning = issues.filter((i) => i.severity === 'warning').length;
+  const info = issues.filter((i) => i.severity === 'info').length;
 
   // Too harsh: mostly critical issues
   if (critical > warning + info && critical > 5) {
@@ -123,12 +127,12 @@ function checkBalance(review: CriticOutput): boolean {
 function calculateQualityScore(
   coverage: ReviewCoverage,
   actionability: number,
-  balance: boolean
+  balance: boolean,
 ): number {
   const coverageScore = coverage.coveragePercent / 100;
   const balanceScore = balance ? 1.0 : 0.5;
 
-  return (coverageScore * 0.4 + actionability * 0.4 + balanceScore * 0.2);
+  return coverageScore * 0.4 + actionability * 0.4 + balanceScore * 0.2;
 }
 
 /**
@@ -141,7 +145,8 @@ function identifyMissingAreas(coverage: ReviewCoverage): string[] {
   if (!coverage.hasEdgeCaseCheck) missing.push('Edge case handling');
   if (!coverage.hasSecurityCheck) missing.push('Security review');
   if (!coverage.hasPerformanceCheck) missing.push('Performance assessment');
-  if (!coverage.hasMaintainabilityCheck) missing.push('Maintainability evaluation');
+  if (!coverage.hasMaintainabilityCheck)
+    missing.push('Maintainability evaluation');
 
   return missing;
 }
@@ -153,28 +158,36 @@ function generateWarnings(
   review: CriticOutput,
   coverage: ReviewCoverage,
   actionability: number,
-  balance: boolean
+  balance: boolean,
 ): string[] {
   const warnings: string[] = [];
 
   // Coverage warnings
   if (coverage.coveragePercent < 60) {
-    warnings.push('Review coverage is low - consider re-review with focus on missing areas');
+    warnings.push(
+      'Review coverage is low - consider re-review with focus on missing areas',
+    );
   }
 
   // Actionability warnings
   if (actionability < 0.5) {
-    warnings.push('Many issues lack specific suggestions - review may not be actionable');
+    warnings.push(
+      'Many issues lack specific suggestions - review may not be actionable',
+    );
   }
 
   // Balance warnings
   if (!balance) {
-    warnings.push('Review appears unbalanced - may be too harsh or too lenient');
+    warnings.push(
+      'Review appears unbalanced - may be too harsh or too lenient',
+    );
   }
 
   // Approval consistency
-  if (review.approved && review.issues.some(i => i.severity === 'critical')) {
-    warnings.push('Code approved despite critical issues - inconsistent decision');
+  if (review.approved && review.issues.some((i) => i.severity === 'critical')) {
+    warnings.push(
+      'Code approved despite critical issues - inconsistent decision',
+    );
   }
 
   if (!review.approved && review.issues.length === 0) {
@@ -194,14 +207,18 @@ function generateWarnings(
  */
 export function hasBlockingIssues(review: CriticOutput): boolean {
   return review.issues.some(
-    i => i.severity === 'critical' && (i.category === 'logic' || i.category === 'security')
+    (i) =>
+      i.severity === 'critical' &&
+      (i.category === 'logic' || i.category === 'security'),
   );
 }
 
 /**
  * Get issues by category
  */
-export function getIssuesByCategory(review: CriticOutput): Map<string, ReviewIssue[]> {
+export function getIssuesByCategory(
+  review: CriticOutput,
+): Map<string, ReviewIssue[]> {
   const byCategory = new Map<string, ReviewIssue[]>();
 
   for (const issue of review.issues) {
@@ -218,7 +235,9 @@ export function getIssuesByCategory(review: CriticOutput): Map<string, ReviewIss
 /**
  * Get issues by severity
  */
-export function getIssuesBySeverity(review: CriticOutput): Map<string, ReviewIssue[]> {
+export function getIssuesBySeverity(
+  review: CriticOutput,
+): Map<string, ReviewIssue[]> {
   const bySeverity = new Map<string, ReviewIssue[]>();
 
   for (const issue of review.issues) {
@@ -249,7 +268,7 @@ export function formatReviewSummary(review: CriticOutput): string {
 
   const byCategory = getIssuesByCategory(review);
   const categories = Array.from(byCategory.keys()).map(
-    cat => `${cat}: ${byCategory.get(cat)!.length}`
+    (cat) => `${cat}: ${byCategory.get(cat)!.length}`,
   );
 
   if (categories.length > 0) {
@@ -270,7 +289,7 @@ export function formatReviewSummary(review: CriticOutput): string {
  */
 export function validateIssuesAddressed(
   previousReview: CriticOutput,
-  currentReview: CriticOutput
+  currentReview: CriticOutput,
 ): {
   addressed: number;
   remaining: number;
@@ -278,16 +297,22 @@ export function validateIssuesAddressed(
   details: string[];
 } {
   const previousIssues = new Set(
-    previousReview.issues.map(i => `${i.category}:${i.message}`)
+    previousReview.issues.map((i) => `${i.category}:${i.message}`),
   );
 
   const currentIssues = new Set(
-    currentReview.issues.map(i => `${i.category}:${i.message}`)
+    currentReview.issues.map((i) => `${i.category}:${i.message}`),
   );
 
-  const addressed = [...previousIssues].filter(i => !currentIssues.has(i)).length;
-  const remaining = [...previousIssues].filter(i => currentIssues.has(i)).length;
-  const newIssues = [...currentIssues].filter(i => !previousIssues.has(i)).length;
+  const addressed = [...previousIssues].filter(
+    (i) => !currentIssues.has(i),
+  ).length;
+  const remaining = [...previousIssues].filter((i) =>
+    currentIssues.has(i),
+  ).length;
+  const newIssues = [...currentIssues].filter(
+    (i) => !previousIssues.has(i),
+  ).length;
 
   const details: string[] = [];
 
@@ -309,7 +334,10 @@ export function validateIssuesAddressed(
 /**
  * Check if review meets minimum quality threshold
  */
-export function meetsQualityThreshold(review: CriticOutput, minScore: number = 0.7): boolean {
+export function meetsQualityThreshold(
+  review: CriticOutput,
+  minScore: number = 0.7,
+): boolean {
   const quality = validateReview(review);
   return quality.score >= minScore && quality.warnings.length === 0;
 }
@@ -321,7 +349,9 @@ export function suggestImprovements(quality: ReviewQuality): string[] {
   const suggestions: string[] = [];
 
   if (!quality.comprehensive) {
-    suggestions.push(`Review missing areas: ${quality.missingAreas.join(', ')}`);
+    suggestions.push(
+      `Review missing areas: ${quality.missingAreas.join(', ')}`,
+    );
   }
 
   if (!quality.actionable) {

@@ -8,44 +8,50 @@ import { z } from 'zod';
 import type { TierEscalationConfig } from './types';
 
 const TierModelsSchema = z.object({
-  artisan:   z.string().min(1, 'artisan model is required'),
+  artisan: z.string().min(1, 'artisan model is required'),
   librarian: z.string().min(1).optional(),
-  critic:    z.string().min(1).optional(),
+  critic: z.string().min(1).optional(),
 });
 
 const TierConfigSchema = z.object({
-  name:          z.string().min(1, 'tier name is required'),
-  mode:          z.enum(['simple', 'full'], {
-    errorMap: () => ({ message: "mode must be 'simple' or 'full'" }),
+  name: z.string().min(1, 'tier name is required'),
+  mode: z.enum(['simple', 'full'], {
+    error: "mode must be 'simple' or 'full'",
   }),
   maxIterations: z.number().int().min(1).max(100),
-  models:        TierModelsSchema,
+  models: TierModelsSchema,
 });
 
 const TierGlobalSchema = z.object({
-  auditDbPath:             z.string().optional(),
-  maxTotalCostUsd:         z.number().positive().optional(),
+  auditDbPath: z.string().optional(),
+  maxTotalCostUsd: z.number().positive().optional(),
   maxTotalDurationMinutes: z.number().positive().optional(),
 });
 
 export const TierEscalationConfigSchema = z.object({
-  tiers:  z.array(TierConfigSchema).min(1, 'at least 1 tier required'),
+  tiers: z.array(TierConfigSchema).min(1, 'at least 1 tier required'),
   global: TierGlobalSchema.optional(),
 });
 
-export async function loadTierConfig(filePath: string): Promise<TierEscalationConfig> {
+export async function loadTierConfig(
+  filePath: string,
+): Promise<TierEscalationConfig> {
   let raw: string;
   try {
     raw = await fs.readFile(filePath, 'utf-8');
   } catch (err: any) {
-    throw new Error(`Tier config not found: ${filePath}\n  ${err.message}`);
+    throw new Error(
+      `Tier config not found: ${filePath}\n  ${err.message}\n→ Fix: Verify the file exists at that path (use absolute path or path relative to cwd: ${process.cwd()})`,
+    );
   }
 
   let parsed: unknown;
   try {
     parsed = JSON.parse(raw);
   } catch (err: any) {
-    throw new Error(`Tier config parse error in ${filePath}: ${err.message}`);
+    throw new Error(
+      `Tier config parse error in ${filePath}: ${err.message}\n→ Fix: Validate your JSON with: cat "${filePath}" | jq .`,
+    );
   }
 
   const result = TierEscalationConfigSchema.safeParse(parsed);
@@ -53,7 +59,9 @@ export async function loadTierConfig(filePath: string): Promise<TierEscalationCo
     const errors = result.error.issues
       .map((e, i) => `  Error ${i + 1}: ${e.path.join('.')} — ${e.message}`)
       .join('\n');
-    throw new Error(`Tier config invalid: ${filePath}\n${errors}\n\nFix the errors above and re-run.`);
+    throw new Error(
+      `Tier config invalid: ${filePath}\n${errors}\n\nFix the errors above and re-run.`,
+    );
   }
 
   return result.data as TierEscalationConfig;
@@ -62,7 +70,5 @@ export async function loadTierConfig(filePath: string): Promise<TierEscalationCo
 export function validateTierConfig(config: unknown): string[] {
   const result = TierEscalationConfigSchema.safeParse(config);
   if (result.success) return [];
-  return result.error.issues.map(
-    (e) => `${e.path.join('.')}: ${e.message}`
-  );
+  return result.error.issues.map((e) => `${e.path.join('.')}: ${e.message}`);
 }

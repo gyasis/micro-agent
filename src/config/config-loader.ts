@@ -152,7 +152,9 @@ export class ConfigLoader {
 /**
  * Factory function to load config
  */
-export async function loadConfig(options?: ConfigLoaderOptions): Promise<RalphConfig> {
+export async function loadConfig(
+  options?: ConfigLoaderOptions,
+): Promise<RalphConfig> {
   const loader = new ConfigLoader(options);
   return await loader.load();
 }

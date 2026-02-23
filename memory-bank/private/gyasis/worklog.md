@@ -4,6 +4,421 @@
 
 ---
 
+## 2026-02-22 (Session 1 -- 005-unified-test-gen)
+
+### Session: 005-unified-test-gen -- Unified Test Generation Complete
+
+**Branch**: `005-unified-test-gen` (branched from `004-fix-outstanding-issues`)
+
+**Objective**: Implement automatic test file generation for the ma-loop CLI. When `ralph-loop run`
+is invoked on a target file that has no existing test file, the system should auto-generate one
+using Claude before starting the loop.
+
+**Commits**: 8 wave checkpoints (`09a782c` through `f604824`)
+
+**Test count at session end**: 303/303 (18 test files), up from 273/273
+
+---
+
+### Workflow
+
+This was the first feature to use the full speckit + devkid pipeline end-to-end:
+
+1. `speckit.specify` produced `specs/005-unified-test-gen/spec.md`
+2. `speckit.plan` produced `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`
+3. `speckit.tasks` produced `tasks.md` (26 tasks organized into 8 phases)
+4. `devkid.orchestrate` produced `execution_plan.json` (8 execution waves)
+5. `devkid.execute` ran all 8 waves with git checkpoint commits between each
+
+---
+
+### New Module: `src/helpers/test-generator.ts`
+
+Pure-function module with two exported functions and several private helpers.
+
+**Exported functions**:
+
+1. `findExistingTests(targetFile: string, workingDir: string): Promise<string | null>`
+   - Resolves absolute path to target file
+   - Checks for `.test.{ext}`, `.spec.{ext}`, `test_{name}.{ext}`, `{name}_spec.{ext}` patterns
+     in the same directory as the target
+   - Returns found path or `null`
+   - Rust (`.rs`) files always return `null` (inline `#[test]` convention)
+
+2. `generateTestFile(options: TestGeneratorOptions): Promise<TestGeneratorResult>`
+   - Calls `resolveTestFilePath()` -- throws if null (Rust or unknown extension)
+   - Reads source file content
+   - Calls `gatherExampleTests()` to find up to 2 existing tests as style examples
+   - Reads `package.json` for framework context if no examples
+   - Calls `buildGenerationMessages()` to construct the LLM prompt
+   - Calls `new ProviderRouter().complete({provider:'anthropic', model, messages, temperature:0.7,
+     maxTokens:4096})` -- uses `ANTHROPIC_API_KEY` from env
+   - Extracts code block from LLM response via `extractCodeBlock()`
+   - Writes generated test file to disk
+   - Returns `{ testFilePath, testCommand, generated: true }`
+
+**Private helpers**:
+
+- `resolveTestFilePath(targetFile, framework)` -- language-aware naming:
+  - `.ts` -> `{name}.test.ts`
+  - `.js` -> `{name}.test.js`
+  - `.py` -> `test_{name}.py`
+  - `.rs` -> `null` (always skip)
+  - `.rb` -> `{name}_spec.rb`
+  - other -> `{name}.test.{ext}`
+  - All output files in same directory as target
+
+- `buildTestCommand(testFilePath, framework)` -- scopes test command to generated file only:
+  - vitest -> `npx vitest run {basename-no-ext}`
+  - jest -> `npx jest {basename-no-ext} --no-watch`
+  - pytest -> `pytest {relativeTestFilePath}`
+  - mocha -> `npx mocha {testFilePath}`
+  - rspec -> `bundle exec rspec {testFilePath}`
+  - cargo/custom -> `npm test` fallback
+
+- `gatherExampleTests(workingDir)` -- globs `**/*.{test,spec}.{ts,js,py,rb}` ignoring
+  `node_modules`, `dist`, `.git`; reads up to 2 files; returns content strings
+
+- `buildGenerationMessages(...)` -- returns `[systemMsg, userMsg]` pair; includes `<examples>`
+  block if examples exist, else `<package-json>` block if packageJson non-empty
+
+- `extractCodeBlock(raw)` -- finds first ` ``` ` fence, skips optional language specifier line,
+  reads until closing ` ``` `; returns `raw.trim()` if no fence found
+
+**Decision -- ProviderRouter.complete() not getSimpleCompletion()**:
+`ProviderRouter.complete()` reads `ANTHROPIC_API_KEY` from env and is consistent with the rest
+of the stack. `getSimpleCompletion()` was an earlier helper with a different signature that some
+code still references but is being phased out.
+
+**Decision -- Dynamic import pattern in run.ts**:
+`test-generator.ts` is imported via a dynamic `import()` call inside the generation block in
+`run.ts`. This matches the pattern used by `runSimpleIteration` and prevents any circular
+dependency risk.
+
+---
+
+### Modified: `src/cli/commands/run.ts`
+
+- Added `generate?: boolean` field to `RunOptions` interface (after `tierConfig?: string`)
+- Inserted generation block after `prepareRunParameters()` and before `initializeInfrastructure()`:
+  - Dynamic import `test-generator`
+  - Calls `findExistingTests()` -- if a test file is already present, logs "Using existing
+    tests:" and skips generation
+  - Skip conditions: `!params.targetFile`, `options.generate === false`, `options.test` already
+    set, `.rs` extension detected
+  - On generation: calls `generateTestFile()`, updates `params.testCommand` to the scoped command
+  - Wrapped in try/catch: LLM failure logs a warning and continues without generated tests
+
+**Decision -- scoped test command**:
+The generated test command targets only the generated file (e.g., `npx vitest run math.test`),
+not the full test suite (`npm test`). This prevents a 303-test run on every loop iteration when
+the user is only trying to fix one file.
+
+**Decision -- --artisan model flag reused for generation**:
+When the user passes `--artisan <model>`, that model is used for both code generation (Artisan
+agent) and test file generation. No new `--generate-model` flag was needed.
+
+---
+
+### Modified: `src/cli/ralph-loop.ts`
+
+- Added `--no-generate` flag to the `run` command after `--tier-config`:
+  ```
+  .option('--no-generate', 'Skip automatic test file generation when no test file exists')
+  ```
+- Updated run command description from:
+  `'Run Ralph Loop iterations for a file or objective'`
+  to:
+  `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`
+
+---
+
+### New Tests: `tests/unit/helpers/test-generator.test.ts`
+
+30 new unit tests across 5 describe blocks:
+
+1. `describe('generateTestFile')` -- 9 cases: ProviderRouter called with correct provider/model;
+   model override honored; fs.writeFile called with resolved path; vitest/pytest test commands;
+   throws for Rust; example tests injected; package.json fallback
+
+2. `describe('findExistingTests')` -- 5 cases: null when no test file; `.test.ts` found;
+   `.spec.ts` found; always null for `.rs`; `test_foo.py` prefix convention
+
+3. `describe('resolveTestFilePath')` -- 6 cases: `.ts`; `.js`; `.py`; `.rs` null; `.rb`; nested path
+
+4. `describe('extractCodeBlock')` -- 4 cases: typescript fence; python fence; no fence; no language specifier
+
+5. `describe('buildTestCommand')` -- 6 cases: vitest; jest; pytest; mocha; rspec; cargo fallback
+
+---
+
+**Decision -- Rust always skipped**:
+Rust uses inline `#[test]` modules within the source file itself. External test files in a
+separate `tests/` directory are possible but require additional module declaration syntax that
+the auto-generator cannot reliably produce without understanding the full crate structure.
+Skipping Rust and instructing the user to write their own tests is the correct conservative choice.
+
+---
+
+**Status at end of session**: `005-unified-test-gen` branch, commit `f604824`, 303/303 tests
+genuinely passing, `npx tsc --noEmit` clean. All 28 tasks complete. Branch is ready to merge
+to main (PR not yet opened).
+
+---
+
+## 2026-02-20 (Session 2 -- 004-fix-outstanding-issues)
+
+### Session: 004-fix-outstanding-issues -- All 5 Issues Resolved
+
+**Branch**: `004-fix-outstanding-issues`
+
+**Objective**: Resolve all 5 outstanding issues identified after 003-tiered-escalation merged:
+TypeScript upgrade to 5.9.3, Prettier ignore coverage, ChromaDB offline fallback, error messages
+with remediation hints, and API documentation.
+
+**Commit**: `4749480`
+
+**Test count at session end**: 273/273 (15 test files), up from 269/269
+
+---
+
+#### Issue 1 -- TypeScript 5.9.3 Upgrade
+
+**Packages upgraded**:
+- `typescript` 4.9.5 -> 5.9.3
+- `@typescript-eslint/parser` ^5 -> ^8
+- `@typescript-eslint/eslint-plugin` ^5 -> ^8
+- `eslint-plugin-unused-imports` ^2 -> ^4
+
+**Source fixes required**:
+
+1. `src/cli/ui/summary-reporter.ts:311` -- invalid destructuring `promises as fs` fixed to
+   `promises: fs` (TypeScript 5.x correctly rejects the `as` alias in destructuring syntax)
+
+2. Zod v4 API migration across multiple files:
+   - `.errors` -> `.issues` on `SafeParseError` (already done in 003 for tier-config; ensured
+     consistently applied everywhere else)
+   - `z.record(valueSchema)` -> `z.record(keySchema, valueSchema)` -- Zod v4 requires both
+     arguments; single-argument form is now a type error
+
+3. `src/agents/base-agent.ts` -- `AgentContext` was defined locally as a partial interface;
+   replaced with import from `./base/agent-context` which has the full interface including
+   `escalationContext`, `workingDirectory`, and all lifecycle fields
+
+4. `AgentConfig.provider` -- changed from `string` to `'anthropic' | 'openai' | 'google' | 'huggingface'`
+   typed union to match the provider enum used throughout the router
+
+5. Config field misalignment fixed:
+   - `config.limits.maxIterations` -> `config.budgets?.maxIterations ?? 30`
+   - `config.limits.maxCost` -> `config.budgets?.maxCost ?? 1.0`
+   - `config.limits.maxTokens` -> `config.budgets?.maxTokens ?? 100000`
+   (The `limits` namespace was renamed `budgets` in an earlier refactor but some files were missed)
+
+**Decision -- `tsconfig.json` moduleResolution stays `"node"`**: TypeScript 5.9.3 also supports
+`"bundler"` and `"node16"` resolution, which are stricter. However, both require `.js` extensions
+on all relative imports. Switching would require touching every `import` statement in the codebase
+(hundreds of files). The `"node"` setting is compatible with TypeScript 5.9.3 and is the correct
+choice for a Node.js CLI tool without a bundler step.
+
+**Verification**: `npx tsc --noEmit` exits 0 with zero errors.
+
+---
+
+#### Issue 2 -- Prettier Ignore Coverage
+
+**File changed**: `.prettierignore`
+
+**Before**: 3 entries (`dist/`, `node_modules/`, `*.md`)
+
+**After**: 22 entries covering:
+- Build artifacts: `dist/`, `coverage/`, `.cache/`
+- Dependencies: `node_modules/`
+- Generated files: `*.d.ts`, `*.js.map`
+- Notebooks: `docs/tutorials/*.ipynb` (JSON-based, Prettier breaks cell formatting)
+- SQLite: `*.db`, `*.sqlite`
+- Spec/story/cursor artifacts: `.specstory/`, `.cursorindexingignore`
+- Misc non-TS: `*.json`, `*.yaml`, `*.yml` (config files managed separately)
+
+**Reformatted**: All `src/**/*.ts` files reformatted with `prettier --write "src/**/*.ts"`
+
+**Verification**: `npx prettier --check "**/*.ts"` exits 0.
+
+---
+
+#### Issue 3 -- ChromaDB Offline Fallback
+
+**File changed**: `src/memory/memory-vault.ts`
+
+**New test file**: `tests/unit/memory/memory-vault-fallback.test.ts`
+
+**Problem before fix**: `MemoryVault.initialize()` directly awaited the ChromaDB client
+connection. If the ChromaDB server was not running (the common case in CI and local setups
+without a running ChromaDB instance), `initialize()` would throw, crashing the entire
+Ralph Loop startup.
+
+**Changes to `memory-vault.ts`**:
+
+1. Added `private connected: boolean = true` as an instance field.
+
+2. Rewrote `initialize()` to use `Promise.race`:
+   ```
+   Promise.race([
+     chromaClient.connect(),
+     new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 3000))
+   ])
+   ```
+   On timeout or connection error: logs a `warn`-level message (`"ChromaDB unavailable -- memory
+   features disabled"`), sets `this.connected = false`, and returns without throwing.
+
+3. Added guard at the top of every public method:
+   ```
+   if (!this.connected) return;   // or: if (!this.connected) return [];
+   ```
+   When ChromaDB is offline, all MemoryVault operations become no-ops or return empty results
+   rather than throwing.
+
+4. Added `isConnected(): boolean` public getter for use in tests and diagnostics.
+
+5. Added stub implementations of four methods that were referenced by callers but not yet
+   implemented: `searchSimilarErrors`, `storeErrorPattern`, `recordFix`, `getErrorPatternStats`.
+   Each stub returns an empty result when offline and delegates to ChromaDB when online.
+
+**New tests** (`tests/unit/memory/memory-vault-fallback.test.ts`):
+- Test 1: `initialize()` resolves (does not reject) when ChromaDB is unavailable
+- Test 2: `isConnected()` returns `false` after a failed initialization
+- Test 3: All public methods (`storeError`, `findSimilar`, `searchSimilarErrors`, `recordFix`,
+  `getErrorPatternStats`) return gracefully without throwing when `connected = false`
+- Test 4: `isConnected()` returns `true` after a successful initialization (happy path)
+
+---
+
+#### Issue 4 -- Error Messages with Remediation
+
+**Files changed**: `src/llm/provider-router.ts`, `src/lifecycle/tier-config.ts`
+
+**Before**: API key errors and config errors provided only a description of the problem, leaving
+users to figure out how to fix the issue themselves.
+
+**After**: All key error paths now append a `-> Fix:` clause:
+
+`src/llm/provider-router.ts`:
+- Anthropic: `"ANTHROPIC_API_KEY not set -> Fix: add ANTHROPIC_API_KEY=sk-ant-... to your .env file"`
+- Google: `"GOOGLE_API_KEY not set -> Fix: add GOOGLE_API_KEY=AI... to your .env file"`
+- OpenAI: `"OPENAI_API_KEY not set -> Fix: add OPENAI_API_KEY=sk-... to your .env file"`
+
+`src/lifecycle/tier-config.ts`:
+- File not found: `"Tier config file not found: <path> -> Fix: create the file or correct the --tier-config path"`
+- Parse failure: `"Failed to parse tier config at <path> -> Fix: validate the file with a YAML/JSON linter"`
+
+---
+
+#### Issue 5 -- API Documentation
+
+**New directory**: `docs/api/`
+
+**Files created**:
+
+1. `docs/api/README.md` (90 lines):
+   - Overview of the Micro Agent API reference
+   - Navigation table linking to all 4 reference pages
+   - Quick-start summary of key entry points
+
+2. `docs/api/cli.md` (196 lines):
+   - `ralph-loop run` command: all flags documented with types, defaults, and examples
+   - `ralph-loop config` command: all sub-commands
+   - `ralph-loop status` command: output format
+   - `ralph-loop reset` command: behavior and options
+   - Environment variable table
+
+3. `docs/api/config.md` (301 lines):
+   - Full `ralph.config.yaml` schema with every field
+   - Type annotations (string, number, boolean, enum)
+   - Default values
+   - Nested `budgets`, `agents`, `plugins`, and `chaos` sections
+   - `tierConfigFile` field (added in 003)
+
+4. `docs/api/agents.md` (281 lines):
+   - `LibrarianAgent` interface: inputs, outputs, configuration
+   - `ArtisanAgent` interface: inputs, outputs, configuration
+   - `CriticAgent` interface: inputs, outputs, configuration
+   - `ChaosAgent` interface: inputs, outputs, configuration
+   - `AgentContext` type definition
+   - `AgentOutput` type definition
+
+5. `docs/api/lifecycle.md` (800 lines):
+   - `IterationManager` class: constructor, methods, options
+   - `ContextMonitor` class: registration, tracking, thresholds
+   - `SessionResetter` class: constructor signature (options object), methods
+   - `StatePersister` class: read/write interface
+   - `BudgetEnforcer` class: cost tracking, termination conditions
+   - `EntropyDetector` class: stagnation detection algorithm
+   - `TierEngine` functions: `runTier`, `buildAccumulatedSummary`, `withTierEscalationContext`
+   - `TierDb` functions: all 5 audit DB functions with signatures
+   - All type definitions from `src/lifecycle/types.ts`
+
+**Total**: 1668 lines of API reference documentation
+
+---
+
+**Status at end of session**: `004-fix-outstanding-issues` branch, commit `4749480`, 273/273
+tests genuinely passing, `npx tsc --noEmit` clean, `npx prettier --check "**/*.ts"` clean.
+All 5 outstanding issues resolved. Branch is ready to merge to main.
+
+---
+
+## 2026-02-20 (Session 1 -- T023 LibrarianAgent Timeout Fix)
+
+### Session: T023 LibrarianAgent Timeout Fix
+
+**Branch**: `main` (no feature branch -- targeted bug fix directly)
+
+**Objective**: Investigate and fix 2 silently-failing tests in
+`tests/integration/escalation-flow.test.ts` (T023 describe block) that were timing out at
+5000ms. The tests appeared in the 269/269 count but were failing with "Test timed out in 5000ms".
+
+**Root Cause Analysis**:
+
+`makeContext()` in `tests/integration/escalation-flow.test.ts` set
+`workingDirectory: process.cwd()`. When any T023 test invoked `LibrarianAgent`, its
+`discoverFiles()` method globbed the entire project root and `analyzeFiles()` read and
+analyzed all 104 TypeScript source files found there. This IO-heavy operation consistently
+exceeded the 5000ms Vitest timeout.
+
+**Three Changes Applied to `tests/integration/escalation-flow.test.ts`**:
+
+1. Added `import path from 'path'` to the import block.
+
+2. Changed `workingDirectory: process.cwd()` to
+   `workingDirectory: path.join(process.cwd(), 'test-example')`.
+   The `test-example/` fixture directory contains only 2 TypeScript files (`simple.ts` and
+   `vitest.config.ts`). LibrarianAgent discovers and analyzes these in milliseconds.
+
+3. Added `targetFile: 'simple.ts'` to the `makeContext()` return object.
+   This field was previously absent. Per spec FR-007, `targetFile` is a key LibrarianAgent
+   input: the agent builds a dependency graph and ranks all discovered files by their
+   distance from `targetFile`. Without it, LibrarianAgent cannot perform its primary ranking
+   function correctly.
+
+**Contract Comment Added**:
+
+A comment block was added directly above `makeContext()` documenting the LibrarianAgent I/O
+contract (per spec FR-006 to FR-008):
+- Inputs consumed: `workingDirectory`, `targetFile`, `objective`, `escalationContext`
+- Outputs produced: `LibrarianOutput` (`relevantFiles`, `dependencyGraph`, `contextSummary`,
+  `tokensUsed`, `cost`)
+- Ranking logic: builds dependency graph, ranks files by distance from `targetFile`
+- Escalation: prepends `"PRIOR ATTEMPTS:\n{escalationContext}"` to context-summary prompt
+
+**Test Results After Fix**:
+
+- `tests/integration/escalation-flow.test.ts`: 18/18 in 564ms (was 16 pass + 2 timeout)
+- Full suite: 269/269 genuinely passing in approximately 1.4s
+
+**Status at end of session**: `main` branch, 269/269 tests all genuinely passing. No active
+feature branch. The fix is confined to the test file; no production source changes.
+
+---
+
 ## 2026-02-17
 
 ### Session: 003-tiered-escalation Feature - Complete
@@ -36,7 +451,7 @@ DB records every attempt.
 
 - Created `src/lifecycle/tier-engine.ts`:
   - `runTier(tierCtx, runSimpleIteration, runFullIteration?)` -- N-tier iteration loop
-  - Per-tier header: `━━━━ ▶ Tier N/total: name [mode, model] ━━━━`
+  - Per-tier header: `---- > Tier N/total: name [mode, model] ----`
   - Records `TierAttemptRecord` per iteration
   - Returns `TierRunResult` (passed=true exits whole chain, passed=false continues)
 

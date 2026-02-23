@@ -32,26 +32,60 @@ program
  */
 program
   .command('run')
-  .description('Run Ralph Loop iterations for a file or objective')
+  .description('Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)')
   .argument('<target>', 'Target file or objective to achieve')
-  .option('-o, --objective <text>', 'Explicit objective (overrides target file inference)')
+  .option(
+    '-o, --objective <text>',
+    'Explicit objective (overrides target file inference)',
+  )
   .option('-t, --test <command>', 'Test command to run (e.g., "npm test")')
-  .option('-f, --framework <name>', 'Test framework: vitest|jest|pytest|cargo|custom', 'vitest')
+  .option(
+    '-f, --framework <name>',
+    'Test framework: vitest|jest|pytest|cargo|custom',
+    'vitest',
+  )
   .option('-i, --max-iterations <n>', 'Maximum iterations', '30')
   .option('-b, --max-budget <n>', 'Maximum cost in USD', '2.00')
   .option('-d, --max-duration <n>', 'Maximum duration in minutes', '15')
   .option('-c, --config <path>', 'Path to ralph.config.yaml')
-  .option('--librarian <model>', 'Override Librarian model (e.g., gemini-2.0-pro)')
-  .option('--artisan <model>', 'Override Artisan model (e.g., claude-sonnet-4.5)')
+  .option(
+    '--librarian <model>',
+    'Override Librarian model (e.g., gemini-2.0-pro)',
+  )
+  .option(
+    '--artisan <model>',
+    'Override Artisan model (e.g., claude-sonnet-4.5)',
+  )
   .option('--critic <model>', 'Override Critic model (e.g., gpt-4.1-mini)')
   .option('--chaos <model>', 'Override Chaos model')
   .option('--no-adversarial', 'Skip adversarial testing')
-  .option('--reset-frequency <n>', 'Context reset frequency (1=every iteration)', '1')
+  .option(
+    '--reset-frequency <n>',
+    'Context reset frequency (1=every iteration)',
+    '1',
+  )
   .option('--verbose', 'Enable verbose logging')
-  .option('--simple [n]', 'Run in simple mode (Artisan+Tests only) for N iterations before escalating to full mode (default: 5)', '5')
-  .option('--no-escalate', 'Disable auto-escalation to full mode — simple mode exits with failure if iterations exhausted')
-  .option('--full', 'Skip simple mode — run full pipeline (Librarian→Artisan→Critic→Tests) from iteration 1')
-  .option('--tier-config <path>', 'Path to JSON tier configuration file — enables N-tier escalation mode')
+  .option(
+    '--simple [n]',
+    'Run in simple mode (Artisan+Tests only) for N iterations before escalating to full mode (default: 5)',
+    '5',
+  )
+  .option(
+    '--no-escalate',
+    'Disable auto-escalation to full mode — simple mode exits with failure if iterations exhausted',
+  )
+  .option(
+    '--full',
+    'Skip simple mode — run full pipeline (Librarian→Artisan→Critic→Tests) from iteration 1',
+  )
+  .option(
+    '--tier-config <path>',
+    'Path to JSON tier configuration file — enables N-tier escalation mode',
+  )
+  .option(
+    '--no-generate',
+    'Skip automatic test file generation when no test file exists',
+  )
   .action(async (target, options) => {
     try {
       await runCommand(target, options);

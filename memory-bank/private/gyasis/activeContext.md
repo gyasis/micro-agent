@@ -1,107 +1,58 @@
 # Active Context
 
-**Last Updated**: 2026-02-17 (003-tiered-escalation)
+**Last Updated**: 2026-02-22 (005-unified-test-gen complete)
 
 ## Current Focus
 
-Branch `003-tiered-escalation` is complete and has been merged to `main` via a no-ff merge
-commit. The feature adds an optional N-tier model escalation system to the Ralph Loop: a
-YAML/JSON tier config file defines a chain of N tiers, each with its own model set and budget.
-Tiers run sequentially with accumulated failure history injected between each tier. A SQLite
-audit database records every attempt for post-run analysis.
+Feature `005-unified-test-gen` is fully implemented and committed. The branch is ready to be
+merged to main (or a PR opened). The next step is to open a pull request from
+`005-unified-test-gen` into `main`.
 
-The `main` branch is now the active working branch with all 269 tests passing.
-No active feature branch exists.
+## What Was Just Completed
 
-## Recent Changes (This Session - 2026-02-17)
+**Feature**: Unified Test Generation for ma-loop
+**Branch**: `005-unified-test-gen` (branched from `004-fix-outstanding-issues`)
+**Commit**: Wave 8 checkpoint (`f604824`) — all 28 tasks complete
+**Tests**: 303/303 passing (273 existing + 30 new unit tests)
+**TypeScript**: 0 errors
 
-### Feature: 003-tiered-escalation (31 tasks, all complete)
+### Deliverables
 
-**New source files created:**
+1. `src/helpers/test-generator.ts` — new pure-function test generation module
+2. `src/cli/commands/run.ts` — modified with generation step before infrastructure init
+3. `src/cli/ralph-loop.ts` — added `--no-generate` flag and updated description
+4. `tests/unit/helpers/test-generator.test.ts` — 30 new unit tests across 5 describe blocks
 
-- `src/lifecycle/types.ts` -- extended with 8 new interfaces:
-  `TierConfig`, `TierModels`, `TierEscalationConfig`, `TierGlobal`, `TierAttemptRecord`,
-  `RunMetadataRow`, `AccumulatedFailureSummary`, `TierRunResult`
+### Workflow Used
 
-- `src/lifecycle/tier-config.ts` -- Zod schemas (`TierModelsSchema`, `TierConfigSchema`,
-  `TierEscalationConfigSchema`) + `loadTierConfig(filePath)` + `validateTierConfig(config)`
-  (returns ALL errors, not just first, using `.issues` not `.errors`)
+First feature to use the full speckit + devkid pipeline:
+- speckit.specify -> spec.md
+- speckit.plan -> plan.md, research.md, data-model.md, contracts/, quickstart.md
+- speckit.tasks -> tasks.md (26 tasks, 8 phases)
+- devkid.orchestrate -> execution_plan.json (8 waves)
+- devkid.execute -> all 8 waves with git checkpoints
 
-- `src/lifecycle/tier-engine.ts` -- `runTier(tierCtx, runSimpleIteration, runFullIteration?)`
-  N-tier iteration loop; budget checks per iteration; per-tier header logs
-  (`━━━━ ▶ Tier N/total: name [mode, model] ━━━━`); records `TierAttemptRecord` per
-  iteration; returns `TierRunResult`
+## Recent Changes (Git Log)
 
-- `src/lifecycle/tier-accumulator.ts` -- `buildAccumulatedSummary(priorResults[])` concatenates
-  tier failure history with 4000-char cap; `withTierEscalationContext(context, summary)` injects
-  accumulated failures into next tier's `AgentContext.escalationContext`
-
-- `src/lifecycle/tier-db.ts` -- SQLite audit log via `better-sqlite3`: `openAuditDatabase`,
-  `writeAttemptRecord`, `writeRunMetadata`, `updateRunMetadata`, `closeAuditDatabase` -- all
-  best-effort (wrapped in try/catch, never throws to caller)
-
-**Modified source files:**
-
-- `src/cli/commands/run.ts` -- added `runTierLoop()` function: detects `--tier-config` flag,
-  loads/validates tier config, prints startup banner table, runs N-tier loop with failure context
-  accumulation between tiers, multi-tier final report, SQLite audit DB integration, conflict
-  warnings for legacy flags (`--simple`, `--full`, `--no-escalate` alongside `--tier-config`)
-
-- `src/cli/ralph-loop.ts` -- added `--tier-config <path>` CLI flag
-
-- `src/config/schema-validator.ts` -- added `tierConfigFile: z.string().optional()` to YAML
-  config schema
-
-**New test files (22 new tests, 269/269 total passing):**
-
-- `tests/unit/lifecycle/tier-config.test.ts` -- Zod schema validation, loadTierConfig, validateTierConfig
-- `tests/unit/lifecycle/tier-accumulator.test.ts` -- accumulator logic, 4000-char cap
-- `tests/unit/lifecycle/tier-db.test.ts` -- SQLite best-effort DB operations
-- `tests/integration/tier-engine.test.ts` -- N-tier loop integration scenarios
-
-**Documentation updated:**
-
-- `docs/tutorials/micro-agent-complete-walkthrough.ipynb` -- Part 13 (N-tier escalation) added;
-  Further Reading table updated; test runner cell updated
-- `docs/tutorials/model-configuration.md` -- "Advanced: N-Tier Model Escalation (Optional)"
-  section added
-
-### Test Results
-
-- Previous: 247/247 passing (after 002-simple-escalation)
-- Current: 269/269 passing (+22 new, 0 regressions)
-
-## Key Design Decisions (003-tiered-escalation)
-
-- Tier escalation is entirely opt-in via `--tier-config <path>` flag; default two-phase behavior
-  unchanged when flag is absent
-- Each tier receives accumulated failure history from all prior tiers via `escalationContext`
-  (same field used by two-phase escalation from 002, compatible extension)
-- Accumulated summary cap is 4000 chars (vs 2000 for simple-mode summary) to accommodate more
-  history across more tiers
-- SQLite audit DB (`better-sqlite3`) is best-effort: failures never abort the run
-- Fresh context per iteration preserved inside each tier (Ralph Loop gold standard intact)
-- `validateTierConfig()` returns ALL Zod issues (not just first) for better UX
-- Zod v3 API: use `.issues` on `SafeParseError`, not `.errors`
-- Tier config conflict warnings are intentional -- surface misconfiguration, not silent ignore
+```
+f604824 [CHECKPOINT] Wave 8 Complete
+4ad9600 [CHECKPOINT] Wave 7 Complete
+737fbdb [CHECKPOINT] Wave 6 Complete
+ea964e4 [CHECKPOINT] Wave 5 Complete
+0b9adfa [CHECKPOINT] Wave 4 Complete
+b7f9544 [CHECKPOINT] Wave 3 Complete
+d2f1103 [CHECKPOINT] Wave 2 Complete
+09a782c [CHECKPOINT] Wave 1 Complete
+4749480 fix: resolve all 5 outstanding issues — 004-fix-outstanding-issues
+```
 
 ## Next Actions
 
-- :white_large_square: **004-next-feature**: No branch planned yet. Project is in a stable state.
-- :white_large_square: **Task: API docs** (`docs/api/`): API reference documentation not yet written.
-  Lower priority. Covers CLI commands, configuration schema, agent interfaces, lifecycle API.
-- :white_large_square: **Ongoing**: Keep `main` green as future features land.
-
-## Blocked / Pending
-
-- Nothing is blocked. `main` is stable and all tests pass.
-
-## Context Notes
-
-- Working directory: `/home/gyasis/Documents/code/micro-agent`
-- Active branch: `main`
-- Last merge: `003-tiered-escalation` no-ff merge into main
-- Key commits: `b1e8506` (docs), `1afed92` (wire tier engine), `93177e0` (Wave 1 foundation),
-  `9c8c192` (chore: tasks/plan)
-- Working tree at git status snapshot: M package-lock.json, M src/cli/commands/run.ts
-  (reflects 003 work now merged)
+1. Open PR: `005-unified-test-gen` -> `main`
+   ```bash
+   gh pr create --base main --head 005-unified-test-gen \
+     --title "feat: unified test generation for ma-loop" \
+     --body "..."
+   ```
+2. After merge: update memory bank to reflect `005-unified-test-gen` merged
+3. Consider next feature branch (006+) — no active spec yet

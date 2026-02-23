@@ -11,16 +11,25 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { withEscalationContext, createAgentContext } from '../../src/agents/base/agent-context';
 import { LibrarianAgent } from '../../src/agents/librarian/librarian.agent';
 import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
 
 // ─── Shared helpers ────────────────────────────────────────────────────────────
 
+// LibrarianAgent contract (per spec FR-006–FR-008):
+//   Inputs consumed:  workingDirectory, targetFile, objective, escalationContext
+//   Outputs produced: LibrarianOutput { relevantFiles, dependencyGraph, contextSummary, tokensUsed, cost }
+//   Ranking logic:    builds dependency graph, ranks files by distance from targetFile
+//   Escalation:       prepends "PRIOR ATTEMPTS:\n{escalationContext}" to context-summary prompt
+//
+// test-example/ is the fixture dir — 2 TS files (simple.ts + vitest.config.ts), fast to scan.
 function makeContext() {
   return createAgentContext({
     sessionId: uuidv4(),
     iteration: 1,
     maxIterations: 10,
     objective: 'Fix multiply function',
-    workingDirectory: process.cwd(), // real dir so Librarian file discovery works
+    workingDirectory: path.join(process.cwd(), 'test-example'), // 2 TS files — keeps discovery fast
+    targetFile: 'simple.ts',                                    // key LibrarianAgent input: drives dependency-graph distances
     testCommand: 'npm test',
     testFramework: 'vitest',
     maxCostUsd: 1.0,

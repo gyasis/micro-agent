@@ -52,7 +52,7 @@ export class BoundaryValueFuzzer {
   generateBoundaryTests(
     funcName: string,
     params: Array<{ name: string; type: string }>,
-    language: 'typescript' | 'python' | 'rust' = 'typescript'
+    language: 'typescript' | 'python' | 'rust' = 'typescript',
   ): BoundaryTestCase[] {
     const tests: BoundaryTestCase[] = [];
 
@@ -62,7 +62,7 @@ export class BoundaryValueFuzzer {
 
       for (const boundary of boundaries) {
         tests.push(
-          this.createTestCase(funcName, param.name, boundary, language)
+          this.createTestCase(funcName, param.name, boundary, language),
         );
       }
     }
@@ -78,8 +78,9 @@ export class BoundaryValueFuzzer {
 
     return {
       name: typeStr,
-      isNumeric:
-        /number|int|float|double|i32|i64|u32|u64|f32|f64/.test(normalized),
+      isNumeric: /number|int|float|double|i32|i64|u32|u64|f32|f64/.test(
+        normalized,
+      ),
       isString: /string|str/.test(normalized),
       isArray: /array|list|vec/.test(normalized) || typeStr.includes('[]'),
       isObject: /object|dict|struct/.test(normalized) || typeStr.includes('{'),
@@ -95,7 +96,7 @@ export class BoundaryValueFuzzer {
    */
   private getBoundariesForType(
     type: TypeInfo,
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): BoundaryValue[] {
     const boundaries: BoundaryValue[] = [];
 
@@ -127,7 +128,7 @@ export class BoundaryValueFuzzer {
    */
   private getNumericBoundaries(
     typeName: string,
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): BoundaryValue[] {
     const boundaries: BoundaryValue[] = [];
 
@@ -170,7 +171,7 @@ export class BoundaryValueFuzzer {
         value: limits.underflow,
         description: `Underflow ${typeName} value`,
         language,
-      }
+      },
     );
 
     // Special numeric values
@@ -193,7 +194,7 @@ export class BoundaryValueFuzzer {
           value: language === 'typescript' ? '-Infinity' : 'float("-inf")',
           description: 'Negative Infinity',
           language,
-        }
+        },
       );
     }
 
@@ -205,7 +206,7 @@ export class BoundaryValueFuzzer {
    */
   private getNumericLimits(
     typeName: string,
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): {
     min: string | number;
     max: string | number;
@@ -299,7 +300,7 @@ export class BoundaryValueFuzzer {
    * Get string boundary values
    */
   private getStringBoundaries(
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): BoundaryValue[] {
     return [
       {
@@ -351,20 +352,12 @@ export class BoundaryValueFuzzer {
    * Get array boundary values
    */
   private getArrayBoundaries(
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): BoundaryValue[] {
     const empty =
-      language === 'rust'
-        ? 'vec![]'
-        : language === 'python'
-          ? '[]'
-          : '[]';
+      language === 'rust' ? 'vec![]' : language === 'python' ? '[]' : '[]';
     const single =
-      language === 'rust'
-        ? 'vec![1]'
-        : language === 'python'
-          ? '[1]'
-          : '[1]';
+      language === 'rust' ? 'vec![1]' : language === 'python' ? '[1]' : '[1]';
     const large =
       language === 'rust'
         ? 'vec![1; 10000]'
@@ -398,7 +391,7 @@ export class BoundaryValueFuzzer {
    * Get object boundary values
    */
   private getObjectBoundaries(
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): BoundaryValue[] {
     const boundaries: BoundaryValue[] = [
       {
@@ -429,7 +422,7 @@ export class BoundaryValueFuzzer {
    * Get null/undefined boundary values
    */
   private getNullBoundaries(
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): BoundaryValue[] {
     const boundaries: BoundaryValue[] = [];
 
@@ -446,7 +439,7 @@ export class BoundaryValueFuzzer {
           value: 'undefined',
           description: 'Undefined value',
           language,
-        }
+        },
       );
     } else if (language === 'python') {
       boundaries.push({
@@ -474,7 +467,7 @@ export class BoundaryValueFuzzer {
     funcName: string,
     paramName: string,
     boundary: BoundaryValue,
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): BoundaryTestCase {
     const testName = `${funcName} - ${paramName} ${boundary.type} (${boundary.description})`;
 
@@ -494,13 +487,15 @@ export class BoundaryValueFuzzer {
       min: 'Should handle minimum value without error or overflow',
       max: 'Should handle maximum value without error or overflow',
       zero: 'Should handle zero value correctly (avoid division by zero)',
-      negative: 'Should handle negative values if supported, or reject gracefully',
+      negative:
+        'Should handle negative values if supported, or reject gracefully',
       overflow: 'Should detect overflow or clamp to max value',
       underflow: 'Should detect underflow or clamp to min value',
       empty: 'Should handle empty input gracefully',
       null: 'Should handle null/None/undefined without crashing',
       undefined: 'Should handle undefined without crashing',
-      special: 'Should handle special values (NaN, Infinity, unicode) correctly',
+      special:
+        'Should handle special values (NaN, Infinity, unicode) correctly',
     };
 
     return behaviors[type];
@@ -513,7 +508,7 @@ export class BoundaryValueFuzzer {
     funcName: string,
     paramName: string,
     boundary: BoundaryValue,
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): string {
     if (language === 'typescript') {
       return this.generateTypeScriptTest(funcName, paramName, boundary);
@@ -530,7 +525,7 @@ export class BoundaryValueFuzzer {
   private generateTypeScriptTest(
     funcName: string,
     paramName: string,
-    boundary: BoundaryValue
+    boundary: BoundaryValue,
   ): string {
     return `test('${funcName} - ${boundary.description}', () => {
   const ${paramName} = ${boundary.value};
@@ -553,7 +548,7 @@ export class BoundaryValueFuzzer {
   private generatePythonTest(
     funcName: string,
     paramName: string,
-    boundary: BoundaryValue
+    boundary: BoundaryValue,
   ): string {
     return `def test_${funcName}_${boundary.type}():
     """Test ${funcName} with ${boundary.description}"""
@@ -573,7 +568,7 @@ export class BoundaryValueFuzzer {
   private generateRustTest(
     funcName: string,
     paramName: string,
-    boundary: BoundaryValue
+    boundary: BoundaryValue,
   ): string {
     return `#[test]
 fn test_${funcName}_${boundary.type}() {
@@ -598,7 +593,7 @@ fn test_${funcName}_${boundary.type}() {
   generateFuzzingStrategy(
     funcName: string,
     params: Array<{ name: string; type: string }>,
-    language: 'typescript' | 'python' | 'rust'
+    language: 'typescript' | 'python' | 'rust',
   ): string {
     const lines: string[] = [];
 

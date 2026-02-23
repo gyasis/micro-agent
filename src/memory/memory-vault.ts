@@ -38,6 +38,7 @@ export class MemoryVault {
   private config: Required<MemoryVaultConfig>;
   private fixCollection: Collection | null = null;
   private testCollection: Collection | null = null;
+  private connected: boolean = true;
 
   constructor(config: MemoryVaultConfig = {}) {
     this.config = {
@@ -53,36 +54,62 @@ export class MemoryVault {
   }
 
   /**
-   * Initialize collections
+   * Initialize collections with 3-second timeout fallback.
+   * If ChromaDB is unreachable, sets connected=false and logs a warning.
+   * Does NOT throw — callers continue in no-op mode.
    */
   async initialize(): Promise<void> {
     try {
-      // Create or get fix patterns collection
-      this.fixCollection = await this.client.getOrCreateCollection({
-        name: 'fix_patterns',
-        metadata: { description: 'Successful error fix patterns' },
-      });
+      const initPromise = Promise.all([
+        this.client.getOrCreateCollection({
+          name: 'fix_patterns',
+          metadata: { description: 'Successful error fix patterns' },
+        }),
+        this.client.getOrCreateCollection({
+          name: 'test_patterns',
+          metadata: { description: 'Common test patterns and structures' },
+        }),
+      ]);
 
-      // Create or get test patterns collection
-      this.testCollection = await this.client.getOrCreateCollection({
-        name: 'test_patterns',
-        metadata: { description: 'Common test patterns and structures' },
-      });
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(
+          () => reject(new Error('ChromaDB connection timeout after 3s')),
+          3000,
+        ),
+      );
+
+      const [fixCol, testCol] = await Promise.race([initPromise, timeout]);
+      this.fixCollection = fixCol;
+      this.testCollection = testCol;
 
       logger.info('Memory Vault initialized', {
         host: this.config.host,
         port: this.config.port,
       });
     } catch (error) {
-      logger.error('Failed to initialize Memory Vault', error);
-      throw error;
+      logger.warn(
+        '[MemoryVault] ChromaDB unavailable — running in no-op mode',
+        {
+          error,
+        },
+      );
+      this.connected = false;
     }
+  }
+
+  /**
+   * Returns true if ChromaDB was successfully connected during initialize().
+   */
+  public isConnected(): boolean {
+    return this.connected;
   }
 
   /**
    * Store a fix pattern
    */
   async storeFixPattern(pattern: FixPattern): Promise<void> {
+    if (!this.connected) return;
+
     if (!this.fixCollection) {
       throw new Error('Memory Vault not initialized');
     }
@@ -102,7 +129,7 @@ export class MemoryVault {
             successRate: pattern.successRate,
             timesApplied: pattern.timesApplied,
             lastUsed: pattern.lastUsed.toISOString(),
-            category: pattern.category || 'general', // Store category for filtering
+            category: pattern.category || 'general',
           },
         ],
       });
@@ -124,30 +151,28 @@ export class MemoryVault {
     errorSignature: string,
     context: string[],
     limit: number = 5,
-    category?: string // Optional category filter (T092 optimization)
+    category?: string,
   ): Promise<SearchResult<FixPattern>[]> {
+    if (!this.connected) return [];
+
     if (!this.fixCollection) {
       throw new Error('Memory Vault not initialized');
     }
 
     try {
-      // Create query embedding
       const queryText = this.createFixQueryText(errorSignature, context);
 
-      // Build query with optional category filter
       const queryOptions: any = {
         queryTexts: [queryText],
         nResults: limit,
       };
 
-      // Add category filter if provided (T092 optimization)
       if (category) {
         queryOptions.where = { category };
       }
 
       const results = await this.fixCollection.query(queryOptions);
 
-      // Convert to SearchResult
       const patterns: SearchResult<FixPattern>[] = [];
 
       if (results.ids && results.distances && results.metadatas) {
@@ -157,11 +182,10 @@ export class MemoryVault {
           const metadata = results.metadatas[0][i];
 
           if (!metadata) continue;
+          if (distance === null) continue;
 
-          // Convert distance to similarity (1 - distance)
           const similarity = 1 - distance;
 
-          // Filter by threshold
           if (similarity < this.config.similarityThreshold) {
             continue;
           }
@@ -191,18 +215,116 @@ export class MemoryVault {
   }
 
   /**
+   * Search for similar errors by error message (convenience wrapper).
+   * Returns fix patterns whose errorSignature matches the query.
+   * Accepts an optional options bag for limit, minSimilarity, language.
+   */
+  async searchSimilarErrors(
+    errorMessage: string,
+    _options?: { limit?: number; minSimilarity?: number; language?: string },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): Promise<any[]> {
+    if (!this.connected) return [];
+    return this.searchFixPatterns(errorMessage, [], _options?.limit ?? 5);
+  }
+
+  /**
+   * Store an error pattern (convenience wrapper).
+   * Accepts either positional args (signature, solution, context[]) or an object bag.
+   */
+  async storeErrorPattern(
+    signatureOrData:
+      | string
+      | {
+          signature?: string;
+          category?: string;
+          solution?: string;
+          context?: string | string[];
+          metadata?: Record<string, unknown>;
+        },
+    solution?: string,
+    context?: string[],
+  ): Promise<void> {
+    if (!this.connected) return;
+
+    let sig: string;
+    let sol: string;
+    let ctx: string[];
+
+    if (typeof signatureOrData === 'string') {
+      sig = signatureOrData;
+      sol = solution ?? '';
+      ctx = context ?? [];
+    } else {
+      sig = signatureOrData.signature ?? '';
+      sol = signatureOrData.solution ?? '';
+      ctx = Array.isArray(signatureOrData.context)
+        ? signatureOrData.context
+        : signatureOrData.context
+          ? [signatureOrData.context]
+          : [];
+    }
+
+    const pattern: FixPattern = {
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      errorSignature: sig,
+      solution: sol,
+      context: ctx,
+      successRate: 1.0,
+      timesApplied: 1,
+      lastUsed: new Date(),
+    };
+    return this.storeFixPattern(pattern);
+  }
+
+  /**
+   * Record a successful fix (convenience wrapper for storeErrorPattern).
+   * Accepts either a simple object or a richer one with errorCategory/metadata.
+   */
+  async recordFix(data: {
+    errorSignature: string;
+    solution: string;
+    context?: string[];
+    errorCategory?: string;
+    successRate?: number;
+    metadata?: Record<string, unknown>;
+  }): Promise<void> {
+    if (!this.connected) return;
+    return this.storeErrorPattern(
+      data.errorSignature,
+      data.solution,
+      data.context ?? [],
+    );
+  }
+
+  /**
+   * Get error pattern statistics.
+   */
+  async getErrorPatternStats(): Promise<{
+    total: number;
+    averageSuccessRate: number;
+  }> {
+    if (!this.connected) return { total: 0, averageSuccessRate: 0 };
+
+    try {
+      const stats = await this.getStats();
+      return { total: stats.fixPatterns, averageSuccessRate: 0 };
+    } catch {
+      return { total: 0, averageSuccessRate: 0 };
+    }
+  }
+
+  /**
    * Update fix pattern usage
    */
-  async updateFixPatternUsage(
-    id: string,
-    successful: boolean
-  ): Promise<void> {
+  async updateFixPatternUsage(id: string, successful: boolean): Promise<void> {
+    if (!this.connected) return;
+
     if (!this.fixCollection) {
       throw new Error('Memory Vault not initialized');
     }
 
     try {
-      // Get current pattern
       const result = await this.fixCollection.get({
         ids: [id],
       });
@@ -212,12 +334,15 @@ export class MemoryVault {
       }
 
       const metadata = result.metadatas[0];
+      if (!metadata) return;
+
       const timesApplied = (metadata.timesApplied as number) + 1;
       const successRate = successful
-        ? ((metadata.successRate as number) * (timesApplied - 1) + 1) / timesApplied
-        : ((metadata.successRate as number) * (timesApplied - 1)) / timesApplied;
+        ? ((metadata.successRate as number) * (timesApplied - 1) + 1) /
+          timesApplied
+        : ((metadata.successRate as number) * (timesApplied - 1)) /
+          timesApplied;
 
-      // Update metadata
       await this.fixCollection.update({
         ids: [id],
         metadatas: [
@@ -245,6 +370,8 @@ export class MemoryVault {
    * Store a test pattern
    */
   async storeTestPattern(pattern: TestPattern): Promise<void> {
+    if (!this.connected) return;
+
     if (!this.testCollection) {
       throw new Error('Memory Vault not initialized');
     }
@@ -267,7 +394,6 @@ export class MemoryVault {
 
       logger.info('Test pattern stored', { id: pattern.id });
 
-      // Prune if over limit
       await this.pruneTestPatterns();
     } catch (error) {
       logger.error('Failed to store test pattern', error);
@@ -281,8 +407,10 @@ export class MemoryVault {
   async searchTestPatterns(
     testType: string,
     framework: string,
-    limit: number = 5
+    limit: number = 5,
   ): Promise<SearchResult<TestPattern>[]> {
+    if (!this.connected) return [];
+
     if (!this.testCollection) {
       throw new Error('Memory Vault not initialized');
     }
@@ -304,6 +432,7 @@ export class MemoryVault {
           const metadata = results.metadatas[0][i];
 
           if (!metadata) continue;
+          if (distance === null) continue;
 
           const similarity = 1 - distance;
 
@@ -339,6 +468,8 @@ export class MemoryVault {
     fixPatterns: number;
     testPatterns: number;
   }> {
+    if (!this.connected) return { fixPatterns: 0, testPatterns: 0 };
+
     try {
       const fixCount = await this.fixCollection?.count();
       const testCount = await this.testCollection?.count();
@@ -367,7 +498,10 @@ Context: ${pattern.context.join(', ')}`;
   /**
    * Create query text for fix search
    */
-  private createFixQueryText(errorSignature: string, context: string[]): string {
+  private createFixQueryText(
+    errorSignature: string,
+    context: string[],
+  ): string {
     return `Error: ${errorSignature}
 Context: ${context.join(', ')}`;
   }
@@ -389,26 +523,23 @@ Context: ${context.join(', ')}`;
       const count = await this.fixCollection.count();
 
       if (count > this.config.maxPatterns) {
-        // Get all patterns ordered by success rate and last used
         const all = await this.fixCollection.get();
 
         if (!all.ids || !all.metadatas) return;
 
-        // Sort by success rate (ascending) to remove worst performers
         const sorted = all.ids
           .map((id, i) => ({
             id,
             metadata: all.metadatas![i],
           }))
           .sort((a, b) => {
-            const rateA = a.metadata.successRate as number;
-            const rateB = b.metadata.successRate as number;
+            const rateA = (a.metadata?.successRate as number) ?? 0;
+            const rateB = (b.metadata?.successRate as number) ?? 0;
             return rateA - rateB;
           });
 
-        // Delete oldest/worst performers
         const toDelete = sorted.slice(0, count - this.config.maxPatterns);
-        const idsToDelete = toDelete.map(p => p.id);
+        const idsToDelete = toDelete.map((p) => p.id);
 
         await this.fixCollection.delete({
           ids: idsToDelete,
@@ -438,7 +569,6 @@ Context: ${context.join(', ')}`;
 
         if (!all.ids) return;
 
-        // Simple FIFO pruning for test patterns
         const toDelete = all.ids.slice(0, count - this.config.maxPatterns);
 
         await this.testCollection.delete({
@@ -459,6 +589,8 @@ Context: ${context.join(', ')}`;
    * Clear all patterns
    */
   async clear(): Promise<void> {
+    if (!this.connected) return;
+
     try {
       if (this.fixCollection) {
         await this.client.deleteCollection({ name: 'fix_patterns' });
@@ -468,7 +600,6 @@ Context: ${context.join(', ')}`;
         await this.client.deleteCollection({ name: 'test_patterns' });
       }
 
-      // Reinitialize
       await this.initialize();
 
       logger.info('Memory Vault cleared');

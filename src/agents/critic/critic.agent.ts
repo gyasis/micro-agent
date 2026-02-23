@@ -42,7 +42,9 @@ export class CriticAgent extends BaseAgent {
    * 4. Provide improvement suggestions
    * 5. Approve or reject code
    */
-  protected async onExecute(context: AgentContext): Promise<AgentResult<CriticOutput>> {
+  protected async onExecute(
+    context: AgentContext,
+  ): Promise<AgentResult<CriticOutput>> {
     this.emitProgress('Starting code review', {
       file: context.artisanCode?.filePath,
     });
@@ -84,7 +86,11 @@ export class CriticAgent extends BaseAgent {
       this.emitProgress(`Code ${approved ? 'APPROVED' : 'REJECTED'}`);
 
       // Calculate cost from token usage
-      const cost = calculateCost(this.config.model, totalInputTokens, totalOutputTokens);
+      const cost = calculateCost(
+        this.config.model,
+        totalInputTokens,
+        totalOutputTokens,
+      );
 
       return {
         success: true,
@@ -122,7 +128,9 @@ export class CriticAgent extends BaseAgent {
   /**
    * Analyze code using GPT
    */
-  private async analyzeCode(request: ReviewRequest): Promise<{ analysis: ReviewAnalysis; usage: TokenUsage }> {
+  private async analyzeCode(
+    request: ReviewRequest,
+  ): Promise<{ analysis: ReviewAnalysis; usage: TokenUsage }> {
     const prompt = this.buildReviewPrompt(request);
 
     try {
@@ -191,7 +199,9 @@ Provide your review in JSON format:
   private parseReviewResponse(response: string): ReviewAnalysis {
     try {
       // Extract JSON from response
-      const jsonMatch = response.match(/```json\s*([\s\S]*?)```/) || response.match(/{[\s\S]*}/);
+      const jsonMatch =
+        response.match(/```json\s*([\s\S]*?)```/) ||
+        response.match(/{[\s\S]*}/);
 
       if (!jsonMatch) {
         throw new Error('No JSON found in response');
@@ -259,24 +269,24 @@ Provide your review in JSON format:
     const criticalIssues = [
       ...analysis.logicIssues,
       ...analysis.securityConcerns,
-    ].filter(i => i.severity === 'critical');
+    ].filter((i) => i.severity === 'critical');
 
     if (criticalIssues.length > 0) {
       suggestions.push(
-        `Fix ${criticalIssues.length} critical issue(s) before proceeding`
+        `Fix ${criticalIssues.length} critical issue(s) before proceeding`,
       );
     }
 
     // Edge cases
     if (analysis.edgeCases.length > 0) {
       suggestions.push(
-        `Add handling for ${analysis.edgeCases.length} identified edge case(s)`
+        `Add handling for ${analysis.edgeCases.length} identified edge case(s)`,
       );
     }
 
     // Security
     const securityIssues = analysis.securityConcerns.filter(
-      i => i.severity !== 'info'
+      (i) => i.severity !== 'info',
     );
     if (securityIssues.length > 0) {
       suggestions.push(`Address ${securityIssues.length} security concern(s)`);
@@ -300,8 +310,12 @@ Provide your review in JSON format:
    */
   private makeApprovalDecision(analysis: ReviewAnalysis): boolean {
     // Automatic rejection if critical issues exist
-    const hasCriticalLogic = analysis.logicIssues.some(i => i.severity === 'critical');
-    const hasCriticalSecurity = analysis.securityConcerns.some(i => i.severity === 'critical');
+    const hasCriticalLogic = analysis.logicIssues.some(
+      (i) => i.severity === 'critical',
+    );
+    const hasCriticalSecurity = analysis.securityConcerns.some(
+      (i) => i.severity === 'critical',
+    );
 
     if (hasCriticalLogic || hasCriticalSecurity) {
       return false;
@@ -320,9 +334,9 @@ Provide your review in JSON format:
     info: number;
   } {
     return {
-      critical: issues.filter(i => i.severity === 'critical').length,
-      warning: issues.filter(i => i.severity === 'warning').length,
-      info: issues.filter(i => i.severity === 'info').length,
+      critical: issues.filter((i) => i.severity === 'critical').length,
+      warning: issues.filter((i) => i.severity === 'warning').length,
+      info: issues.filter((i) => i.severity === 'info').length,
     };
   }
 
@@ -331,7 +345,7 @@ Provide your review in JSON format:
    */
   private formatIssues(issues: ReviewIssue[]): string {
     return issues
-      .map(i => {
+      .map((i) => {
         const location = i.file
           ? `${i.file}${i.line ? `:${i.line}` : ''}`
           : 'unknown';

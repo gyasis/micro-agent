@@ -226,7 +226,11 @@ export class CargoParser extends BaseTestParser {
               lines: [],
             };
           }
-        } else if (currentFailure && line.trim() && !line.startsWith('failures:')) {
+        } else if (
+          currentFailure &&
+          line.trim() &&
+          !line.startsWith('failures:')
+        ) {
           currentFailure.lines.push(line);
         }
 
@@ -258,13 +262,15 @@ export class CargoParser extends BaseTestParser {
    */
   private attachFailureToTest(
     tests: TestCase[],
-    failure: { name: string; lines: string[] }
+    failure: { name: string; lines: string[] },
   ): void {
-    const test = tests.find(t => t.name === failure.name);
+    const test = tests.find((t) => t.name === failure.name);
 
     if (test && test.error) {
       // Extract assertion failure
-      const assertMatch = failure.lines.join('\n').match(/thread '.*' panicked at '(.*?)'/);
+      const assertMatch = failure.lines
+        .join('\n')
+        .match(/thread '.*' panicked at '(.*?)'/);
 
       if (assertMatch) {
         test.error.message = assertMatch[1];

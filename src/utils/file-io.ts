@@ -18,10 +18,13 @@ import crypto from 'crypto';
 export async function writeFileAtomic(
   filepath: string,
   content: string | Buffer,
-  encoding: BufferEncoding = 'utf-8'
+  encoding: BufferEncoding = 'utf-8',
 ): Promise<void> {
   const dir = path.dirname(filepath);
-  const tempPath = path.join(dir, `.${path.basename(filepath)}.tmp.${Date.now()}`);
+  const tempPath = path.join(
+    dir,
+    `.${path.basename(filepath)}.tmp.${Date.now()}`,
+  );
 
   try {
     // Ensure directory exists
@@ -48,7 +51,7 @@ export async function writeFileAtomic(
  */
 export async function readFileSafe(
   filepath: string,
-  encoding: BufferEncoding = 'utf-8'
+  encoding: BufferEncoding = 'utf-8',
 ): Promise<string | null> {
   try {
     return await fs.readFile(filepath, encoding);
@@ -80,7 +83,7 @@ export async function readJSON<T = any>(filepath: string): Promise<T | null> {
 export async function writeJSON(
   filepath: string,
   data: any,
-  pretty: boolean = true
+  pretty: boolean = true,
 ): Promise<void> {
   const content = pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data);
   await writeFileAtomic(filepath, content);
@@ -89,7 +92,10 @@ export async function writeJSON(
 /**
  * Append to file
  */
-export async function appendFile(filepath: string, content: string): Promise<void> {
+export async function appendFile(
+  filepath: string,
+  content: string,
+): Promise<void> {
   const dir = path.dirname(filepath);
   await fs.mkdir(dir, { recursive: true });
   await fs.appendFile(filepath, content, 'utf-8');
@@ -225,7 +231,7 @@ export async function getFileHash(filepath: string): Promise<string | null> {
  * Read multiple files in parallel
  */
 export async function readFiles(
-  filepaths: string[]
+  filepaths: string[],
 ): Promise<Map<string, string>> {
   const results = new Map<string, string>();
 
@@ -243,23 +249,26 @@ export async function readFiles(
 /**
  * Write multiple files atomically
  */
-export async function writeFiles(
-  files: Map<string, string>
-): Promise<{ succeeded: string[]; failed: Array<{ path: string; error: string }> }> {
+export async function writeFiles(files: Map<string, string>): Promise<{
+  succeeded: string[];
+  failed: Array<{ path: string; error: string }>;
+}> {
   const succeeded: string[] = [];
   const failed: Array<{ path: string; error: string }> = [];
 
-  const promises = Array.from(files.entries()).map(async ([filepath, content]) => {
-    try {
-      await writeFileAtomic(filepath, content);
-      succeeded.push(filepath);
-    } catch (error) {
-      failed.push({
-        path: filepath,
-        error: String(error),
-      });
-    }
-  });
+  const promises = Array.from(files.entries()).map(
+    async ([filepath, content]) => {
+      try {
+        await writeFileAtomic(filepath, content);
+        succeeded.push(filepath);
+      } catch (error) {
+        failed.push({
+          path: filepath,
+          error: String(error),
+        });
+      }
+    },
+  );
 
   await Promise.all(promises);
   return { succeeded, failed };

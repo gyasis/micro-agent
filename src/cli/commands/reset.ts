@@ -17,7 +17,9 @@ export interface ResetCommandOptions {
   confirm?: boolean;
 }
 
-export async function resetCommand(options: ResetCommandOptions = {}): Promise<void> {
+export async function resetCommand(
+  options: ResetCommandOptions = {},
+): Promise<void> {
   try {
     console.log('🔄 Ralph Loop Reset\n');
 
@@ -34,7 +36,10 @@ export async function resetCommand(options: ResetCommandOptions = {}): Promise<v
     const ralphDir = path.join(projectRoot, '.ralph');
 
     // Check if .ralph directory exists
-    const exists = await fs.access(ralphDir).then(() => true).catch(() => false);
+    const exists = await fs
+      .access(ralphDir)
+      .then(() => true)
+      .catch(() => false);
 
     if (!exists) {
       console.log('✅ No Ralph Loop data found (already clean)\n');
@@ -87,7 +92,6 @@ export async function resetCommand(options: ResetCommandOptions = {}): Promise<v
     console.log('\n🎉 Reset complete!');
     console.log(`   Cleaned: ${cleaned.join(', ')}`);
     console.log('   Fresh Ralph Loop state restored\n');
-
   } catch (error: any) {
     console.error('❌ Reset failed:', error.message);
     process.exit(1);

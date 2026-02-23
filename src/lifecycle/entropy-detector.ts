@@ -85,7 +85,7 @@ export class EntropyDetector extends EventEmitter {
     errorMessage: string,
     iteration: number,
     source: ErrorEntry['source'] = 'unit_test',
-    category?: string
+    category?: string,
   ): EntropyDetectionResult {
     // T066: Adversarial test failures do NOT increment entropy counter
     if (source === 'adversarial_test') {
@@ -154,7 +154,7 @@ export class EntropyDetector extends EventEmitter {
           errorSignature: signature,
           count,
           threshold: this.config.threshold,
-          iterations: result.recentErrors.map(e => e.iteration),
+          iterations: result.recentErrors.map((e) => e.iteration),
         });
 
         return result;
@@ -211,7 +211,7 @@ export class EntropyDetector extends EventEmitter {
    * Get recent errors matching signature
    */
   private getRecentErrorsForSignature(signature: string): ErrorEntry[] {
-    return this.errorHistory.filter(entry => entry.signature === signature);
+    return this.errorHistory.filter((entry) => entry.signature === signature);
   }
 
   /**
@@ -273,7 +273,8 @@ export class EntropyDetector extends EventEmitter {
 
     // Most common error is close to threshold
     const nearThreshold =
-      stats.mostCommonError && stats.mostCommonError.count >= this.config.threshold - 1;
+      stats.mostCommonError &&
+      stats.mostCommonError.count >= this.config.threshold - 1;
 
     return lowEntropy || !!nearThreshold;
   }
@@ -297,7 +298,9 @@ export class EntropyDetector extends EventEmitter {
 /**
  * Create entropy detector with defaults (T058)
  */
-export function createEntropyDetector(config?: Partial<EntropyConfig>): EntropyDetector {
+export function createEntropyDetector(
+  config?: Partial<EntropyConfig>,
+): EntropyDetector {
   return new EntropyDetector(config);
 }
 
@@ -310,14 +313,18 @@ export function formatEntropyResult(result: EntropyDetectionResult): string {
   if (result.entropyDetected) {
     lines.push('🛑 CIRCUIT BREAKER TRIGGERED');
     lines.push('');
-    lines.push(`Identical error detected ${result.count} times (threshold: ${result.threshold})`);
+    lines.push(
+      `Identical error detected ${result.count} times (threshold: ${result.threshold})`,
+    );
     lines.push('');
     lines.push('Error Signature:');
     lines.push(`  ${result.errorSignature}`);
     lines.push('');
     lines.push('Occurrences:');
     for (const error of result.recentErrors) {
-      lines.push(`  Iteration ${error.iteration}: ${error.original.substring(0, 80)}...`);
+      lines.push(
+        `  Iteration ${error.iteration}: ${error.original.substring(0, 80)}...`,
+      );
     }
     lines.push('');
     lines.push('⚠️  Manual intervention required:');
@@ -326,7 +333,9 @@ export function formatEntropyResult(result: EntropyDetectionResult): string {
     lines.push('  - Verify dependencies');
     lines.push('  - Adjust objective if needed');
   } else {
-    lines.push(`Error tracked: ${result.count}/${result.threshold} (${result.message})`);
+    lines.push(
+      `Error tracked: ${result.count}/${result.threshold} (${result.message})`,
+    );
   }
 
   return lines.join('\n');

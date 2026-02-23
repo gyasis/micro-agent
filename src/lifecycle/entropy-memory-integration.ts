@@ -15,7 +15,11 @@
  * @module lifecycle/entropy-memory-integration
  */
 
-import type { EntropyDetector, ErrorEntry, EntropyDetectionResult } from './entropy-detector';
+import type {
+  EntropyDetector,
+  ErrorEntry,
+  EntropyDetectionResult,
+} from './entropy-detector';
 import type { MemoryVault } from '../memory/memory-vault';
 import { createLogger } from '../utils/logger';
 
@@ -66,7 +70,7 @@ export class EntropyMemoryIntegration {
       objective: string;
       language: string;
       framework: string;
-    }
+    },
   ) {
     this.entropyDetector = entropyDetector;
     this.memoryVault = memoryVault;
@@ -85,15 +89,20 @@ export class EntropyMemoryIntegration {
    */
   private setupEventHandlers(): void {
     // T065: Store error pattern when entropy is detected
-    this.entropyDetector.on('entropy-detected', async (result: EntropyDetectionResult) => {
-      await this.storeErrorPattern(result);
-    });
+    this.entropyDetector.on(
+      'entropy-detected',
+      async (result: EntropyDetectionResult) => {
+        await this.storeErrorPattern(result);
+      },
+    );
   }
 
   /**
    * Store error pattern to MemoryVault when entropy is detected (T065)
    */
-  private async storeErrorPattern(result: EntropyDetectionResult): Promise<void> {
+  private async storeErrorPattern(
+    result: EntropyDetectionResult,
+  ): Promise<void> {
     logger.info('Storing error pattern to MemoryVault', {
       errorSignature: result.errorSignature,
       count: result.count,
@@ -104,7 +113,7 @@ export class EntropyMemoryIntegration {
       errorSignature: result.errorSignature,
       errorCategory: this.categorizeError(result.errorSignature),
       occurrences: result.count,
-      iterations: result.recentErrors.map(e => e.iteration),
+      iterations: result.recentErrors.map((e) => e.iteration),
       testFramework: this.currentSession.framework,
       language: this.currentSession.language,
       context: {
@@ -145,7 +154,7 @@ export class EntropyMemoryIntegration {
   public async recordSolution(
     errorSignature: string,
     solution: string,
-    successfulIteration: number
+    successfulIteration: number,
   ): Promise<void> {
     logger.info('Recording solution to MemoryVault', {
       errorSignature,
@@ -177,14 +186,14 @@ export class EntropyMemoryIntegration {
   /**
    * Query MemoryVault for similar error patterns
    */
-  public async querySimilarErrors(
-    errorMessage: string
-  ): Promise<Array<{
-    signature: string;
-    category: string;
-    solution?: string;
-    similarity: number;
-  }>> {
+  public async querySimilarErrors(errorMessage: string): Promise<
+    Array<{
+      signature: string;
+      category: string;
+      solution?: string;
+      similarity: number;
+    }>
+  > {
     try {
       // Query MemoryVault for similar errors
       const results = await this.memoryVault.searchSimilarErrors(errorMessage, {
@@ -268,8 +277,8 @@ export class EntropyMemoryIntegration {
       return {
         entropyStats,
         memoryVaultPatterns: patterns.total || 0,
-        resolvedPatterns: patterns.resolved || 0,
-        unresolvedPatterns: patterns.unresolved || 0,
+        resolvedPatterns: 0,
+        unresolvedPatterns: patterns.total || 0,
       };
     } catch (error) {
       logger.error('Failed to get MemoryVault stats', error);
@@ -296,7 +305,11 @@ export function createEntropyMemoryIntegration(
     objective: string;
     language: string;
     framework: string;
-  }
+  },
 ): EntropyMemoryIntegration {
-  return new EntropyMemoryIntegration(entropyDetector, memoryVault, sessionConfig);
+  return new EntropyMemoryIntegration(
+    entropyDetector,
+    memoryVault,
+    sessionConfig,
+  );
 }

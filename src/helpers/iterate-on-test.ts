@@ -55,7 +55,7 @@ export async function iterateOnTest({
           `,
         },
       ],
-    }))!
+    }))!,
   );
   console.log(formatMessage('\n'));
 
@@ -65,7 +65,7 @@ export async function iterateOnTest({
         'How does the generated test look? Reply "good", or provide feedback',
       defaultValue: 'good',
       placeholder: 'good',
-    })
+    }),
   );
 
   if (result.toLowerCase().trim() !== 'good') {

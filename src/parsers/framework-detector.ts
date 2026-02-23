@@ -37,7 +37,7 @@ export interface DetectionResult {
  * Detect test framework from project directory
  */
 export async function detectFramework(
-  projectDir: string
+  projectDir: string,
 ): Promise<DetectionResult> {
   // Try detection methods in order of confidence
   const detectors = [
@@ -66,7 +66,7 @@ export async function detectFramework(
  * Detect from package.json (Node.js projects)
  */
 async function detectFromPackageJson(
-  projectDir: string
+  projectDir: string,
 ): Promise<DetectionResult | null> {
   const packageJsonPath = path.join(projectDir, 'package.json');
 
@@ -163,7 +163,7 @@ async function detectFromPackageJson(
  * Detect from Python manifests
  */
 async function detectFromPythonManifest(
-  projectDir: string
+  projectDir: string,
 ): Promise<DetectionResult | null> {
   // Check pyproject.toml
   const pyprojectPath = path.join(projectDir, 'pyproject.toml');
@@ -220,7 +220,7 @@ async function detectFromPythonManifest(
  * Detect from Cargo.toml (Rust projects)
  */
 async function detectFromCargoToml(
-  projectDir: string
+  projectDir: string,
 ): Promise<DetectionResult | null> {
   const cargoPath = path.join(projectDir, 'Cargo.toml');
 
@@ -241,7 +241,7 @@ async function detectFromCargoToml(
  * Detect from Gemfile (Ruby projects)
  */
 async function detectFromGemfile(
-  projectDir: string
+  projectDir: string,
 ): Promise<DetectionResult | null> {
   const gemfilePath = path.join(projectDir, 'Gemfile');
 
@@ -267,7 +267,7 @@ async function detectFromGemfile(
  * Detect from pom.xml (Java projects)
  */
 async function detectFromPom(
-  projectDir: string
+  projectDir: string,
 ): Promise<DetectionResult | null> {
   const pomPath = path.join(projectDir, 'pom.xml');
 
@@ -294,10 +294,12 @@ async function detectFromPom(
  * Detect from config files
  */
 async function detectFromConfigFiles(
-  projectDir: string
+  projectDir: string,
 ): Promise<DetectionResult | null> {
   // Vitest
-  if (await findConfigFile(projectDir, ['vitest.config.ts', 'vitest.config.js'])) {
+  if (
+    await findConfigFile(projectDir, ['vitest.config.ts', 'vitest.config.js'])
+  ) {
     return {
       framework: 'vitest',
       confidence: 'medium',
@@ -334,7 +336,7 @@ async function detectFromConfigFiles(
  */
 async function findConfigFile(
   projectDir: string,
-  candidates: string[]
+  candidates: string[],
 ): Promise<string | undefined> {
   for (const candidate of candidates) {
     const fullPath = path.join(projectDir, candidate);

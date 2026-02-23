@@ -27,7 +27,7 @@ export interface ProviderFailure {
 }
 
 export type ProviderRequestFn = (
-  request: CompletionRequest
+  request: CompletionRequest,
 ) => Promise<CompletionResponse>;
 
 export class FallbackHandler extends EventEmitter {
@@ -65,7 +65,7 @@ export class FallbackHandler extends EventEmitter {
    * Execute request with automatic failover
    */
   public async executeWithFallback(
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     if (this.providerChain.length === 0) {
       throw new Error('No providers configured in fallback chain');
@@ -83,7 +83,11 @@ export class FallbackHandler extends EventEmitter {
       this.emit('fallback-attempt', { provider, request });
 
       try {
-        const response = await this.executeWithRetry(provider, requestFn, request);
+        const response = await this.executeWithRetry(
+          provider,
+          requestFn,
+          request,
+        );
         this.emit('fallback-success', { provider, response });
         return response;
       } catch (error) {
@@ -107,7 +111,7 @@ export class FallbackHandler extends EventEmitter {
     });
 
     throw new Error(
-      `All providers failed. Last error: ${lastError?.message || 'Unknown error'}`
+      `All providers failed. Last error: ${lastError?.message || 'Unknown error'}`,
     );
   }
 
@@ -117,7 +121,7 @@ export class FallbackHandler extends EventEmitter {
   private async executeWithRetry(
     provider: string,
     requestFn: ProviderRequestFn,
-    request: CompletionRequest
+    request: CompletionRequest,
   ): Promise<CompletionResponse> {
     let lastError: Error | null = null;
 
@@ -175,7 +179,8 @@ export class FallbackHandler extends EventEmitter {
    */
   private calculateBackoff(attempt: number): number {
     const backoff =
-      this.config.initialBackoffMs * Math.pow(this.config.backoffMultiplier, attempt);
+      this.config.initialBackoffMs *
+      Math.pow(this.config.backoffMultiplier, attempt);
     return Math.min(backoff, this.config.maxBackoffMs);
   }
 
@@ -203,7 +208,7 @@ export class FallbackHandler extends EventEmitter {
   private recordFailure(provider: string, error: string): void {
     // Find existing failure for this provider
     const existing = this.failures.find(
-      (f) => f.provider === provider && Date.now() - f.timestamp < 60000
+      (f) => f.provider === provider && Date.now() - f.timestamp < 60000,
     );
 
     if (existing) {
@@ -219,7 +224,9 @@ export class FallbackHandler extends EventEmitter {
     }
 
     // Clean up old failures (older than 5 minutes)
-    this.failures = this.failures.filter((f) => Date.now() - f.timestamp < 300000);
+    this.failures = this.failures.filter(
+      (f) => Date.now() - f.timestamp < 300000,
+    );
   }
 
   /**
@@ -256,7 +263,7 @@ export class FallbackHandler extends EventEmitter {
  * Factory function to create fallback handler
  */
 export function createFallbackHandler(
-  config?: Partial<FallbackConfig>
+  config?: Partial<FallbackConfig>,
 ): FallbackHandler {
   return new FallbackHandler(config);
 }

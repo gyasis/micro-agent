@@ -1,140 +1,42 @@
 # Progress
 
-**Last Updated**: 2026-02-17 (003-tiered-escalation)
+**Last Updated**: 2026-02-22 13:04:14
 
 ## Overall Progress
+- Total Tasks: 28
+- Completed: 28 ✅
+- Pending: 0 ⏳
+- Progress: 100%
 
-- Branch 001-ralph-loop-2026: COMPLETE, merged to main (commit c527da1)
-- Branch 002-simple-escalation: COMPLETE, merged to main (commit 8d42927)
-- Branch 003-tiered-escalation: COMPLETE, merged to main via no-ff merge
-- Active branch: main
-- All 269 tests passing (was 247, +22 from 003-tiered-escalation)
-
-## Test Status
-
-- :white_check_mark: 269/269 tests passing
-- :white_check_mark: No regressions from 003-tiered-escalation (+22 new tests)
-- :white_check_mark: Duration: approximately 4-5s
-- :white_check_mark: XState v5 API compatibility maintained
-
-## Phase Completion (001-ralph-loop-2026)
-
-- :white_check_mark: Phase 1: Setup (T001-T009) - Infrastructure configured
-- :white_check_mark: Phase 2: Foundational (T010-T025) - Core lifecycle, LLM, state machine, utilities
-- :white_check_mark: Phase 3: User Story 1 - Multi-Agent Code Generation (T026-T034)
-- :white_check_mark: Phase 4: User Story 2 - Fresh Context Per Iteration (T035-T037)
-- :white_check_mark: Phase 5: User Story 3 - Test Framework Integration (T038-T044)
-- :white_check_mark: Phase 6: User Story 4 - MemoryVault / Error Learning (T045-T052)
-- :white_check_mark: Phase 7: User Story 5 - Plugin System (T053-T059)
-- :white_check_mark: Phase 8: User Story 6 - Chaos Engineering (T060-T065)
-- :white_check_mark: Wave 25A: Branding Fixes (T066-T072) - All Micro Agent branding correct
-- :white_check_mark: Wave 25B: Documentation & Tutorials (T073-T077) - 4 tutorials written
-- :white_check_mark: Wave 25C: Release Preparation (T078-T080) - Changelog, release notes
-- :white_check_mark: Wave 26: Cost/Token Tracking (T081-T086) - CostTracker and ProviderRouter
-- :white_check_mark: Wave 26.5: Eliminate ALL Mocked Code - Real LLM Integration
-- :white_check_mark: Wave 26.9: Environment Setup - All API Keys Collected
-- :white_check_mark: Wave 27 & 28: CLI Commands and Test Runner Integration
-
-## Phase Completion (002-simple-escalation)
-
-- :white_check_mark: All 28 tasks across 5 execution waves - COMPLETE
-- :white_check_mark: Wave A: Types + interfaces (SimpleIterationRecord, FailureSummary, EscalationEvent)
-- :white_check_mark: Wave B: AgentContext extension (escalationContext field + withEscalationContext())
-- :white_check_mark: Wave C: Librarian informed-start (generateContextSummary prepends PRIOR ATTEMPTS)
-- :white_check_mark: Wave D: run.ts complete rewrite (Phase A / Phase B / Phase C structure)
-- :white_check_mark: Wave E: CLI flags (--simple [N], --no-escalate, --full) + full test suite
-
-## Phase Completion (003-tiered-escalation)
-
-- :white_check_mark: All 31 tasks - COMPLETE
-- :white_check_mark: Wave 1: Foundation -- 8 new interfaces in `src/lifecycle/types.ts`
-- :white_check_mark: Wave 1: tier-config.ts -- Zod schemas, loadTierConfig(), validateTierConfig() (all errors)
-- :white_check_mark: Wave 1: tier-engine.ts -- runTier() N-tier loop with per-tier header logs
-- :white_check_mark: Wave 1: tier-accumulator.ts -- buildAccumulatedSummary() + withTierEscalationContext()
-- :white_check_mark: Wave 1: tier-db.ts -- SQLite audit log via better-sqlite3, best-effort pattern
-- :white_check_mark: Wire-up: run.ts runTierLoop() -- startup banner, N-tier loop, multi-tier report, DB
-- :white_check_mark: CLI: ralph-loop.ts -- --tier-config <path> flag registered
-- :white_check_mark: Config: schema-validator.ts -- tierConfigFile field added to YAML schema
-- :white_check_mark: Tests: 22 new tests (tier-config, tier-accumulator, tier-db, tier-engine)
-- :white_check_mark: Docs: Notebook Part 13, model-configuration.md N-tier section
-
-## What Works (Verified)
-
-- :white_check_mark: Full end-to-end Ralph Loop with real API calls
-- :white_check_mark: Librarian agent (Gemini) gathers context from codebase
-- :white_check_mark: Artisan agent (Claude) generates/fixes code
-- :white_check_mark: Critic agent (GPT) reviews code
-- :white_check_mark: Cost tracking (~$0.02 per iteration)
-- :white_check_mark: Session reset between iterations (both phases)
-- :white_check_mark: State persistence to disk
-- :white_check_mark: Context monitoring with 40% threshold
-- :white_check_mark: Budget enforcement (cost-based, shared across phases)
-- :white_check_mark: Multi-language test runner (TypeScript, Python, Rust)
-- :white_check_mark: MemoryVault error learning
-- :white_check_mark: Plugin system
-- :white_check_mark: Chaos/adversarial agent (optional)
-- :white_check_mark: `ralph-loop run`, `config`, `status`, `reset` CLI commands
-- :white_check_mark: `ralph.config.yaml` auto-discovery
-- :white_check_mark: Simple mode (Artisan + Tests only, `--simple [N]`)
-- :white_check_mark: Auto-escalation from simple to full mode after N failures
-- :white_check_mark: buildFailureSummary() compression (2000-char cap)
-- :white_check_mark: Librarian receives "PRIOR ATTEMPTS:" escalation context
-- :white_check_mark: withEscalationContext() immutable AgentContext update
-- :white_check_mark: --full flag for exact pre-002 pipeline behavior
-- :white_check_mark: --no-escalate flag to disable auto-escalation
-- :white_check_mark: Per-phase cost and iteration tracking in run.ts
-- :white_check_mark: N-tier model escalation via --tier-config <path> (optional)
-- :white_check_mark: Tier config Zod validation (all errors surfaced, not just first)
-- :white_check_mark: buildAccumulatedSummary() tier failure history (4000-char cap)
-- :white_check_mark: Accumulated tier failure context injected into each subsequent tier
-- :white_check_mark: Per-tier header banner: "━━━━ ▶ Tier N/total: name [mode, model] ━━━━"
-- :white_check_mark: SQLite audit DB for tier attempts (best-effort, never throws)
-- :white_check_mark: Conflict warnings when --tier-config used with --simple/--full/--no-escalate
-- :white_check_mark: Backward compatibility: two-phase behavior unchanged without --tier-config
-
-## What Is NOT Done
-
-- :white_large_square: `docs/api/` directory - API reference documentation not yet written
-- :white_large_square: 004-next-feature branch - no feature planned yet
-
-## Critical Bugs Fixed (History)
-
-### 2026-02-16 (001-ralph-loop-2026)
-
-- :white_check_mark: XState v5 test compatibility (createActor pattern)
-- :white_check_mark: ContextMonitor.registerAgent() missing in run.ts
-- :white_check_mark: Wrong model names in defaults.ts (all 3 fixed)
-- :white_check_mark: Budget false-positive check removed from isBudgetExceeded()
-- :white_check_mark: dotenv not loading at CLI entry point
-- :white_check_mark: SessionResetter constructor crash (options object required)
-- :white_check_mark: Test framework detection bypassed when custom command provided
+## Task Breakdown
+- [x] T001 Confirm active branch is `005-unified-test-gen` and `npm test` reports 273/273 passing before any changes (baseline validation)
+- [x] T002 Create `src/helpers/test-generator.ts` with module docblock, imports (`path`, `fs/promises`, `glob`, `ProviderRouter`, `Message`), and export the two interface stubs (`TestGeneratorOptions`, `TestGeneratorResult`) — no function bodies yet
+- [x] T003 Implement `resolveTestFilePath(targetFile: string, framework: string): string | null` (NOT exported) in `src/helpers/test-generator.ts` — maps `.ts`→`.test.ts`, `.js`→`.test.js`, `.py`→`test_{name}.py`, `.rs`→`null`, `.rb`→`{name}_spec.rb`, other→`.test.{ext}`, all in same directory as target
+- [x] T004 Implement `extractCodeBlock(raw: string): string` (NOT exported) in `src/helpers/test-generator.ts` — finds first ` ``` ` fence, skips optional language specifier line, reads until closing ` ``` `, returns trimmed content; returns `raw.trim()` if no fence found
+- [x] T005 Implement `buildTestCommand(testFilePath: string, framework: string): string` (NOT exported) in `src/helpers/test-generator.ts` — vitest→`npx vitest run {basename-no-ext}`, jest→`npx jest {basename-no-ext} --no-watch`, pytest→`pytest {relativeTestFilePath}`, mocha→`npx mocha {testFilePath}`, rspec→`bundle exec rspec {testFilePath}`, cargo/custom→`npm test` fallback
+- [x] T006 Implement `gatherExampleTests(workingDir: string): Promise<string[]>` (NOT exported) in `src/helpers/test-generator.ts` — globs `**/*.{test,spec}.{ts,js,py,rb}` ignoring `node_modules`, `dist`, `.git`; reads up to 2 files; returns array of content strings
+- [x] T007 Implement `buildGenerationMessages(targetFile, targetContent, objective, testFilePath, exampleTests, packageJson): Message[]` (NOT exported) in `src/helpers/test-generator.ts` — returns `[systemMsg, userMsg]` per the prompt design in `contracts/test-generator-api.md`; includes `<examples>` block if examples exist, else `<package-json>` block if packageJson non-empty
+- [x] T008 Verify foundational checkpoint: run `npx tsc --noEmit` (0 errors) and `npm test` (273/273 pass) — do NOT proceed to user story phases until both pass
+- [x] T009 [US1] Write unit test group `describe('generateTestFile')` in `tests/unit/helpers/test-generator.test.ts` — 9 cases: router.complete() called with `provider: 'anthropic'`; default model is `claude-sonnet-4-20250514`; model override honored when `options.model` set; `fs.writeFile` called with resolved path and extracted code; returns correct `testCommand` for vitest; returns correct `testCommand` for pytest; throws when `.rs` target resolved (null path); includes up to 2 example contents in messages when available; falls back to package.json block when no examples
+- [x] T010 [US1] Implement `findExistingTests(targetFile: string, workingDir: string): Promise<string | null>` (EXPORTED) in `src/helpers/test-generator.ts` — resolves absolute path, checks for `.test.{ext}`, `.spec.{ext}`, `test_{name}.{ext}`, `{name}_spec.{ext}` patterns in same directory; returns found path or null; `.rs` files always return null
+- [x] T011 [US1] Implement `generateTestFile(options: TestGeneratorOptions): Promise<TestGeneratorResult>` (EXPORTED) in `src/helpers/test-generator.ts` — calls `resolveTestFilePath` (throws if null), reads source file, calls `gatherExampleTests`, reads `package.json`, calls `buildGenerationMessages`, calls `new ProviderRouter().complete({provider:'anthropic', model, messages, temperature:0.7, maxTokens:4096})`, extracts code block, writes file, returns result with `buildTestCommand` output
+- [x] T012 [US1] Add `generate?: boolean` field to `RunOptions` interface in `src/cli/commands/run.ts` (after `tierConfig?: string` field, line ~79)
+- [x] T013 [US1] Insert generation block in `src/cli/commands/run.ts` after `prepareRunParameters()` call (~line 111) and BEFORE `initializeInfrastructure()` call (~line 113) — dynamic import `test-generator`, call `findExistingTests`, branch on result: if null and not `.rs` call `generateTestFile` and update `params.testCommand`, else log "Using existing tests:", wrap generate call in try/catch to warn-and-continue on LLM failure
+- [x] T014 [US1] Verify US1 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors), smoke test `quickstart.md Test 1` (test file created and loop runs)
+- [x] T015 [US2] Add unit test group `describe('findExistingTests')` in `tests/unit/helpers/test-generator.test.ts` — 5 cases: returns null when no `.test.ts` file exists; returns path when `foo.test.ts` exists adjacent; returns path when `foo.spec.ts` exists adjacent; always returns null for `.rs` files; returns path for `test_foo.py` prefix convention (Python)
+- [x] T016 [US2] Confirm `findExistingTests()` (implemented in T010) correctly handles all passthrough patterns — no new code needed; verify via unit tests from T015 that all 5 patterns pass
+- [x] T017 [US2] Verify US2 acceptance gate: run `npm test` (273+ pass), smoke test `quickstart.md Test 2` (logs "Using existing tests:", NO new file written)
+- [x] T018 [US3] Add `--no-generate` option to the `run` command in `src/cli/ralph-loop.ts` after the existing `--tier-config` option (~line 84): `.option('--no-generate', 'Skip automatic test file generation when no test file exists')`
+- [x] T019 [US3] Update `run` command description in `src/cli/ralph-loop.ts` line 35 from `'Run Ralph Loop iterations for a file or objective'` to `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`
+- [x] T020 [US3] Verify US3 acceptance gate: run `npx ralph-loop run --help` and confirm `--no-generate` appears; run `npm test` (273+ pass); smoke test `quickstart.md Test 3` (no file generated with `--no-generate`)
+- [x] T021 [US4] Confirm the `!options.test` guard in the generation block (inserted in T013) correctly skips generation when `--test` is provided — no new code needed; verify by reading the block and smoke-testing `quickstart.md Test 4`
+- [x] T022 [US4] Verify US4 acceptance gate: smoke test `quickstart.md Test 4` (generation skipped when `--test` provided); run `npm test` (273+ pass)
+- [x] T023 [US5] Add unit test group `describe('resolveTestFilePath')` in `tests/unit/helpers/test-generator.test.ts` — 6 cases: `.ts`→`.test.ts` in same dir; `.js`→`.test.js` in same dir; `.py`→`test_{name}.py` in same dir; `.rs`→`null`; `.rb`→`{name}_spec.rb` in same dir; nested path `src/util/math.ts`→`src/util/math.test.ts`
+- [x] T024 [US5] Confirm `resolveTestFilePath()` (implemented in T003) handles all 6 cases — no new code needed; verify via unit tests from T023 that all cases pass
+- [x] T025 [US5] Verify US5 acceptance gate: run `npm test` (273+ pass), `npx tsc --noEmit` (0 errors); smoke tests `quickstart.md Test 5` (Rust skipped) and `quickstart.md Test 6` (Python `test_math.py` naming)
+- [x] T026 [P] Add unit test group `describe('extractCodeBlock')` in `tests/unit/helpers/test-generator.test.ts` — 4 cases: extracts from ` ```typescript ``` ` fence; extracts from ` ```python ``` ` fence; returns raw string when no fence present; handles ` ``` ` without language specifier
+- [x] T027 Run full combined acceptance gate: `npm test` (all 273 original + all new unit tests pass), `npx tsc --noEmit` (0 errors) — MUST pass before proceeding
+- [x] T028 Commit all changes: `feat: add unified test generation for ma-loop — auto-generates tests when none exist`
 
 ## Recent Milestones
-
-- **2026-02-17**: 003-tiered-escalation complete and merged to main. 269/269 tests passing.
-  N-Tier Model Escalation implemented across 31 tasks. New lifecycle modules (tier-config,
-  tier-engine, tier-accumulator, tier-db), 8 new interfaces, --tier-config CLI flag, SQLite
-  audit DB, accumulated failure context accumulation with 4000-char cap.
-
-- **2026-02-17**: 002-simple-escalation complete and merged to main. 247/247 tests passing.
-  Simple Mode + Auto-Escalation implemented across 28 tasks. New interfaces, new CLI flags,
-  complete rewrite of run.ts main loop, Librarian informed-start via "PRIOR ATTEMPTS:" header.
-
-- **2026-02-16**: All 216 tests passing, full E2E verified with real APIs, 6 critical runtime
-  bugs fixed. Branch `001-ralph-loop-2026` production-ready and merged to main.
-
-- **Wave 26.5 + 26.9**: Eliminated ALL mock code; real LLM integration confirmed with all 3
-  providers. API keys collected and verified.
-
-- **Wave 27 & 28**: CLI commands implemented (`run`, `config`, `status`, `reset`).
-  TestRunner integrated with all parsers.
-
-- **Wave 26**: Cost/token tracking live. ProviderRouter handles multi-provider routing and failover.
-
-- **Waves 1-24**: Complete multi-agent system built from scratch over 28+ waves including
-  state machine, lifecycle management, MemoryVault, plugin system, chaos engineering.
-
-## Known Remaining Issues
-
-- `package-lock.json` has minor drift (cosmetic, not functional)
-- `docs/api/` is still unwritten (low priority)
+b9cd46f [MILESTONE] Dev-kid initialized

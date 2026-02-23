@@ -9,7 +9,10 @@
 
 import { exec } from 'child_process';
 import { promisify } from 'util';
-import { detectFramework, getDefaultTestCommand } from '../parsers/framework-detector';
+import {
+  detectFramework,
+  getDefaultTestCommand,
+} from '../parsers/framework-detector';
 import { parserRegistry } from '../parsers/base-parser';
 import { JestParser } from '../parsers/jest-parser';
 import { PytestParser } from '../parsers/pytest-parser';
@@ -107,7 +110,7 @@ export class TestRunner {
         stdout,
         stderr,
         testCommand,
-        framework
+        framework,
       );
 
       const duration = Date.now() - startTime;
@@ -137,7 +140,7 @@ export class TestRunner {
         const results = await this.parseTestOutput(
           error.stdout || '',
           error.stderr || '',
-          options.testCommand || 'unknown'
+          options.testCommand || 'unknown',
         );
 
         return {
@@ -169,7 +172,7 @@ export class TestRunner {
     stdout: string,
     stderr: string,
     command: string,
-    detectedFramework?: string
+    detectedFramework?: string,
   ): Promise<RalphTestResult> {
     // Combine stdout and stderr for parsing
     const fullOutput = stdout + '\n' + stderr;
@@ -259,7 +262,7 @@ export class TestRunner {
    */
   async runTestsWithRetry(
     options: TestRunOptions,
-    maxRetries: number = 1
+    maxRetries: number = 1,
   ): Promise<TestRunResult> {
     let lastResult: TestRunResult | null = null;
 
@@ -275,7 +278,10 @@ export class TestRunner {
       }
 
       // Don't retry if it was a parse error or timeout
-      if (lastResult.error?.includes('timeout') || lastResult.error?.includes('parse')) {
+      if (
+        lastResult.error?.includes('timeout') ||
+        lastResult.error?.includes('parse')
+      ) {
         break;
       }
     }
@@ -288,14 +294,19 @@ export class TestRunner {
    */
   async runTestsForFile(
     filePath: string,
-    options: Omit<TestRunOptions, 'testCommand'>
+    options: Omit<TestRunOptions, 'testCommand'>,
   ): Promise<TestRunResult> {
     // Detect framework
     const detection = await detectFramework(options.workingDirectory);
-    let testCommand = detection.command || getDefaultTestCommand(detection.framework);
+    let testCommand =
+      detection.command || getDefaultTestCommand(detection.framework);
 
     // Add file filter to command
-    testCommand = this.addFileFilterToCommand(testCommand, filePath, detection.framework);
+    testCommand = this.addFileFilterToCommand(
+      testCommand,
+      filePath,
+      detection.framework,
+    );
 
     return this.runTests({
       ...options,
@@ -309,7 +320,7 @@ export class TestRunner {
   private addFileFilterToCommand(
     command: string,
     filePath: string,
-    framework: string
+    framework: string,
   ): string {
     switch (framework) {
       case 'vitest':

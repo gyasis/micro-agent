@@ -2,7 +2,7 @@
 
 **Purpose**: Technical constraints and environment
 
-**Last Updated**: 2026-02-17 (003-tiered-escalation)
+**Last Updated**: 2026-02-22 (005-unified-test-gen)
 
 ## Tech Stack
 
@@ -86,11 +86,20 @@ src/
     schema-validator.ts    # Zod schemas
     config-loader.ts       # Auto-discovery loader
     defaults.ts            # Default configuration
+  helpers/
+    test-generator.ts      # NEW in 005: findExistingTests(), generateTestFile(); pure-function
+                           #   test generation; language-aware path naming per extension;
+                           #   ProviderRouter.complete() with provider:'anthropic'; dynamic import
+                           #   from run.ts; Rust (.rs) always returns null/skipped;
+                           #   buildTestCommand() scopes to generated file not full suite
   cli/
-    ralph-loop.ts          # CLI entry point (loads dotenv here); --simple/--no-escalate/--full flags
+    ralph-loop.ts          # CLI entry point (loads dotenv here); --simple/--no-escalate/--full/
+                           #   --no-generate flags (005); updated description mentions auto-gen
     commands/
       run.ts               # Main run command; 3-phase loop (Phase A/B/C); runSimpleIteration();
-                           #   buildFailureSummary(); per-phase cost tracking (rewritten in 002)
+                           #   buildFailureSummary(); per-phase cost tracking (rewritten in 002);
+                           #   generation step added in 005 (after prepareRunParameters, before
+                           #   initializeInfrastructure); RunOptions.generate?: boolean
       config.ts            # Config inspection command
       status.ts            # Status command
       reset.ts             # Reset command
@@ -109,6 +118,10 @@ tests/
                            #   tier-config.test.ts (unit tests for Zod schemas + loader, 003)
                            #   tier-accumulator.test.ts (unit tests for accumulator, 003)
                            #   tier-db.test.ts (unit tests for SQLite audit DB, 003)
+    helpers/               # Helper module tests
+                           #   test-generator.test.ts (30 tests, added in 005; covers
+                           #     generateTestFile, findExistingTests, resolveTestFilePath,
+                           #     extractCodeBlock, buildTestCommand)
     memory/                # MemoryVault tests
     parsers/               # Parser tests
   integration/             # Integration tests
@@ -143,7 +156,7 @@ The `config()` call at the top of `src/cli/ralph-loop.ts` loads from `process.cw
 ## Build System
 
 - `npm run build` - TypeScript compile to `dist/`
-- `npm test` - Run Vitest (all 269 tests as of 2026-02-17, +22 from 003-tiered-escalation)
+- `npm test` - Run Vitest (303 tests as of 2026-02-22; 273 from 004 + 30 new from 005)
 - `npm run lint` - ESLint
 - `npm run format` - Prettier
 
@@ -154,13 +167,16 @@ The `config()` call at the top of `src/cli/ralph-loop.ts` loads from `process.cw
 - Rust (cargo test)
 - Custom (any command with detectable output)
 
-## Git Branch Status (2026-02-17)
+## Git Branch Status (2026-02-22)
 
-- **Active branch**: `main`
+- **Active branch**: `005-unified-test-gen` (ready to PR -> main)
 - **001-ralph-loop-2026**: merged to main (commit `c527da1`)
 - **002-simple-escalation**: merged to main (feature commit `ec7e7c6`, merge commit `8d42927`)
 - **003-tiered-escalation**: merged to main via no-ff merge commit (all 31 tasks complete)
   - Key commits: `b1e8506` (docs), `1afed92` (wire tier engine into runCommand),
     `93177e0` (Wave 1 foundation), `9c8c192` (chore: tasks.md + execution_plan.json)
-- **Last merge commit**: no-ff merge of `003-tiered-escalation` into `main`
-- **Status**: 269/269 tests passing, main is stable
+- **004-fix-outstanding-issues**: committed (`4749480`), merged to main (970877b memory-bank
+  update commit after merge)
+- **005-unified-test-gen**: feature complete, 28 tasks done, 303/303 tests passing; 8 wave
+  checkpoint commits (`09a782c` through `f604824`); PR to main not yet opened
+- **Status**: 303/303 tests passing on 005 branch, main is stable at 273/273

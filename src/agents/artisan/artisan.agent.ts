@@ -54,7 +54,9 @@ export class ArtisanAgent extends BaseAgent {
    * 4. Parse and validate output
    * 5. Prepare code changes
    */
-  protected async onExecute(context: AgentContext): Promise<AgentResult<ArtisanOutput>> {
+  protected async onExecute(
+    context: AgentContext,
+  ): Promise<AgentResult<ArtisanOutput>> {
     this.emitProgress('Starting code generation', {
       objective: context.objective,
       contextFiles: context.librarianContext?.relevantFiles.length || 0,
@@ -79,7 +81,11 @@ export class ArtisanAgent extends BaseAgent {
       }
 
       // Step 2: Generate code with Claude (including learned solutions)
-      const { generated, usage } = await this.generateCode(request, context, learnedSolutions);
+      const { generated, usage } = await this.generateCode(
+        request,
+        context,
+        learnedSolutions,
+      );
       if (usage) {
         totalTokensUsed += usage.total;
         totalInputTokens += usage.input;
@@ -88,7 +94,10 @@ export class ArtisanAgent extends BaseAgent {
       this.emitProgress('Code generated', { file: generated.filePath });
 
       // Step 3: Prepare code changes
-      const changes = await this.prepareChanges(generated, context.workingDirectory);
+      const changes = await this.prepareChanges(
+        generated,
+        context.workingDirectory,
+      );
       this.emitProgress('Changes prepared', { count: changes.length });
 
       // Step 4: Write code to disk
@@ -96,7 +105,11 @@ export class ArtisanAgent extends BaseAgent {
       this.emitProgress('Code written to disk');
 
       // Calculate cost from token usage
-      const cost = calculateCost(this.config.model, totalInputTokens, totalOutputTokens);
+      const cost = calculateCost(
+        this.config.model,
+        totalInputTokens,
+        totalOutputTokens,
+      );
 
       return {
         success: true,
@@ -135,11 +148,13 @@ export class ArtisanAgent extends BaseAgent {
   /**
    * Query MemoryVault for similar error patterns (T063)
    */
-  private async queryMemoryVault(context: AgentContext): Promise<Array<{
-    errorCategory: string;
-    solution: string;
-    successRate: number;
-  }>> {
+  private async queryMemoryVault(context: AgentContext): Promise<
+    Array<{
+      errorCategory: string;
+      solution: string;
+      successRate: number;
+    }>
+  > {
     if (!this.memoryVault) {
       return [];
     }
@@ -151,7 +166,7 @@ export class ArtisanAgent extends BaseAgent {
       const results = await this.memoryVault.searchSimilarErrors(objective, {
         limit: 3,
         minSimilarity: 0.7,
-        language: context.language || 'typescript',
+        language: (context.metadata?.language as string) || 'typescript',
       });
 
       this.logger.info('MemoryVault query results', {
@@ -171,7 +186,11 @@ export class ArtisanAgent extends BaseAgent {
   private async generateCode(
     request: CodeGenerationRequest,
     context: AgentContext,
-    learnedSolutions: Array<{ errorCategory: string; solution: string; successRate: number }> = []
+    learnedSolutions: Array<{
+      errorCategory: string;
+      solution: string;
+      successRate: number;
+    }> = [],
   ): Promise<{ generated: GeneratedCode; usage: TokenUsage }> {
     const prompt = this.buildCodePrompt(request, context, learnedSolutions);
 
@@ -196,27 +215,37 @@ export class ArtisanAgent extends BaseAgent {
   private buildCodePrompt(
     request: CodeGenerationRequest,
     context: AgentContext,
-    learnedSolutions: Array<{ errorCategory: string; solution: string; successRate: number }> = []
+    learnedSolutions: Array<{
+      errorCategory: string;
+      solution: string;
+      successRate: number;
+    }> = [],
   ): string {
     const contextSection = this.formatContextFiles(request.context);
-    const librarianSummary = context.librarianContext?.contextSummary || 'No context summary available';
+    const librarianSummary =
+      context.librarianContext?.contextSummary ||
+      'No context summary available';
 
     const testInfo = `Test command: ${request.testCommand}
 Test framework: ${request.testFramework}`;
 
     const constraintsSection = request.constraints
-      ? `\nConstraints:\n${request.constraints.map(c => `- ${c}`).join('\n')}`
+      ? `\nConstraints:\n${request.constraints.map((c) => `- ${c}`).join('\n')}`
       : '';
 
     // T063: Include learned solutions from MemoryVault
-    const learnedSection = learnedSolutions.length > 0
-      ? `\nLearned solutions from past iterations:
-${learnedSolutions.map((sol, i) =>
-  `${i + 1}. ${sol.errorCategory}: ${sol.solution} (success rate: ${(sol.successRate * 100).toFixed(0)}%)`
-).join('\n')}
+    const learnedSection =
+      learnedSolutions.length > 0
+        ? `\nLearned solutions from past iterations:
+${learnedSolutions
+  .map(
+    (sol, i) =>
+      `${i + 1}. ${sol.errorCategory}: ${sol.solution} (success rate: ${(sol.successRate * 100).toFixed(0)}%)`,
+  )
+  .join('\n')}
 
 IMPORTANT: Apply these learned solutions to avoid repeating past mistakes.`
-      : '';
+        : '';
 
     return `Objective: ${request.objective}
 
@@ -255,7 +284,7 @@ Then explain your reasoning and approach in 2-3 sentences.`;
     const topFiles = files.slice(0, 5); // Limit to top 5 to avoid token overuse
 
     return topFiles
-      .map(file => {
+      .map((file) => {
         const preview = file.content.split('\n').slice(0, 30).join('\n');
         return `File: ${file.path}
 ${file.relevanceScore ? `Relevance: ${file.relevanceScore.toFixed(2)}` : ''}
@@ -272,7 +301,7 @@ ${file.content.split('\n').length > 30 ? '... (truncated)' : ''}
    */
   private parseCodeResponse(
     response: string,
-    request: CodeGenerationRequest
+    request: CodeGenerationRequest,
   ): GeneratedCode {
     // Extract code from markdown code blocks
     const codeBlockRegex = /```(?:typescript|javascript|ts|js)?\n([\s\S]*?)```/;
@@ -285,13 +314,18 @@ ${file.content.split('\n').length > 30 ? '... (truncated)' : ''}
     const code = match[1].trim();
 
     // Extract reasoning (everything after the code block)
-    const reasoningStart = response.indexOf('```', match.index! + match[0].length);
-    const reasoning = reasoningStart !== -1
-      ? response.substring(reasoningStart + 3).trim()
-      : 'Code generated based on objective';
+    const reasoningStart = response.indexOf(
+      '```',
+      match.index! + match[0].length,
+    );
+    const reasoning =
+      reasoningStart !== -1
+        ? response.substring(reasoningStart + 3).trim()
+        : 'Code generated based on objective';
 
     // Determine file path
-    const filePath = request.targetFile || this.inferFilePath(code, request.objective);
+    const filePath =
+      request.targetFile || this.inferFilePath(code, request.objective);
 
     return {
       filePath,
@@ -331,9 +365,7 @@ ${file.content.split('\n').length > 30 ? '... (truncated)' : ''}
    * Convert to kebab-case
    */
   private toKebabCase(str: string): string {
-    return str
-      .replace(/([a-z])([A-Z])/g, '$1-$2')
-      .toLowerCase();
+    return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
   }
 
   /**
@@ -341,7 +373,7 @@ ${file.content.split('\n').length > 30 ? '... (truncated)' : ''}
    */
   private async prepareChanges(
     generated: GeneratedCode,
-    workingDir: string
+    workingDir: string,
   ): Promise<CodeChange[]> {
     const fullPath = path.resolve(workingDir, generated.filePath);
     const changes: CodeChange[] = [];
@@ -372,7 +404,10 @@ ${file.content.split('\n').length > 30 ? '... (truncated)' : ''}
   /**
    * Write generated code to disk
    */
-  private async writeCode(generated: GeneratedCode, workingDir: string): Promise<void> {
+  private async writeCode(
+    generated: GeneratedCode,
+    workingDir: string,
+  ): Promise<void> {
     const fullPath = path.resolve(workingDir, generated.filePath);
     const dir = path.dirname(fullPath);
 
@@ -391,7 +426,10 @@ ${file.content.split('\n').length > 30 ? '... (truncated)' : ''}
   /**
    * Validate generated code syntax
    */
-  private async validateSyntax(code: string, filePath: string): Promise<boolean> {
+  private async validateSyntax(
+    code: string,
+    filePath: string,
+  ): Promise<boolean> {
     // Basic validation: check for common syntax errors
     const hasUnmatchedBraces = this.checkBracesBalance(code);
     if (!hasUnmatchedBraces) {

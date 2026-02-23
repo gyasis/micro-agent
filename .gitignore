@@ -5,3 +5,5 @@ debug.ralph/
 .env*
 coverage/
 dist/
+# Specstory captures full session transcripts including env vars — never commit
+.specstory/

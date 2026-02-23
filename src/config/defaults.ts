@@ -79,7 +79,7 @@ export function getDefaults(): RalphConfig {
     },
 
     memory: {
-      vectorDb: 'chromadb',
+      vectorDb: 'lancedb',
       embeddingModel: 'all-MiniLM-L6-v2',
       similarityThreshold: 0.85,
       maxPatterns: 1000,

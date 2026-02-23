@@ -84,7 +84,10 @@ export const BudgetConfigSchema = z.object({
  * Memory (MemoryVault) configuration
  */
 export const MemoryConfigSchema = z.object({
-  vectorDb: z.enum(['chromadb', 'lancedb']).default('chromadb'),
+  vectorDb: z
+    .enum(['lancedb', 'vectra', 'chromadb'])
+    .default('lancedb')
+    .transform((v) => (v === 'chromadb' ? 'lancedb' : v)),
   embeddingModel: z.string().default('all-MiniLM-L6-v2'),
   similarityThreshold: z.number().min(0).max(1).default(0.85),
   maxPatterns: z.number().positive().default(1000),

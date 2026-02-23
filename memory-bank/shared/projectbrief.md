@@ -2,7 +2,7 @@
 
 **Purpose**: North Star document - why this project exists
 
-**Last Updated**: 2026-02-20 (004-fix-outstanding-issues complete)
+**Last Updated**: 2026-02-22 (005-unified-test-gen complete)
 
 ## Vision
 
@@ -25,15 +25,16 @@ system avoids the "Dumb Zone" degradation that plagues long conversations.
 
 ## Success Criteria
 
-- All 273 tests genuinely pass (currently: YES as of 2026-02-20; 269 original + 4 new
-  ChromaDB fallback tests added in 004-fix-outstanding-issues)
+- All 303 tests genuinely pass (currently: YES as of 2026-02-22; 273 from 004 + 30 new test-
+  generator unit tests added in 005-unified-test-gen)
 - End-to-end Ralph Loop workflow verified with real APIs (Gemini + Claude + GPT) -- VERIFIED
 - Cost per iteration is tracked and stays within configurable budget (~$0.02 typical)
 - Three agents collaborate to fix a real code bug (verified with `math.ts` example)
 - Branch `001-ralph-loop-2026` merged to `main` (commit c527da1) -- DONE
 - Branch `002-simple-escalation` merged to `main` (commit 8d42927) -- DONE
 - Branch `003-tiered-escalation` merged to `main` (no-ff merge) -- DONE
-- Branch `004-fix-outstanding-issues` committed (commit 4749480), ready to merge -- DONE
+- Branch `004-fix-outstanding-issues` committed (commit 4749480), merged to main -- DONE
+- Branch `005-unified-test-gen` fully implemented (8 wave commits, 303/303 tests) -- READY FOR PR
 - Simple Mode + Auto-Escalation pipeline operational with `--simple`, `--full`, `--no-escalate` flags
 - N-Tier Model Escalation pipeline operational with `--tier-config <path>` flag and JSON/YAML
   tier config files
@@ -42,6 +43,9 @@ system avoids the "Dumb Zone" degradation that plagues long conversations.
 - ChromaDB offline fallback operational -- MemoryVault degrades gracefully if server absent
 - Actionable error messages with `-> Fix:` remediation hints for all auth/config failures
 - API documentation written -- `docs/api/` has 5 files totaling 1668 lines
+- Unified test generation operational -- `ralph-loop run` auto-generates test files when none
+  exist, using `--no-generate` to opt out; language-aware naming for TS/JS/Python/Ruby; Rust
+  always skipped; scoped test command targets generated file only
 
 ## Constraints
 

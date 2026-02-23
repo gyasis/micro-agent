@@ -2,7 +2,7 @@
 
 **Purpose**: Architecture patterns and design decisions
 
-**Last Updated**: 2026-02-17 (003-tiered-escalation)
+**Last Updated**: 2026-02-22 (005-unified-test-gen)
 
 ## Ralph Principles (LLM Smart Zone Optimization)
 
@@ -162,6 +162,92 @@ tiers:
   unchanged when the flag is absent
 - Escalation is OPTIONAL; if not specified, default simple/full mode works without any change
 
+### Test Generation Before Loop Pattern (005-unified-test-gen)
+
+An optional pre-loop step that auto-generates a test file when none exists for the target file.
+Activated by default; disabled with `--no-generate`. Runs after `prepareRunParameters()` and
+before `initializeInfrastructure()` in `src/cli/commands/run.ts`.
+
+**Flow**:
+1. `findExistingTests(targetFile, workingDir)` checks for `.test.{ext}`, `.spec.{ext}`,
+   `test_{name}.{ext}`, and `{name}_spec.{ext}` patterns in the target's directory.
+2. If a test file already exists: logs "Using existing tests: <path>", no generation.
+3. If no test file exists (and not skipped): calls `generateTestFile(options)` which:
+   - Resolves the output path via `resolveTestFilePath()` (returns `null` for `.rs`, skips Rust)
+   - Reads the source file
+   - Gathers up to 2 existing test files from the working directory as style examples
+   - Reads `package.json` for framework context as fallback when no examples found
+   - Calls `ProviderRouter.complete()` with `provider:'anthropic'` and `claude-sonnet-4-20250514`
+   - Extracts the code block from the LLM response
+   - Writes the generated test file to disk
+   - Returns `{ testFilePath, testCommand, generated: true }`
+4. `params.testCommand` is updated to a scoped command targeting only the generated file.
+
+**Skip conditions**:
+- `options.generate === false` (`--no-generate` flag)
+- `options.test` already set by the user (`--test` flag)
+- Target file has `.rs` extension (Rust: inline `#[test]`, cannot auto-generate external file)
+- `!params.targetFile` (objective-only mode, no file target)
+- Any exception during generation: warns and continues without generated tests
+
+**Language-aware naming** (via `resolveTestFilePath()`):
+- `.ts` -> `{name}.test.ts` (same directory)
+- `.js` -> `{name}.test.js` (same directory)
+- `.py` -> `test_{name}.py` (same directory)
+- `.rs` -> `null` (always skip)
+- `.rb` -> `{name}_spec.rb` (same directory)
+- other -> `{name}.test.{ext}` (same directory)
+
+**Scoped test command** (via `buildTestCommand()`):
+- vitest -> `npx vitest run {basename-no-ext}`
+- jest -> `npx jest {basename-no-ext} --no-watch`
+- pytest -> `pytest {relativeTestFilePath}`
+- mocha -> `npx mocha {testFilePath}`
+- rspec -> `bundle exec rspec {testFilePath}`
+- cargo/custom -> `npm test` fallback
+
+**Key module**: `src/helpers/test-generator.ts`
+
+---
+
+### speckit + devkid Feature Workflow (005-unified-test-gen)
+
+The standard workflow for implementing a new feature in this project now uses the full
+speckit + devkid pipeline. This was first used end-to-end in 005-unified-test-gen.
+
+**Phases**:
+
+1. **speckit.specify** -> `specs/{branch}/spec.md`
+   - Captures requirements, acceptance criteria, user stories
+
+2. **speckit.plan** -> `specs/{branch}/plan.md` + supporting files:
+   - `research.md` (technical investigation, alternatives considered)
+   - `data-model.md` (interface/type definitions)
+   - `contracts/` (API contracts between modules)
+   - `quickstart.md` (smoke test checklist)
+
+3. **speckit.tasks** -> `specs/{branch}/tasks.md`
+   - Numbered tasks organized into implementation phases
+   - Each task has acceptance gate criteria
+   - 005 had 26 tasks in 8 phases (28 tasks with 2 validation/commit tasks)
+
+4. **devkid.orchestrate** -> `execution_plan.json`
+   - Groups tasks into parallel/sequential execution waves
+   - Defines checkpoints between waves
+   - 005 had 8 execution waves
+
+5. **devkid.execute** -> commits each wave
+   - Each wave is a discrete git checkpoint: `[CHECKPOINT] Wave N Complete`
+   - On completion: 0 TypeScript errors, all tests passing
+
+**Benefits**:
+- Spec-driven: requirements captured before implementation begins
+- Wave isolation: if a wave fails, rollback to prior checkpoint is clean
+- Audit trail: every wave is a git commit with clear scope
+- Memory-bank compatible: task list survives session resets via disk
+
+---
+
 ### State Machine Pattern (XState v5)
 
 States: `librarian` -> `artisan` -> `critic` -> `testing` -> (loop or `completion`)
@@ -306,3 +392,29 @@ pass/fail parsing regardless of command override.
   per iteration) is preserved inside each tier. Tier history is injected as a summary string
   via `escalationContext` at tier start, NOT as conversation history. Each iteration within a
   tier still starts with a clean LLM session.
+
+- **Test Generation Uses ProviderRouter.complete() Not getSimpleCompletion()**: The test
+  generator in `src/helpers/test-generator.ts` calls `new ProviderRouter().complete({...})`
+  with `provider:'anthropic'` and the configured artisan model. The older `getSimpleCompletion()`
+  helper has a different signature and is being phased out. Always use `ProviderRouter.complete()`
+  for new LLM call sites.
+
+- **Test Generation is Pre-Loop, Not In-Loop**: The `generateTestFile()` call happens once,
+  before the Ralph Loop starts. It is NOT called on every iteration. Once the test file is
+  written and `params.testCommand` is updated, the loop runs exactly as if the user had provided
+  the test command manually.
+
+- **Scoped Test Command After Generation**: When a test file is auto-generated, the test command
+  is scoped to that specific file (e.g., `npx vitest run math.test`), NOT the full suite
+  (`npm test`). This is critical: running 303 tests on every loop iteration when only one file
+  is being fixed would be extremely slow and expensive.
+
+- **Dynamic Import Pattern in run.ts**: `test-generator.ts` is imported via a dynamic `import()`
+  call inside the generation block, matching the pattern used for `runSimpleIteration`. This
+  avoids any risk of circular imports between the CLI orchestration layer and helper modules.
+
+- **Rust Test Generation is Always Skipped**: `.rs` files return `null` from
+  `resolveTestFilePath()` and the generation block treats `null` as a skip signal. Rust uses
+  inline `#[test]` modules that require understanding the full crate structure. Attempting to
+  auto-generate Rust tests without that context produces broken code. Users writing Rust must
+  provide their own test files and pass `--test cargo test` explicitly.

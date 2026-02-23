@@ -4,6 +4,168 @@
 
 ---
 
+## 2026-02-22 (Session 1 -- 005-unified-test-gen)
+
+### Session: 005-unified-test-gen -- Unified Test Generation Complete
+
+**Branch**: `005-unified-test-gen` (branched from `004-fix-outstanding-issues`)
+
+**Objective**: Implement automatic test file generation for the ma-loop CLI. When `ralph-loop run`
+is invoked on a target file that has no existing test file, the system should auto-generate one
+using Claude before starting the loop.
+
+**Commits**: 8 wave checkpoints (`09a782c` through `f604824`)
+
+**Test count at session end**: 303/303 (18 test files), up from 273/273
+
+---
+
+### Workflow
+
+This was the first feature to use the full speckit + devkid pipeline end-to-end:
+
+1. `speckit.specify` produced `specs/005-unified-test-gen/spec.md`
+2. `speckit.plan` produced `plan.md`, `research.md`, `data-model.md`, `contracts/`, `quickstart.md`
+3. `speckit.tasks` produced `tasks.md` (26 tasks organized into 8 phases)
+4. `devkid.orchestrate` produced `execution_plan.json` (8 execution waves)
+5. `devkid.execute` ran all 8 waves with git checkpoint commits between each
+
+---
+
+### New Module: `src/helpers/test-generator.ts`
+
+Pure-function module with two exported functions and several private helpers.
+
+**Exported functions**:
+
+1. `findExistingTests(targetFile: string, workingDir: string): Promise<string | null>`
+   - Resolves absolute path to target file
+   - Checks for `.test.{ext}`, `.spec.{ext}`, `test_{name}.{ext}`, `{name}_spec.{ext}` patterns
+     in the same directory as the target
+   - Returns found path or `null`
+   - Rust (`.rs`) files always return `null` (inline `#[test]` convention)
+
+2. `generateTestFile(options: TestGeneratorOptions): Promise<TestGeneratorResult>`
+   - Calls `resolveTestFilePath()` -- throws if null (Rust or unknown extension)
+   - Reads source file content
+   - Calls `gatherExampleTests()` to find up to 2 existing tests as style examples
+   - Reads `package.json` for framework context if no examples
+   - Calls `buildGenerationMessages()` to construct the LLM prompt
+   - Calls `new ProviderRouter().complete({provider:'anthropic', model, messages, temperature:0.7,
+     maxTokens:4096})` -- uses `ANTHROPIC_API_KEY` from env
+   - Extracts code block from LLM response via `extractCodeBlock()`
+   - Writes generated test file to disk
+   - Returns `{ testFilePath, testCommand, generated: true }`
+
+**Private helpers**:
+
+- `resolveTestFilePath(targetFile, framework)` -- language-aware naming:
+  - `.ts` -> `{name}.test.ts`
+  - `.js` -> `{name}.test.js`
+  - `.py` -> `test_{name}.py`
+  - `.rs` -> `null` (always skip)
+  - `.rb` -> `{name}_spec.rb`
+  - other -> `{name}.test.{ext}`
+  - All output files in same directory as target
+
+- `buildTestCommand(testFilePath, framework)` -- scopes test command to generated file only:
+  - vitest -> `npx vitest run {basename-no-ext}`
+  - jest -> `npx jest {basename-no-ext} --no-watch`
+  - pytest -> `pytest {relativeTestFilePath}`
+  - mocha -> `npx mocha {testFilePath}`
+  - rspec -> `bundle exec rspec {testFilePath}`
+  - cargo/custom -> `npm test` fallback
+
+- `gatherExampleTests(workingDir)` -- globs `**/*.{test,spec}.{ts,js,py,rb}` ignoring
+  `node_modules`, `dist`, `.git`; reads up to 2 files; returns content strings
+
+- `buildGenerationMessages(...)` -- returns `[systemMsg, userMsg]` pair; includes `<examples>`
+  block if examples exist, else `<package-json>` block if packageJson non-empty
+
+- `extractCodeBlock(raw)` -- finds first ` ``` ` fence, skips optional language specifier line,
+  reads until closing ` ``` `; returns `raw.trim()` if no fence found
+
+**Decision -- ProviderRouter.complete() not getSimpleCompletion()**:
+`ProviderRouter.complete()` reads `ANTHROPIC_API_KEY` from env and is consistent with the rest
+of the stack. `getSimpleCompletion()` was an earlier helper with a different signature that some
+code still references but is being phased out.
+
+**Decision -- Dynamic import pattern in run.ts**:
+`test-generator.ts` is imported via a dynamic `import()` call inside the generation block in
+`run.ts`. This matches the pattern used by `runSimpleIteration` and prevents any circular
+dependency risk.
+
+---
+
+### Modified: `src/cli/commands/run.ts`
+
+- Added `generate?: boolean` field to `RunOptions` interface (after `tierConfig?: string`)
+- Inserted generation block after `prepareRunParameters()` and before `initializeInfrastructure()`:
+  - Dynamic import `test-generator`
+  - Calls `findExistingTests()` -- if a test file is already present, logs "Using existing
+    tests:" and skips generation
+  - Skip conditions: `!params.targetFile`, `options.generate === false`, `options.test` already
+    set, `.rs` extension detected
+  - On generation: calls `generateTestFile()`, updates `params.testCommand` to the scoped command
+  - Wrapped in try/catch: LLM failure logs a warning and continues without generated tests
+
+**Decision -- scoped test command**:
+The generated test command targets only the generated file (e.g., `npx vitest run math.test`),
+not the full test suite (`npm test`). This prevents a 303-test run on every loop iteration when
+the user is only trying to fix one file.
+
+**Decision -- --artisan model flag reused for generation**:
+When the user passes `--artisan <model>`, that model is used for both code generation (Artisan
+agent) and test file generation. No new `--generate-model` flag was needed.
+
+---
+
+### Modified: `src/cli/ralph-loop.ts`
+
+- Added `--no-generate` flag to the `run` command after `--tier-config`:
+  ```
+  .option('--no-generate', 'Skip automatic test file generation when no test file exists')
+  ```
+- Updated run command description from:
+  `'Run Ralph Loop iterations for a file or objective'`
+  to:
+  `'Run Ralph Loop iterations for a file or objective (auto-generates tests if none exist)'`
+
+---
+
+### New Tests: `tests/unit/helpers/test-generator.test.ts`
+
+30 new unit tests across 5 describe blocks:
+
+1. `describe('generateTestFile')` -- 9 cases: ProviderRouter called with correct provider/model;
+   model override honored; fs.writeFile called with resolved path; vitest/pytest test commands;
+   throws for Rust; example tests injected; package.json fallback
+
+2. `describe('findExistingTests')` -- 5 cases: null when no test file; `.test.ts` found;
+   `.spec.ts` found; always null for `.rs`; `test_foo.py` prefix convention
+
+3. `describe('resolveTestFilePath')` -- 6 cases: `.ts`; `.js`; `.py`; `.rs` null; `.rb`; nested path
+
+4. `describe('extractCodeBlock')` -- 4 cases: typescript fence; python fence; no fence; no language specifier
+
+5. `describe('buildTestCommand')` -- 6 cases: vitest; jest; pytest; mocha; rspec; cargo fallback
+
+---
+
+**Decision -- Rust always skipped**:
+Rust uses inline `#[test]` modules within the source file itself. External test files in a
+separate `tests/` directory are possible but require additional module declaration syntax that
+the auto-generator cannot reliably produce without understanding the full crate structure.
+Skipping Rust and instructing the user to write their own tests is the correct conservative choice.
+
+---
+
+**Status at end of session**: `005-unified-test-gen` branch, commit `f604824`, 303/303 tests
+genuinely passing, `npx tsc --noEmit` clean. All 28 tasks complete. Branch is ready to merge
+to main (PR not yet opened).
+
+---
+
 ## 2026-02-20 (Session 2 -- 004-fix-outstanding-issues)
 
 ### Session: 004-fix-outstanding-issues -- All 5 Issues Resolved

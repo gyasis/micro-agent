@@ -4,10 +4,20 @@ How to configure different LLM models for each agent in Micro Agent.
 
 ## Quick Start
 
-Micro Agent uses 3 specialized agents, each optimized for different tasks:
-- **Librarian**: Analyzes codebase context (fast, cheap model recommended)
-- **Artisan**: Generates code fixes (powerful model recommended)
-- **Critic**: Reviews code quality (balanced model recommended)
+Micro Agent uses 4 specialized agents, each with different compute/inference requirements:
+
+| Agent | Role | Inference Need | Recommended Model |
+|-------|------|---------------|-------------------|
+| **Librarian** | Ranks + loads relevant files into context | **Low** — structured retrieval, no creative reasoning | `gemini-2.5-flash` |
+| **Artisan** | Writes/edits code to fix the bug | **High** — deep reasoning, code generation | `claude-sonnet-4-6` |
+| **Critic** | Reviews Artisan output, flags issues | **Medium** — structured analysis, structured output | `gpt-4.1-mini` |
+| **Chaos** | Adversarial testing — tries to break the code | **Medium-High** — creative adversarial thinking | `claude-sonnet-4-6` |
+
+**Rule of thumb:**
+- Librarian: fast + cheap (reads context, doesn't reason hard)
+- Artisan: most powerful you can afford (this is the fix engine)
+- Critic: fast + cheap (structured review, not open-ended)
+- Chaos: same tier as Artisan (needs creativity to find edge cases)
 
 ## Configuration Methods
 
@@ -117,9 +127,8 @@ ma-loop run src/file.ts \
 ```
 
 **Other Options:**
-- `gpt-4o` - More powerful
-- `gpt-4-turbo` - Optimized for speed
-- `o1-preview` - Advanced reasoning
+- `gpt-4.1` - More powerful (Critic on complex codebases)
+- `o1` - Advanced reasoning (very expensive, rarely needed for Critic)
 
 ## Model Selection Strategies
 

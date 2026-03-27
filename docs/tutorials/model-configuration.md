@@ -25,7 +25,7 @@ Create `.micro-agent.json` in your project root:
     },
     "artisan": {
       "provider": "anthropic",
-      "model": "claude-sonnet-4-20250514",
+      "model": "claude-sonnet-4-6",
       "temperature": 0.7
     },
     "critic": {
@@ -53,7 +53,7 @@ Set model overrides via environment:
 ```bash
 # In your .env file
 LIBRARIAN_MODEL=gemini-2.5-flash
-ARTISAN_MODEL=claude-sonnet-4-20250514
+ARTISAN_MODEL=claude-sonnet-4-6
 CRITIC_MODEL=gpt-4o-mini
 
 # API Keys
@@ -69,12 +69,12 @@ Override models for a single run:
 ```bash
 ma-loop run src/file.ts \
   --librarian gemini-2.5-flash \
-  --artisan claude-sonnet-4-20250514 \
+  --artisan claude-sonnet-4-6 \
   --critic gpt-4o-mini \
   --max-budget 0.50
 ```
 
-## Available Models (February 2026)
+## Available Models (March 2026)
 
 ### Google Gemini Models
 
@@ -98,13 +98,13 @@ ma-loop run src/file.ts \
 ```json
 {
   "provider": "anthropic",
-  "model": "claude-sonnet-4-20250514"  // Balanced power/speed
+  "model": "claude-sonnet-4-6"  // Balanced power/speed
 }
 ```
 
 **Other Options:**
-- `claude-opus-4-20250514` - Most powerful (expensive)
-- `claude-haiku-4-20250514` - Fastest (cheapest)
+- `claude-opus-4-6` - Most powerful (expensive)
+- `claude-haiku-4-5-20251001` - Fastest (cheapest)
 
 ### OpenAI Models
 
@@ -136,7 +136,7 @@ Best for: Rapid iteration, testing, development
   },
   "artisan": {
     "provider": "anthropic",
-    "model": "claude-haiku-4-20250514", // Fast & cheap
+    "model": "claude-haiku-4-5-20251001", // Fast & cheap
     "temperature": 0.7
   },
   "critic": {
@@ -162,7 +162,7 @@ Best for: Production use, important fixes
   },
   "artisan": {
     "provider": "anthropic",
-    "model": "claude-sonnet-4-20250514", // Balanced power
+    "model": "claude-sonnet-4-6", // Balanced power
     "temperature": 0.7
   },
   "critic": {
@@ -188,7 +188,7 @@ Best for: Critical bugs, complex refactoring
   },
   "artisan": {
     "provider": "anthropic",
-    "model": "claude-opus-4-20250514", // Most powerful
+    "model": "claude-opus-4-6", // Most powerful
     "temperature": 0.7
   },
   "critic": {
@@ -237,7 +237,7 @@ cat > .micro-agent.json <<EOF
 {
   "llm": {
     "librarian": {"provider": "google", "model": "gemini-2.5-flash"},
-    "artisan": {"provider": "anthropic", "model": "claude-sonnet-4-20250514"},
+    "artisan": {"provider": "anthropic", "model": "claude-sonnet-4-6"},
     "critic": {"provider": "openai", "model": "gpt-4o-mini"}
   }
 }
@@ -253,7 +253,7 @@ cat > .micro-agent.json <<EOF
 {
   "llm": {
     "librarian": {"provider": "google", "model": "gemini-2.5-flash"},
-    "artisan": {"provider": "anthropic", "model": "claude-haiku-4-20250514"},
+    "artisan": {"provider": "anthropic", "model": "claude-haiku-4-5-20251001"},
     "critic": {"provider": "openai", "model": "gpt-4o-mini"}
   }
 }
@@ -269,7 +269,7 @@ cat > .micro-agent.json <<EOF
 {
   "llm": {
     "librarian": {"provider": "google", "model": "gemini-2.5-pro"},
-    "artisan": {"provider": "anthropic", "model": "claude-opus-4-20250514"},
+    "artisan": {"provider": "anthropic", "model": "claude-opus-4-6"},
     "critic": {"provider": "openai", "model": "gpt-4o"}
   }
 }
@@ -323,7 +323,7 @@ Configure different models for different languages:
     "typescript": {
       "artisan": {
         "provider": "anthropic",
-        "model": "claude-sonnet-4-20250514"
+        "model": "claude-sonnet-4-6"
       }
     },
     "python": {
@@ -335,7 +335,7 @@ Configure different models for different languages:
     "rust": {
       "artisan": {
         "provider": "anthropic",
-        "model": "claude-opus-4-20250514"
+        "model": "claude-opus-4-6"
       }
     }
   }
@@ -376,7 +376,7 @@ Create `tiers.json` in your project:
       "mode": "simple",
       "maxIterations": 5,
       "models": {
-        "artisan": "claude-haiku-4-20250514"
+        "artisan": "claude-haiku-4-5-20251001"
       }
     },
     {
@@ -384,7 +384,7 @@ Create `tiers.json` in your project:
       "mode": "full",
       "maxIterations": 10,
       "models": {
-        "artisan": "claude-sonnet-4-20250514",
+        "artisan": "claude-sonnet-4-6",
         "librarian": "gemini-2.5-flash",
         "critic": "gpt-4o-mini"
       }
@@ -483,7 +483,7 @@ OPENAI_API_KEY=your-openai-key
 
 # Correct (2026 names):
 "gemini-2.5-flash"      ✅
-"claude-sonnet-4-20250514" ✅
+"claude-sonnet-4-6" ✅
 "gpt-4o-mini"           ✅
 ```
 
@@ -494,7 +494,7 @@ OPENAI_API_KEY=your-openai-key
 {
   "artisan": {
     "provider": "anthropic",
-    "model": "claude-haiku-4-20250514"  // Cheapest Claude
+    "model": "claude-haiku-4-5-20251001"  // Cheapest Claude
   }
 }
 ```
@@ -526,7 +526,7 @@ cat > .micro-agent.json <<EOF
 {
   "llm": {
     "librarian": {"provider": "google", "model": "gemini-2.5-flash"},
-    "artisan": {"provider": "anthropic", "model": "claude-sonnet-4-20250514"},
+    "artisan": {"provider": "anthropic", "model": "claude-sonnet-4-6"},
     "critic": {"provider": "openai", "model": "gpt-4o-mini"}
   },
   "budget": {

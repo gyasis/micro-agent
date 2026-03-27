@@ -50,13 +50,13 @@ program
   .option('-c, --config <path>', 'Path to ralph.config.yaml')
   .option(
     '--librarian <model>',
-    'Override Librarian model (e.g., gemini-2.0-pro)',
+    'Override Librarian model (e.g., gemini-2.5-flash)',
   )
   .option(
     '--artisan <model>',
-    'Override Artisan model (e.g., claude-sonnet-4.5)',
+    'Override Artisan model (e.g., claude-sonnet-4-6)',
   )
-  .option('--critic <model>', 'Override Critic model (e.g., gpt-4.1-mini)')
+  .option('--critic <model>', 'Override Critic model (e.g., gpt-4o-mini)')
   .option('--chaos <model>', 'Override Chaos model')
   .option('--no-adversarial', 'Skip adversarial testing')
   .option(

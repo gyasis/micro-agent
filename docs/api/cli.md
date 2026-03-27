@@ -53,9 +53,9 @@ ma-loop    run <target> [options]
 | `--max-duration <n>`          | `-d`  | number      | `15`       | Maximum wall-clock runtime in minutes. Loop exits when this limit is reached.                                    | `--max-duration 5`                              |
 | `--config <path>`             | `-c`  | path        | —          | Path to a `ralph.config.yaml` file. Overrides auto-discovery.                                                   | `--config ./configs/ralph.config.yaml`          |
 | `--librarian <model>`         | —     | string      | `gemini-2.5-flash`          | Override the Librarian agent model identifier.                                                  | `--librarian gemini-2.5-flash`                  |
-| `--artisan <model>`           | —     | string      | `claude-sonnet-4-20250514`  | Override the Artisan agent model identifier.                                                    | `--artisan claude-sonnet-4-20250514`            |
+| `--artisan <model>`           | —     | string      | `claude-sonnet-4-6`  | Override the Artisan agent model identifier.                                                    | `--artisan claude-sonnet-4-6`            |
 | `--critic <model>`            | —     | string      | `gpt-4o-mini`               | Override the Critic agent model identifier.                                                     | `--critic gpt-4o-mini`                          |
-| `--chaos <model>`             | —     | string      | —          | Override the Chaos (adversarial) agent model identifier.                                                         | `--chaos claude-sonnet-4-20250514`              |
+| `--chaos <model>`             | —     | string      | —          | Override the Chaos (adversarial) agent model identifier.                                                         | `--chaos claude-sonnet-4-6`              |
 | `--no-adversarial`            | —     | boolean     | `false`    | Skip the Chaos adversarial-testing phase entirely.                                                               | `--no-adversarial`                              |
 | `--reset-frequency <n>`       | —     | number      | `1`        | How often (in iterations) the context window is reset. Default `1` gives a fresh context every iteration.        | `--reset-frequency 3`                           |
 | `--verbose`                   | —     | boolean     | `false`    | Enable verbose structured logging — prints agent inputs/outputs, token counts, and per-iteration cost.           | `--verbose`                                     |
@@ -97,7 +97,7 @@ ralph-loop run ./src/math.ts --test "npm test" --tier-config ./tiers.json
 
 # Override models and use a custom framework
 ralph-loop run ./src/app.py --test "pytest" --framework pytest \
-  --librarian gemini-2.5-flash --artisan claude-sonnet-4-20250514 --critic gpt-4o-mini
+  --librarian gemini-2.5-flash --artisan claude-sonnet-4-6 --critic gpt-4o-mini
 ```
 
 ---

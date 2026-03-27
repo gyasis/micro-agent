@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-   <a href="https://www.npmjs.com/package/@builder.io/micro-agent"><img src="https://img.shields.io/npm/v/@builder.io/micro-agent" alt="Current version"></a>
+   <a href="https://www.npmjs.com/package/@gyasis/micro-agent"><img src="https://img.shields.io/npm/v/@gyasis/micro-agent" alt="Current version"></a>
 </p>
 
 # Micro Agent
@@ -38,10 +38,10 @@ An autonomous AI coding agent that iteratively writes and fixes code until all t
 
 ```bash
 # Global installation
-npm install -g @builder.io/micro-agent
+npm install -g @gyasis/micro-agent
 
 # Or use locally
-npm install @builder.io/micro-agent --save-dev
+npm install @gyasis/micro-agent --save-dev
 ```
 
 ### Basic Usage
@@ -322,7 +322,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
-      - run: npm install -g @builder.io/micro-agent
+      - run: npm install -g @gyasis/micro-agent
       - run: micro-agent --file src/ --prompt "Fix all failing tests" --max-cost 1.0
 ```
 
@@ -332,7 +332,7 @@ Extend Micro Agent with custom lifecycle hooks (powered by Ralph Loop engine):
 
 ```typescript
 // plugins/slack-notifier.ts
-import type { RalphPlugin } from '@builder.io/micro-agent/plugin-sdk';
+import type { RalphPlugin } from '@gyasis/micro-agent/plugin-sdk';
 
 export const slackPlugin: RalphPlugin = {
   name: 'slack-notifications',

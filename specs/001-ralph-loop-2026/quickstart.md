@@ -19,10 +19,10 @@ This guide helps you get started with Micro Agent, the autonomous AI coding agen
 
 ```bash
 # Install Micro Agent
-npm install -g @builder.io/micro-agent
+npm install -g @gyasis/micro-agent
 
 # Or use locally
-npm install @builder.io/micro-agent --save-dev
+npm install @gyasis/micro-agent --save-dev
 ```
 
 ### Prerequisites
@@ -128,7 +128,7 @@ plugins:
       failOnError: false
 
   # npm package plugin
-  - plugin: '@builder.io/micro-agent-plugin-slack'
+  - plugin: '@gyasis/micro-agent-plugin-slack'
     enabled: true
     config:
       settings:
@@ -139,7 +139,7 @@ plugins:
         onBudgetExceeded: false
 
   # Disabled plugin
-  - plugin: '@builder.io/micro-agent-plugin-analytics'
+  - plugin: '@gyasis/micro-agent-plugin-analytics'
     enabled: false
 ```
 
@@ -187,7 +187,7 @@ module.exports = {
 **TypeScript plugin:**
 
 ```typescript
-import type { RalphPlugin } from '@builder.io/micro-agent/plugin-sdk';
+import type { RalphPlugin } from '@gyasis/micro-agent/plugin-sdk';
 
 export const myPlugin: RalphPlugin = {
   name: 'my-typescript-plugin',
@@ -268,7 +268,7 @@ Plugins are isolated from the main Ralph Loop execution:
 
 ```typescript
 // plugins/linting-plugin.ts
-import type { RalphPlugin, PluginContext, GeneratedCode } from '@builder.io/micro-agent/plugin-sdk';
+import type { RalphPlugin, PluginContext, GeneratedCode } from '@gyasis/micro-agent/plugin-sdk';
 import { ESLint } from 'eslint';
 
 export const lintingPlugin: RalphPlugin = {

@@ -1,12 +1,12 @@
 # CLAUDE.md - Micro Agent Project Intelligence
 
 This file captures project-specific patterns, critical implementation paths, and workflow
-intelligence for the Micro Agent project (`@builder.io/micro-agent`).
+intelligence for the Micro Agent project (`@gyasis/micro-agent`).
 
 ## Project Identity
 
 - **Name**: Micro Agent (powered by Ralph Loop 2026)
-- **Package**: `@builder.io/micro-agent` v0.1.5
+- **Package**: `@gyasis/micro-agent` v0.1.5
 - **Branch**: `001-ralph-loop-2026` -> merging to `main`
 - **Status as of 2026-02-16**: All 216 tests passing, E2E verified, production-ready
 

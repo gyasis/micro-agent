@@ -18,7 +18,7 @@ import Anthropic from '@anthropic-ai/sdk';
 
 const defaultModel = 'gpt-4o';
 const assistantIdentifierMetadataKey = '_id';
-const assistantIdentifierMetadataValue = '@builder.io/micro-agent';
+const assistantIdentifierMetadataValue = '@gyasis/micro-agent';
 
 const useOllama = (model?: string) => {
   return model?.includes('llama') || model?.includes('phi');

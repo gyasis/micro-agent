@@ -11,7 +11,7 @@ export default command(
   },
   async () => {
     console.log('');
-    const command = `npm update -g @builder.io/micro-agent`;
+    const command = `npm update -g @gyasis/micro-agent`;
     console.log(dim(`Running: ${command}`));
     console.log('');
     await execaCommand(command, {

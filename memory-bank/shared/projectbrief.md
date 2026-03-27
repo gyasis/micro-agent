@@ -57,5 +57,5 @@ system avoids the "Dumb Zone" degradation that plagues long conversations.
   `z.record(v)` (two arguments required)
 - **Technical**: TypeScript 5.9.3 with `moduleResolution: "node"` (NOT bundler/node16 -- those
   would require .js extensions on all relative imports)
-- **Business**: Package published as `@builder.io/micro-agent` v0.1.5
+- **Business**: Package published as `@gyasis/micro-agent` v0.1.5
 - **Process**: Only the `memory-bank-keeper` agent may modify the memory-bank folder

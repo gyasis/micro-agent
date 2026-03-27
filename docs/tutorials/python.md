@@ -31,7 +31,7 @@ Complete guide for using Micro Agent with Python projects using pytest.
 ### Install Micro Agent (Global)
 
 ```bash
-npm install -g @builder.io/micro-agent
+npm install -g @gyasis/micro-agent
 
 # Verify installation
 micro-agent --version
@@ -583,7 +583,7 @@ Create plugin for auto-formatting:
 
 ```python
 # plugins/black_format.py
-import type { RalphPlugin } from '@builder.io/micro-agent/plugin-sdk'
+import type { RalphPlugin } from '@gyasis/micro-agent/plugin-sdk'
 import subprocess
 
 export const blackPlugin: RalphPlugin = {
@@ -650,7 +650,7 @@ jobs:
           pip install pytest pytest-cov
 
       - name: Install Micro Agent
-        run: npm install -g @builder.io/micro-agent
+        run: npm install -g @gyasis/micro-agent
 
       - name: Run Micro Agent
         env:

@@ -6,7 +6,7 @@
  *
  * @example
  * ```typescript
- * import type { RalphPlugin, PluginContext } from '@builder.io/micro-agent/plugin-sdk';
+ * import type { RalphPlugin, PluginContext } from '@gyasis/micro-agent/plugin-sdk';
  *
  * export const myPlugin: RalphPlugin = {
  *   name: 'my-custom-plugin',
@@ -18,7 +18,7 @@
  * ```
  */
 
-declare module '@builder.io/micro-agent/plugin-sdk' {
+declare module '@gyasis/micro-agent/plugin-sdk' {
   /**
    * Plugin lifecycle hooks
    * All hooks are optional - implement only what you need

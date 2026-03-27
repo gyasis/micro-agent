@@ -536,6 +536,21 @@ async function prepareRunParameters(
 }
 
 /**
+ * Parse a model spec like "ollama/qwen2.5-coder:latest" into { provider, model }.
+ * Bare model names (no slash) default to openai.
+ */
+function parseModelSpec(spec: string): { provider: string; model: string } {
+  const slashIndex = spec.indexOf('/');
+  if (slashIndex === -1) {
+    return { provider: 'openai', model: spec };
+  }
+  return {
+    provider: spec.slice(0, slashIndex),
+    model: spec.slice(slashIndex + 1),
+  };
+}
+
+/**
  * Initialize infrastructure components
  */
 async function initializeInfrastructure(params: any, config: any) {
@@ -1005,6 +1020,20 @@ async function runTierLoop(
 
   for (let i = 0; i < tierConfig.tiers.length; i++) {
     const tier = tierConfig.tiers[i];
+
+    // Apply tier model overrides to agents
+    if (tier.models?.artisan) {
+      const artisanSpec = parseModelSpec(tier.models.artisan);
+      agents.artisan.updateConfig({ provider: artisanSpec.provider, model: artisanSpec.model });
+    }
+    if (tier.models?.librarian) {
+      const libSpec = parseModelSpec(tier.models.librarian);
+      agents.librarian.updateConfig({ provider: libSpec.provider, model: libSpec.model });
+    }
+    if (tier.models?.critic) {
+      const critSpec = parseModelSpec(tier.models.critic);
+      agents.critic.updateConfig({ provider: critSpec.provider, model: critSpec.model });
+    }
 
     const { result, finalContext } = await runTier(
       {

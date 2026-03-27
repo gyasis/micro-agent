@@ -31,7 +31,7 @@ Complete guide for using Micro Agent with TypeScript and JavaScript projects usi
 ### Global Installation (Recommended)
 
 ```bash
-npm install -g @builder.io/micro-agent
+npm install -g @gyasis/micro-agent
 
 # Verify installation
 micro-agent --version
@@ -41,7 +41,7 @@ micro-agent --version
 
 ```bash
 # Add to project
-npm install --save-dev @builder.io/micro-agent
+npm install --save-dev @gyasis/micro-agent
 
 # Run using npx
 npx micro-agent --file src/utils/calculator.ts
@@ -533,7 +533,7 @@ Extend Micro Agent with lifecycle hooks:
 
 ```typescript
 // plugins/prettier-format.ts
-import type { RalphPlugin } from '@builder.io/micro-agent/plugin-sdk';
+import type { RalphPlugin } from '@gyasis/micro-agent/plugin-sdk';
 import prettier from 'prettier';
 
 export const prettierPlugin: RalphPlugin = {
@@ -579,7 +579,7 @@ jobs:
           node-version: '20'
 
       - name: Install Micro Agent
-        run: npm install -g @builder.io/micro-agent
+        run: npm install -g @gyasis/micro-agent
 
       - name: Run Micro Agent
         env:

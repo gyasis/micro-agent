@@ -356,18 +356,18 @@ class DocGenPlugin implements RalphPlugin {
 ```typescript
 // ralph-plugins.yaml
 plugins:
-  - name: '@builder.io/micro-agent-plugin-prettier'
+  - name: '@gyasis/micro-agent-plugin-prettier'
     enabled: true
     config:
       on: onAfterGen
 
-  - name: '@builder.io/micro-agent-plugin-security-scan'
+  - name: '@gyasis/micro-agent-plugin-security-scan'
     enabled: true
     config:
       on: onBeforeSuccess
       tools: [semgrep, snyk]
 
-  - name: '@builder.io/micro-agent-plugin-benchmark'
+  - name: '@gyasis/micro-agent-plugin-benchmark'
     enabled: false
     config:
       on: onSuccess
@@ -627,9 +627,9 @@ memory:
 
 # Plugins
 plugins:
-  - "@builder.io/micro-agent-plugin-prettier"
-  - "@builder.io/micro-agent-plugin-security-scan"
-  - "@builder.io/micro-agent-plugin-benchmark"
+  - "@gyasis/micro-agent-plugin-prettier"
+  - "@gyasis/micro-agent-plugin-security-scan"
+  - "@gyasis/micro-agent-plugin-benchmark"
 
 # Sandbox
 sandbox:

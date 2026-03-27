@@ -41,7 +41,7 @@ cargo --version
 ### Install Micro Agent
 
 ```bash
-npm install -g @builder.io/micro-agent
+npm install -g @gyasis/micro-agent
 
 # Verify installation
 micro-agent --version
@@ -668,7 +668,7 @@ jobs:
           toolchain: stable
 
       - name: Install Micro Agent
-        run: npm install -g @builder.io/micro-agent
+        run: npm install -g @gyasis/micro-agent
 
       - name: Run Micro Agent
         env:

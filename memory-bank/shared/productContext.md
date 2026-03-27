@@ -23,7 +23,7 @@
 
 ## Product Strategy
 
-- **Name**: Micro Agent (package: `@builder.io/micro-agent`)
+- **Name**: Micro Agent (package: `@gyasis/micro-agent`)
 - **Method**: Ralph Loop 2026 - frequent context resets, git-based state persistence
 - **Positioning**: The smarter AI coding assistant that knows its own limits (context window
   management built in)

@@ -7,7 +7,7 @@
 ## Tech Stack
 
 - **Language**: TypeScript (ES2022 target, Node.js 20+)
-- **Package**: `@builder.io/micro-agent` v0.1.5
+- **Package**: `@gyasis/micro-agent` v0.1.5
 - **State Machine**: XState v5 (actor model)
 - **Test Framework**: Vitest
 - **Config Validation**: Zod

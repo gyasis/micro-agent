@@ -17,7 +17,7 @@ import type {
   BudgetConstraints,
   TestContext,
   FileContext,
-} from '@builder.io/micro-agent/agents/base/agent-context';
+} from '@gyasis/micro-agent/agents/base/agent-context';
 ```
 
 ---

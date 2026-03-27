@@ -1,6 +1,6 @@
 # Micro Agent API Reference
 
-**Version**: v0.1.5 | **Package**: `@builder.io/micro-agent`
+**Version**: v0.1.5 | **Package**: `@gyasis/micro-agent`
 
 This directory contains the complete API reference for the Micro Agent (Ralph Loop 2026) system.
 

@@ -298,7 +298,7 @@ litellm:
 
 ### 1. Install Micro Agent
 ```bash
-npm install -g @builder.io/micro-agent
+npm install -g @gyasis/micro-agent
 ```
 
 ### 2. Configure API Keys

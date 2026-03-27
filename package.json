@@ -1,5 +1,5 @@
 {
-  "name": "@builder.io/micro-agent",
+  "name": "@gyasis/micro-agent",
   "description": "An AI CLI that writes code for you.",
   "version": "0.1.5",
   "type": "module",

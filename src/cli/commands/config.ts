@@ -63,7 +63,7 @@ export async function configCommand(
       `  Context Reset Frequency: ${config.memory?.contextResetFrequency ?? 1} iteration(s)`,
     );
     console.log(`  Context Reset Threshold: 40%`);
-    console.log(`  Vault Type: ${config.memory?.vectorDb ?? 'chromadb'}`);
+    console.log(`  Vault Type: ${config.memory?.vectorDb ?? 'lancedb'}`);
 
     console.log('\nTest:');
     console.log(`  Framework: vitest`);

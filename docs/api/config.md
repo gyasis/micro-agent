@@ -49,7 +49,7 @@ same sub-schema (`ModelConfigSchema`).
 |-------|----------|-------|-------------|
 | `librarian` | `google` | `gemini-2.5-flash` | `0.3` |
 | `artisan` | `anthropic` | `claude-sonnet-4-20250514` | `0.7` |
-| `critic` | `openai` | `gpt-4o-mini` | `0.2` |
+| `critic` | `openai` | `gpt-4.1-mini` | `0.2` |
 | `chaos` | `anthropic` | `claude-sonnet-4-20250514` | `0.9` |
 | `localGuard` | _(not set)_ | _(not set)_ | _(not set)_ |
 
@@ -203,7 +203,7 @@ models:
     maxTokens: 8192
   critic:
     provider: openai
-    model: gpt-4o-mini
+    model: gpt-4.1-mini
     temperature: 0.2
   chaos:
     provider: anthropic

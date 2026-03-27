@@ -56,7 +56,7 @@ program
     '--artisan <model>',
     'Override Artisan model (e.g., claude-sonnet-4-6)',
   )
-  .option('--critic <model>', 'Override Critic model (e.g., gpt-4o-mini)')
+  .option('--critic <model>', 'Override Critic model (e.g., gpt-4.1-mini)')
   .option('--chaos <model>', 'Override Chaos model')
   .option('--no-adversarial', 'Skip adversarial testing')
   .option(

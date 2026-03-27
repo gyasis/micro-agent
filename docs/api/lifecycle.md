@@ -221,7 +221,7 @@ before `trackTokens()` is called for it. Unrecognized models fall back to
 ```typescript
 contextMonitor.registerAgent('librarian', 'gemini-2.5-flash');
 contextMonitor.registerAgent('artisan',   'claude-sonnet-4-20250514');
-contextMonitor.registerAgent('critic',    'gpt-4o-mini');
+contextMonitor.registerAgent('critic',    'gpt-4.1-mini');
 ```
 
 ---
@@ -619,7 +619,7 @@ valid). Use for programmatic validation without loading from disk.
       "models": {
         "artisan": "claude-opus-4-6",
         "librarian": "gemini-2.5-flash",
-        "critic": "gpt-4o-mini"
+        "critic": "gpt-4.1-mini"
       }
     }
   ],

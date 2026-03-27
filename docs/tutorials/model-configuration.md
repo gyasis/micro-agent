@@ -30,7 +30,7 @@ Create `.micro-agent.json` in your project root:
     },
     "critic": {
       "provider": "openai",
-      "model": "gpt-4o-mini",
+      "model": "gpt-4.1-mini",
       "temperature": 0.2
     }
   },
@@ -54,7 +54,7 @@ Set model overrides via environment:
 # In your .env file
 LIBRARIAN_MODEL=gemini-2.5-flash
 ARTISAN_MODEL=claude-sonnet-4-6
-CRITIC_MODEL=gpt-4o-mini
+CRITIC_MODEL=gpt-4.1-mini
 
 # API Keys
 GOOGLE_API_KEY=your-gemini-key
@@ -70,7 +70,7 @@ Override models for a single run:
 ma-loop run src/file.ts \
   --librarian gemini-2.5-flash \
   --artisan claude-sonnet-4-6 \
-  --critic gpt-4o-mini \
+  --critic gpt-4.1-mini \
   --max-budget 0.50
 ```
 
@@ -112,7 +112,7 @@ ma-loop run src/file.ts \
 ```json
 {
   "provider": "openai",
-  "model": "gpt-4o-mini"              // Fast, cheap
+  "model": "gpt-4.1-mini"              // Fast, cheap
 }
 ```
 
@@ -141,7 +141,7 @@ Best for: Rapid iteration, testing, development
   },
   "critic": {
     "provider": "openai",
-    "model": "gpt-4o-mini",           // $0.15 per 1M tokens
+    "model": "gpt-4.1-mini",           // $0.15 per 1M tokens
     "temperature": 0.2
   }
 }
@@ -167,7 +167,7 @@ Best for: Production use, important fixes
   },
   "critic": {
     "provider": "openai",
-    "model": "gpt-4o-mini",
+    "model": "gpt-4.1-mini",
     "temperature": 0.2
   }
 }
@@ -193,7 +193,7 @@ Best for: Critical bugs, complex refactoring
   },
   "critic": {
     "provider": "openai",
-    "model": "gpt-4o",               // Advanced reasoning
+    "model": "gpt-4.1",               // Advanced reasoning
     "temperature": 0.2
   }
 }
@@ -238,7 +238,7 @@ cat > .micro-agent.json <<EOF
   "llm": {
     "librarian": {"provider": "google", "model": "gemini-2.5-flash"},
     "artisan": {"provider": "anthropic", "model": "claude-sonnet-4-6"},
-    "critic": {"provider": "openai", "model": "gpt-4o-mini"}
+    "critic": {"provider": "openai", "model": "gpt-4.1-mini"}
   }
 }
 EOF
@@ -254,7 +254,7 @@ cat > .micro-agent.json <<EOF
   "llm": {
     "librarian": {"provider": "google", "model": "gemini-2.5-flash"},
     "artisan": {"provider": "anthropic", "model": "claude-haiku-4-5-20251001"},
-    "critic": {"provider": "openai", "model": "gpt-4o-mini"}
+    "critic": {"provider": "openai", "model": "gpt-4.1-mini"}
   }
 }
 EOF
@@ -270,7 +270,7 @@ cat > .micro-agent.json <<EOF
   "llm": {
     "librarian": {"provider": "google", "model": "gemini-2.5-pro"},
     "artisan": {"provider": "anthropic", "model": "claude-opus-4-6"},
-    "critic": {"provider": "openai", "model": "gpt-4o"}
+    "critic": {"provider": "openai", "model": "gpt-4.1"}
   }
 }
 EOF
@@ -329,7 +329,7 @@ Configure different models for different languages:
     "python": {
       "artisan": {
         "provider": "openai",
-        "model": "gpt-4o"
+        "model": "gpt-4.1"
       }
     },
     "rust": {
@@ -386,7 +386,7 @@ Create `tiers.json` in your project:
       "models": {
         "artisan": "claude-sonnet-4-6",
         "librarian": "gemini-2.5-flash",
-        "critic": "gpt-4o-mini"
+        "critic": "gpt-4.1-mini"
       }
     }
   ],
@@ -484,7 +484,7 @@ OPENAI_API_KEY=your-openai-key
 # Correct (2026 names):
 "gemini-2.5-flash"      ✅
 "claude-sonnet-4-6" ✅
-"gpt-4o-mini"           ✅
+"gpt-4.1-mini"           ✅
 ```
 
 ### Issue: Costs too high
@@ -527,7 +527,7 @@ cat > .micro-agent.json <<EOF
   "llm": {
     "librarian": {"provider": "google", "model": "gemini-2.5-flash"},
     "artisan": {"provider": "anthropic", "model": "claude-sonnet-4-6"},
-    "critic": {"provider": "openai", "model": "gpt-4o-mini"}
+    "critic": {"provider": "openai", "model": "gpt-4.1-mini"}
   },
   "budget": {
     "maxIterations": 5,

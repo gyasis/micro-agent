@@ -45,7 +45,7 @@ export async function configCommand(
       `  Artisan:   ${config.models?.artisan?.model ?? 'claude-sonnet-4-20250514'} (${config.models?.artisan?.provider ?? 'anthropic'})`,
     );
     console.log(
-      `  Critic:    ${config.models?.critic?.model ?? 'gpt-4o-mini'} (${config.models?.critic?.provider ?? 'openai'})`,
+      `  Critic:    ${config.models?.critic?.model ?? 'gpt-4.1-mini'} (${config.models?.critic?.provider ?? 'openai'})`,
     );
     console.log(
       `  Chaos:     ${config.models?.chaos?.model ?? 'Same as Artisan'} (${config.models?.chaos?.provider ?? config.models?.artisan?.provider ?? 'anthropic'})`,

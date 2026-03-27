@@ -54,6 +54,8 @@ export const DEFAULT_CONTEXT_LIMITS: ModelContextLimits = {
   'gemini-2.0-flash': 1_000_000, // Legacy (deprecated March 2026)
 
   // GPT models (2026)
+  'gpt-4.1': 1_047_576,
+  'gpt-4.1-mini': 1_047_576,
   'gpt-4o': 128_000,
   'gpt-4o-mini': 128_000,
   'gpt-4-turbo': 128_000,
